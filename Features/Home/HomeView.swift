@@ -3,7 +3,13 @@ import SwiftUI
 /// Home screen with candle and begin writing button
 struct HomeView: View {
     @StateObject private var viewModel = HomeViewModel()
+    @EnvironmentObject private var storageService: StorageService
+    @EnvironmentObject private var purchaseService: PurchaseService
+
     @State private var showTimer = false
+    @State private var showPaywall = false
+
+    private let gatingService = SessionGatingService.shared
 
     var body: some View {
         ZStack {
@@ -34,8 +40,34 @@ struct HomeView: View {
                 viewModel.refresh()
             })
         }
+        .fullScreenCover(isPresented: $showPaywall, onDismiss: {
+            // Refresh after paywall closes to check subscription status
+            viewModel.refresh()
+        }) {
+            PaywallView(onSubscribed: {
+                // User subscribed - dismiss paywall and start session
+                showPaywall = false
+                // Start timer after brief delay to let paywall dismiss
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    showTimer = true
+                }
+            })
+        }
         .onAppear {
             viewModel.refresh()
+        }
+    }
+
+    // MARK: - Session Start Logic
+    private func attemptStartSession() {
+        // Log gating status for debugging
+        gatingService.logGatingStatus()
+
+        if gatingService.canStartSession {
+            showTimer = true
+        } else {
+            // User has exceeded free session limit - show paywall
+            showPaywall = true
         }
     }
 
@@ -101,7 +133,7 @@ struct HomeView: View {
     // MARK: - Action Button
     private var actionButton: some View {
         Button {
-            showTimer = true
+            attemptStartSession()
         } label: {
             Text(viewModel.buttonText)
         }

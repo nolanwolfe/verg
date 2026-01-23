@@ -3,6 +3,7 @@ import Combine
 import UIKit
 
 /// ViewModel for the Paywall screen
+@MainActor
 final class PaywallViewModel: ObservableObject {
 
     // MARK: - Published Properties
@@ -23,24 +24,10 @@ final class PaywallViewModel: ObservableObject {
             }
         }
 
-        var price: String {
-            switch self {
-            case .weekly: return "$4.99"
-            case .yearly: return "$99.99"
-            }
-        }
-
         var period: String {
             switch self {
             case .weekly: return "/week"
             case .yearly: return "/year"
-            }
-        }
-
-        var description: String {
-            switch self {
-            case .weekly: return "Billed weekly"
-            case .yearly: return "Save 61%"
             }
         }
 
@@ -57,18 +44,35 @@ final class PaywallViewModel: ObservableObject {
     }
 
     let features: [Feature] = [
-        Feature(icon: "checkmark.circle.fill", text: "10-minute focused writing sessions"),
+        Feature(icon: "checkmark.circle.fill", text: "Daily focused writing sessions"),
         Feature(icon: "checkmark.circle.fill", text: "Track your daily streak"),
         Feature(icon: "checkmark.circle.fill", text: "Build a gallery of your pages"),
         Feature(icon: "checkmark.circle.fill", text: "Daily reminders to write")
     ]
 
     // MARK: - Dependencies
-    private let purchaseService: PurchaseService
+    var purchaseService: PurchaseService = .shared
 
     // MARK: - Callbacks
     var onDismiss: (() -> Void)?
     var onSubscribed: (() -> Void)?
+
+    // MARK: - Dynamic Prices from PurchaseService
+    var weeklyPrice: String {
+        purchaseService.weeklyPrice
+    }
+
+    var yearlyPrice: String {
+        purchaseService.yearlyPrice
+    }
+
+    var weeklyIntroOffer: String? {
+        purchaseService.weeklyIntroOffer
+    }
+
+    var yearlyIntroOffer: String? {
+        purchaseService.yearlyIntroOffer
+    }
 
     // MARK: - Initialization
     init(purchaseService: PurchaseService = .shared) {
@@ -98,15 +102,13 @@ final class PaywallViewModel: ObservableObject {
                 success = await purchaseService.purchaseYearly()
             }
 
-            await MainActor.run {
-                isLoading = false
+            isLoading = false
 
-                if success {
-                    onSubscribed?()
-                } else {
-                    errorMessage = purchaseService.errorMessage ?? "Purchase failed. Please try again."
-                    showError = true
-                }
+            if success {
+                onSubscribed?()
+            } else if let error = purchaseService.errorMessage {
+                errorMessage = error
+                showError = true
             }
         }
     }
@@ -118,15 +120,13 @@ final class PaywallViewModel: ObservableObject {
         Task {
             let success = await purchaseService.restorePurchases()
 
-            await MainActor.run {
-                isLoading = false
+            isLoading = false
 
-                if success {
-                    onSubscribed?()
-                } else {
-                    errorMessage = "No purchases found to restore."
-                    showError = true
-                }
+            if success {
+                onSubscribed?()
+            } else {
+                errorMessage = "No purchases found to restore."
+                showError = true
             }
         }
     }

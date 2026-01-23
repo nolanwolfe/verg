@@ -16,6 +16,7 @@ final class SettingsViewModel: ObservableObject {
     @Published var showTimePicker: Bool = false
     @Published var showRestoreAlert: Bool = false
     @Published var restoreMessage: String = ""
+    @Published var showCustomerCenter: Bool = false
 
     // MARK: - Dependencies
     private let storageService: StorageService
@@ -167,9 +168,7 @@ final class SettingsViewModel: ObservableObject {
     }
 
     func manageSubscription() {
-        if let url = URL(string: "https://apps.apple.com/account/subscriptions") {
-            UIApplication.shared.open(url)
-        }
+        showCustomerCenter = true
     }
 
     // MARK: - App Actions
