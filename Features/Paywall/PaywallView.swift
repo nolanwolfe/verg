@@ -1,245 +1,262 @@
 import SwiftUI
+import RevenueCat
+import RevenueCatUI
 
-/// Paywall screen for subscription
+/// Paywall screen - uses custom UI for StoreKit testing or RevenueCat Paywall
 struct PaywallView: View {
-    @StateObject private var viewModel = PaywallViewModel()
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var purchaseService: PurchaseService
+    @StateObject private var viewModel = PaywallViewModel()
 
     var onSubscribed: (() -> Void)?
 
     var body: some View {
-        ZStack {
-            // Background
-            Theme.Colors.background
-                .ignoresSafeArea()
-
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: Theme.Spacing.lg) {
-                    // Close button
-                    closeButton
-
-                    // Header with candle
-                    headerSection
-
-                    // Features list
-                    featuresSection
-
-                    // Pricing cards
-                    pricingSection
-
-                    // CTA button
-                    ctaButton
-
-                    // Restore purchases
-                    restoreButton
-
-                    // Legal links
-                    legalLinks
+        if purchaseService.isUsingStoreKitTesting {
+            // Custom paywall for StoreKit testing
+            NativePaywallView(viewModel: viewModel)
+                .onAppear {
+                    viewModel.purchaseService = purchaseService
+                    viewModel.onDismiss = { dismiss() }
+                    viewModel.onSubscribed = {
+                        onSubscribed?()
+                        dismiss()
+                    }
                 }
-                .padding(.horizontal, Theme.Spacing.lg)
-                .padding(.bottom, Theme.Spacing.xxxl)
-            }
-
-            // Loading overlay
-            if viewModel.isLoading {
-                loadingOverlay
-            }
-        }
-        .alert("Error", isPresented: $viewModel.showError) {
-            Button("OK", role: .cancel) { }
-        } message: {
-            Text(viewModel.errorMessage ?? "An error occurred")
-        }
-        .onAppear {
-            viewModel.onSubscribed = {
-                onSubscribed?()
-                dismiss()
-            }
-            viewModel.onDismiss = {
-                dismiss()
-            }
-        }
-    }
-
-    // MARK: - Close Button
-    private var closeButton: some View {
-        HStack {
-            Spacer()
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 28))
-                    .foregroundColor(Theme.Colors.secondaryText)
-            }
-        }
-        .padding(.top, Theme.Spacing.sm)
-    }
-
-    // MARK: - Header Section
-    private var headerSection: some View {
-        VStack(spacing: Theme.Spacing.md) {
-            // Candle icon
-            Image(systemName: "flame.fill")
-                .font(.system(size: 60))
-                .foregroundStyle(Theme.Colors.accentGradient)
-                .padding(.bottom, Theme.Spacing.sm)
-
-            Text("Start Your Writing Ritual")
-                .font(Theme.Typography.largeTitle)
-                .foregroundColor(Theme.Colors.primaryText)
-                .multilineTextAlignment(.center)
-
-            Text("Build a daily journaling habit with focused writing sessions")
-                .font(Theme.Typography.body)
-                .foregroundColor(Theme.Colors.secondaryText)
-                .multilineTextAlignment(.center)
-        }
-        .padding(.top, Theme.Spacing.md)
-    }
-
-    // MARK: - Features Section
-    private var featuresSection: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            ForEach(viewModel.features) { feature in
-                HStack(spacing: Theme.Spacing.sm) {
-                    Image(systemName: feature.icon)
-                        .foregroundColor(Theme.Colors.accent)
-                        .font(.system(size: 20))
-
-                    Text(feature.text)
-                        .font(Theme.Typography.body)
-                        .foregroundColor(Theme.Colors.primaryText)
+        } else {
+            // RevenueCat paywall for production
+            PaywallViewWrapper(
+                onDismiss: { dismiss() },
+                onSubscribed: {
+                    onSubscribed?()
+                    dismiss()
                 }
-            }
-        }
-        .padding(Theme.Spacing.lg)
-        .fillWidth(alignment: .leading)
-        .cardStyle()
-    }
-
-    // MARK: - Pricing Section
-    private var pricingSection: some View {
-        VStack(spacing: Theme.Spacing.sm) {
-            ForEach(PaywallViewModel.PlanType.allCases, id: \.rawValue) { plan in
-                PricingCard(
-                    plan: plan,
-                    isSelected: viewModel.selectedPlan == plan,
-                    onSelect: { viewModel.selectPlan(plan) }
-                )
-            }
-        }
-    }
-
-    // MARK: - CTA Button
-    private var ctaButton: some View {
-        Button {
-            viewModel.startTrial()
-        } label: {
-            Text("Start 3-Day Free Trial")
-        }
-        .buttonStyle(PrimaryButtonStyle())
-        .padding(.top, Theme.Spacing.sm)
-    }
-
-    // MARK: - Restore Button
-    private var restoreButton: some View {
-        Button {
-            viewModel.restorePurchases()
-        } label: {
-            Text("Restore Purchases")
-        }
-        .buttonStyle(TextLinkButtonStyle())
-    }
-
-    // MARK: - Legal Links
-    private var legalLinks: some View {
-        HStack(spacing: Theme.Spacing.lg) {
-            Button("Terms") {
-                viewModel.openTermsOfService()
-            }
-            .buttonStyle(TextLinkButtonStyle())
-
-            Button("Privacy") {
-                viewModel.openPrivacyPolicy()
-            }
-            .buttonStyle(TextLinkButtonStyle())
-        }
-        .padding(.top, Theme.Spacing.sm)
-    }
-
-    // MARK: - Loading Overlay
-    private var loadingOverlay: some View {
-        ZStack {
-            Color.black.opacity(0.6)
-                .ignoresSafeArea()
-
-            ProgressView()
-                .progressViewStyle(CircularProgressViewStyle(tint: Theme.Colors.primaryText))
-                .scaleEffect(1.5)
+            )
         }
     }
 }
 
-// MARK: - Pricing Card
-struct PricingCard: View {
-    let plan: PaywallViewModel.PlanType
-    let isSelected: Bool
-    let onSelect: () -> Void
+/// Wrapper for RevenueCat PaywallView with callbacks
+struct PaywallViewWrapper: View {
+    let onDismiss: () -> Void
+    let onSubscribed: () -> Void
 
     var body: some View {
-        Button(action: onSelect) {
-            HStack {
-                VStack(alignment: .leading, spacing: Theme.Spacing.xxxs) {
-                    HStack {
-                        Text(plan.title)
-                            .font(Theme.Typography.headline)
-                            .foregroundColor(Theme.Colors.primaryText)
+        RevenueCatUI.PaywallView(displayCloseButton: true)
+            .onPurchaseCompleted { customerInfo in
+                if customerInfo.entitlements[PurchaseService.entitlementID]?.isActive == true {
+                    onSubscribed()
+                }
+            }
+            .onRestoreCompleted { customerInfo in
+                if customerInfo.entitlements[PurchaseService.entitlementID]?.isActive == true {
+                    onSubscribed()
+                }
+            }
+    }
+}
 
-                        if plan.isBestValue {
-                            Text("BEST VALUE")
-                                .font(Theme.Typography.caption)
+/// Native paywall view for StoreKit testing
+struct NativePaywallView: View {
+    @ObservedObject var viewModel: PaywallViewModel
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color(.systemBackground)
+                    .ignoresSafeArea()
+
+                ScrollView {
+                    VStack(spacing: 32) {
+                        // Header
+                        VStack(spacing: 12) {
+                            Image(systemName: "sparkles")
+                                .font(.system(size: 48))
+                                .foregroundStyle(.purple)
+
+                            Text("Unlock Verg Pro")
+                                .font(.largeTitle)
                                 .fontWeight(.bold)
-                                .foregroundColor(Theme.Colors.primaryText)
-                                .padding(.horizontal, Theme.Spacing.xxs)
-                                .padding(.vertical, Theme.Spacing.xxxs)
-                                .background(Theme.Colors.accentGradient)
-                                .cornerRadius(Theme.CornerRadius.small / 2)
+
+                            Text("Start your free trial today")
+                                .font(.title3)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.top, 20)
+
+                        // Features
+                        VStack(alignment: .leading, spacing: 16) {
+                            ForEach(viewModel.features) { feature in
+                                HStack(spacing: 12) {
+                                    Image(systemName: feature.icon)
+                                        .foregroundStyle(.purple)
+                                        .font(.title3)
+
+                                    Text(feature.text)
+                                        .font(.body)
+                                }
+                            }
+                        }
+                        .padding(.horizontal, 24)
+
+                        // Plan Selection
+                        VStack(spacing: 12) {
+                            PlanCard(
+                                title: "Yearly",
+                                price: viewModel.yearlyPrice,
+                                period: "/year",
+                                badge: "Best Value",
+                                subtitle: viewModel.yearlyIntroOffer ?? "Save 61%",
+                                isSelected: viewModel.selectedPlan == .yearly,
+                                onTap: { viewModel.selectPlan(.yearly) }
+                            )
+
+                            PlanCard(
+                                title: "Weekly",
+                                price: viewModel.weeklyPrice,
+                                period: "/week",
+                                badge: nil,
+                                subtitle: viewModel.weeklyIntroOffer ?? "Billed weekly",
+                                isSelected: viewModel.selectedPlan == .weekly,
+                                onTap: { viewModel.selectPlan(.weekly) }
+                            )
+                        }
+                        .padding(.horizontal, 24)
+
+                        // CTA Button
+                        VStack(spacing: 8) {
+                            Button {
+                                viewModel.startTrial()
+                            } label: {
+                                HStack {
+                                    if viewModel.isLoading {
+                                        ProgressView()
+                                            .tint(.white)
+                                    } else {
+                                        Text("Start Free Trial")
+                                            .fontWeight(.semibold)
+                                    }
+                                }
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 56)
+                                .background(.purple)
+                                .foregroundStyle(.white)
+                                .clipShape(RoundedRectangle(cornerRadius: 16))
+                            }
+                            .disabled(viewModel.isLoading)
+
+                            Text("No purchase necessary")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        .padding(.horizontal, 24)
+
+                        // Restore & Legal
+                        VStack(spacing: 8) {
+                            Button("Restore Purchases") {
+                                viewModel.restorePurchases()
+                            }
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+
+                            HStack(spacing: 16) {
+                                Button("Privacy Policy") {
+                                    viewModel.openPrivacyPolicy()
+                                }
+                                Button("Terms of Service") {
+                                    viewModel.openTermsOfService()
+                                }
+                            }
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                        }
+                        .padding(.bottom, 20)
+                    }
+                }
+            }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.body.weight(.medium))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .alert("Error", isPresented: $viewModel.showError) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(viewModel.errorMessage ?? "Something went wrong")
+            }
+        }
+    }
+}
+
+/// Individual plan selection card
+struct PlanCard: View {
+    let title: String
+    let price: String
+    let period: String
+    let badge: String?
+    let subtitle: String
+    let isSelected: Bool
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack(spacing: 8) {
+                        Text(title)
+                            .font(.headline)
+
+                        if let badge {
+                            Text(badge)
+                                .font(.caption2)
+                                .fontWeight(.semibold)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(.purple.opacity(0.2))
+                                .foregroundStyle(.purple)
+                                .clipShape(Capsule())
                         }
                     }
 
-                    Text(plan.description)
-                        .font(Theme.Typography.caption)
-                        .foregroundColor(Theme.Colors.secondaryText)
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
 
                 Spacer()
 
-                VStack(alignment: .trailing) {
-                    Text(plan.price)
-                        .font(Theme.Typography.title2)
-                        .foregroundColor(Theme.Colors.primaryText)
-
-                    Text(plan.period)
-                        .font(Theme.Typography.caption)
-                        .foregroundColor(Theme.Colors.secondaryText)
+                HStack(alignment: .firstTextBaseline, spacing: 2) {
+                    Text(price)
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    Text(period)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
                 }
             }
-            .padding(Theme.Spacing.md)
-            .background(Theme.Colors.cardBackground)
-            .cornerRadius(Theme.CornerRadius.medium)
-            .overlay(
-                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
-                    .stroke(
-                        isSelected ? Theme.Colors.accent : Color.clear,
-                        lineWidth: 2
-                    )
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(isSelected ? Color.purple : Color.gray.opacity(0.3), lineWidth: isSelected ? 2 : 1)
+            )
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(isSelected ? Color.purple.opacity(0.05) : Color.clear)
             )
         }
+        .buttonStyle(.plain)
     }
 }
 
 // MARK: - Preview
 #Preview {
     PaywallView()
+        .environmentObject(PurchaseService.shared)
 }

@@ -6,27 +6,10 @@ struct OnboardingView: View {
 
     var onComplete: (() -> Void)?
 
-    // MARK: - Onboarding Pages Data
-    private let pages: [(imageName: String, title: String, subtitle: String, buttonText: String)] = [
-        (
-            imageName: "iphone.radiowaves.left.and.right",
-            title: "Your phone steals your thoughts",
-            subtitle: "Endless attention. Zero reflection.",
-            buttonText: "This is the door out."
-        ),
-        (
-            imageName: "pencil.and.scribble",
-            title: "This app isn't for typing, it's for writing",
-            subtitle: "Do you have a pen and paper?",
-            buttonText: "I'm ready to write on paper"
-        ),
-        (
-            imageName: "flame",
-            title: "One simple ritual",
-            subtitle: "Track your pages. Watch your progress and thoughts grow.",
-            buttonText: "Leave the phone alone."
-        )
-    ]
+    // MARK: - Onboarding Pages Data (from centralized strings)
+    private var pages: [AppStrings.Onboarding.Page] {
+        AppStrings.Onboarding.pages
+    }
 
     var body: some View {
         ZStack {
@@ -71,7 +54,7 @@ struct OnboardingView: View {
             Button {
                 viewModel.skip()
             } label: {
-                Text("Skip")
+                Text(AppStrings.Onboarding.skipButton)
                     .font(Theme.Typography.subheadline)
                     .foregroundColor(Theme.Colors.secondaryText)
             }

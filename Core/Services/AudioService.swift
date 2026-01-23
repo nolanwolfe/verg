@@ -15,7 +15,7 @@ final class AudioService: ObservableObject {
     // MARK: - Sound Types
     enum Sound: String {
         case bellStart = "bell_start"
-        case bellEnd = "bell_end"
+        case bellEnd = "185822__lloydevans09__single-chime"
 
         var filename: String {
             rawValue

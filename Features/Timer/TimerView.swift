@@ -33,6 +33,26 @@ struct TimerView: View {
 
                 Spacer()
             }
+
+            // "Upload a photo" coach mark notice overlay
+            if viewModel.showUploadPhotoNotice {
+                CoachMarkNoticeView(
+                    title: AppStrings.CoachMark.UploadPhoto.title,
+                    message: AppStrings.CoachMark.UploadPhoto.body,
+                    primaryButtonText: AppStrings.CoachMark.UploadPhoto.primaryButton,
+                    secondaryButtonText: AppStrings.CoachMark.UploadPhoto.secondaryButton,
+                    onPrimaryTap: {
+                        DispatchQueue.main.async {
+                            viewModel.onUploadPhotoTapped()
+                        }
+                    },
+                    onSecondaryTap: {
+                        DispatchQueue.main.async {
+                            viewModel.onSkipPhotoTapped()
+                        }
+                    }
+                )
+            }
         }
         .fullScreenCover(isPresented: $viewModel.showCamera) {
             CameraView(

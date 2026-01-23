@@ -45,6 +45,12 @@ final class StorageService: ObservableObject {
         loadStats()
         loadSettings()
 
+        // Migrate old/testing timer defaults (e.g., 5 seconds) to 10 minutes
+        if settings.timerDuration == 5 {
+            settings.timerDuration = 600
+            saveSettings()
+        }
+
         // Validate streak on load
         stats.validateStreak()
         saveStats()
@@ -219,6 +225,42 @@ final class StorageService: ObservableObject {
         settings.isSubscribed = subscribed
         saveSettings()
     }
+
+    // MARK: - Coach Mark Notice Management
+    func setHasSeenSetTimerNotice(_ seen: Bool) {
+        settings.hasSeenSetTimerNotice = seen
+        saveSettings()
+    }
+
+    func incrementUploadPhotoNoticeShownCount() {
+        settings.uploadPhotoNoticeShownCount += 1
+        saveSettings()
+    }
+
+    /// Whether to show the "upload photo" coach mark notice (shown for first 3 sessions)
+    var shouldShowUploadPhotoNotice: Bool {
+        settings.uploadPhotoNoticeShownCount < 3
+    }
+
+    #if DEBUG
+    /// Reset free session count for testing (DEBUG only)
+    func resetForTesting() {
+        // Clear all sessions
+        sessions = []
+        saveSessions()
+
+        // Reset stats
+        stats = UserStats()
+        saveStats()
+
+        // Reset coach mark flags
+        settings.hasSeenSetTimerNotice = false
+        settings.uploadPhotoNoticeShownCount = 0
+        saveSettings()
+
+        print("[DEBUG] StorageService: Reset all data for testing")
+    }
+    #endif
 
     // MARK: - Utility
     /// Check if there are any sessions

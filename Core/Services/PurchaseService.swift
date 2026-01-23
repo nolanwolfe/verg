@@ -1,202 +1,357 @@
 import Foundation
-import Combine
+import StoreKit
+import RevenueCat
 
-/// Service for managing in-app purchases (RevenueCat placeholder)
 final class PurchaseService: ObservableObject {
-
-    // MARK: - Singleton
     static let shared = PurchaseService()
 
+    // MARK: - Constants
+    static let entitlementID = "premium"
+
     // MARK: - Published Properties
-    @Published private(set) var isSubscribed: Bool = true  // Default true for development
-    @Published private(set) var isLoading: Bool = false
-    @Published private(set) var errorMessage: String?
+    @MainActor @Published private(set) var isSubscribed: Bool = false
+    @MainActor @Published private(set) var isLoading: Bool = false
+    @MainActor @Published private(set) var weeklyPrice: String = "$3.99"
+    @MainActor @Published private(set) var yearlyPrice: String = "$99.99"
+    @MainActor @Published private(set) var weeklyIntroOffer: String? = "3 days free"
+    @MainActor @Published private(set) var yearlyIntroOffer: String? = "3 days free"
+    @MainActor @Published var errorMessage: String?
 
-    // MARK: - Product Info
-    struct Product {
-        let identifier: String
-        let title: String
-        let description: String
-        let priceString: String
-        let duration: String
+    // MARK: - Product IDs
+    private let weeklyID = "verg_weekly"
+    private let yearlyID = "verg_yearly"
+
+    // RevenueCat API key - empty means use StoreKit testing
+    private let revenueCatAPIKey = "appl_wQqrrrHwpiBHrHJDqnuBKYOfysb"
+
+    // MARK: - Private Properties
+    private var products: [Product] = []
+    private var updateListenerTask: Task<Void, Error>?
+    private var currentOffering: Offering?
+
+    var isUsingStoreKitTesting: Bool {
+        revenueCatAPIKey.isEmpty
     }
-
-    let weeklyProduct = Product(
-        identifier: "ink_weekly",
-        title: "Weekly",
-        description: "Billed weekly",
-        priceString: "$4.99",
-        duration: "week"
-    )
-
-    let yearlyProduct = Product(
-        identifier: "ink_yearly",
-        title: "Yearly",
-        description: "Best value - Save 61%",
-        priceString: "$99.99",
-        duration: "year"
-    )
-
-    // MARK: - Dependencies
-    private let storage: StorageService
 
     // MARK: - Initialization
-    private init(storage: StorageService = .shared) {
-        self.storage = storage
+    private init() {}
 
-        // Load subscription status from storage
-        // For development, default to true
-        isSubscribed = true // storage.settings.isSubscribed
+    deinit {
+        updateListenerTask?.cancel()
     }
 
-    // MARK: - Public Methods
+    // MARK: - Configuration
 
-    /// Check current subscription status
-    func checkSubscriptionStatus() async -> Bool {
-        // TODO: Integrate with RevenueCat
-        // let customerInfo = try? await Purchases.shared.customerInfo()
-        // return customerInfo?.entitlements["premium"]?.isActive ?? false
+    @MainActor
+    func configure() {
+        if !revenueCatAPIKey.isEmpty {
+            // Use RevenueCat
+            Purchases.logLevel = .debug
+            print("[RC] Configuring RevenueCat with API key: \(revenueCatAPIKey.prefix(6))…")
+            Purchases.configure(withAPIKey: revenueCatAPIKey)
+            Task {
+                await fetchOfferingsFromRevenueCat()
+            }
+        } else {
+            // Use StoreKit testing - listen for transactions
+            updateListenerTask = listenForTransactions()
+        }
 
-        // For now, always return true for development
-        return true
+        Task {
+            await fetchProducts()
+            await checkSubscriptionStatus()
+        }
     }
 
-    /// Purchase weekly subscription
+    // MARK: - Transaction Listener (StoreKit 2)
+
+    private func listenForTransactions() -> Task<Void, Error> {
+        Task.detached { [weak self] in
+            for await result in Transaction.updates {
+                if case .verified(let transaction) = result {
+                    await self?.checkSubscriptionStatus()
+                    await transaction.finish()
+                }
+            }
+        }
+    }
+
+    // MARK: - Fetch Offerings from RevenueCat
+
+    @MainActor
+    func fetchOfferingsFromRevenueCat() async {
+        do {
+            print("[RC] Fetching offerings…")
+            let offerings = try await Purchases.shared.offerings()
+            self.currentOffering = offerings.current
+            if let current = offerings.current {
+                // Map weekly and yearly packages by identifier or product id
+                if let weeklyPkg = current.availablePackages.first(where: { $0.identifier.lowercased().contains("week") || $0.storeProduct.productIdentifier == weeklyID }) {
+                    if let formatted = weeklyPkg.storeProduct.priceFormatter?.string(from: weeklyPkg.storeProduct.price as NSDecimalNumber) {
+                        weeklyPrice = formatted
+                    } else {
+                        weeklyPrice = "$\(weeklyPkg.storeProduct.price)"
+                    }
+                    if let intro = weeklyPkg.storeProduct.introductoryDiscount {
+                        weeklyIntroOffer = intro.localizedSubscriptionPeriod
+                    }
+                }
+                if let yearlyPkg = current.availablePackages.first(where: { $0.identifier.lowercased().contains("year") || $0.storeProduct.productIdentifier == yearlyID }) {
+                    if let formatted = yearlyPkg.storeProduct.priceFormatter?.string(from: yearlyPkg.storeProduct.price as NSDecimalNumber) {
+                        yearlyPrice = formatted
+                    } else {
+                        yearlyPrice = "$\(yearlyPkg.storeProduct.price)"
+                    }
+                    if let intro = yearlyPkg.storeProduct.introductoryDiscount {
+                        yearlyIntroOffer = intro.localizedSubscriptionPeriod
+                    }
+                }
+            } else {
+                print("[RC][WARN] No current offering configured.")
+            }
+        } catch {
+            print("[RC][ERROR] Failed to fetch offerings: \(error)")
+            self.errorMessage = "RevenueCat offerings error: \(error.localizedDescription)"
+        }
+    }
+
+    // MARK: - Fetch Products
+
+    @MainActor
+    func fetchProducts() async {
+        if !revenueCatAPIKey.isEmpty {
+            await fetchOfferingsFromRevenueCat()
+            return
+        }
+        do {
+            products = try await Product.products(for: [weeklyID, yearlyID])
+
+            for product in products {
+                if product.id == weeklyID {
+                    weeklyPrice = product.displayPrice
+                    weeklyIntroOffer = product.introOfferDescription
+                } else if product.id == yearlyID {
+                    yearlyPrice = product.displayPrice
+                    yearlyIntroOffer = product.introOfferDescription
+                }
+            }
+        } catch {
+            print("Failed to fetch products: \(error)")
+        }
+    }
+
+    // MARK: - Subscription Status
+
+    @MainActor
+    func checkSubscriptionStatus() async {
+        if !revenueCatAPIKey.isEmpty {
+            // RevenueCat check
+            print("[RC] Checking subscription status…")
+            do {
+                let customerInfo = try await Purchases.shared.customerInfo()
+                print("[RC] CustomerInfo received. Active entitlements: \(customerInfo.entitlements.active.keys)")
+                isSubscribed = customerInfo.entitlements[Self.entitlementID]?.isActive == true
+            } catch {
+                print("[RC][ERROR] customerInfo() failed: \(error)")
+                self.errorMessage = "RevenueCat error: \(error.localizedDescription)"
+                isSubscribed = false
+            }
+        } else {
+            // StoreKit 2 check
+            var hasSubscription = false
+            for await result in Transaction.currentEntitlements {
+                if case .verified(let transaction) = result {
+                    if transaction.productID == weeklyID || transaction.productID == yearlyID {
+                        if transaction.revocationDate == nil {
+                            hasSubscription = true
+                            break
+                        }
+                    }
+                }
+            }
+            isSubscribed = hasSubscription
+        }
+    }
+
+    // MARK: - Purchase Methods
+
+    @MainActor
     func purchaseWeekly() async -> Bool {
-        return await purchase(productId: weeklyProduct.identifier)
+        guard let product = products.first(where: { $0.id == weeklyID }) else {
+            if products.isEmpty {
+                await fetchProducts()
+            }
+            guard let product = products.first(where: { $0.id == weeklyID }) else {
+                errorMessage = "Product not found"
+                return false
+            }
+            return await purchase(product)
+        }
+        return await purchase(product)
     }
 
-    /// Purchase yearly subscription
+    @MainActor
     func purchaseYearly() async -> Bool {
-        return await purchase(productId: yearlyProduct.identifier)
+        guard let product = products.first(where: { $0.id == yearlyID }) else {
+            if products.isEmpty {
+                await fetchProducts()
+            }
+            guard let product = products.first(where: { $0.id == yearlyID }) else {
+                errorMessage = "Product not found"
+                return false
+            }
+            return await purchase(product)
+        }
+        return await purchase(product)
     }
 
-    /// Restore purchases
+    @MainActor
+    private func purchase(_ product: Product) async -> Bool {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+
+        do {
+            let result = try await product.purchase()
+
+            switch result {
+            case .success(let verification):
+                switch verification {
+                case .verified(let transaction):
+                    await transaction.finish()
+                    await checkSubscriptionStatus()
+                    return true
+                case .unverified:
+                    errorMessage = "Purchase verification failed"
+                    return false
+                }
+            case .pending:
+                errorMessage = "Purchase is pending approval"
+                return false
+            case .userCancelled:
+                return false
+            @unknown default:
+                return false
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+            print("Purchase error: \(error)")
+            return false
+        }
+    }
+
+    // MARK: - Restore Purchases
+
+    @MainActor
     func restorePurchases() async -> Bool {
-        await MainActor.run {
-            isLoading = true
-            errorMessage = nil
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+
+        do {
+            if !revenueCatAPIKey.isEmpty {
+                let customerInfo = try await Purchases.shared.restorePurchases()
+                print("[RC] Restore completed. Active entitlements: \(customerInfo.entitlements.active.keys)")
+                isSubscribed = customerInfo.entitlements[Self.entitlementID]?.isActive == true
+            } else {
+                try await AppStore.sync()
+                await checkSubscriptionStatus()
+            }
+            return isSubscribed
+        } catch {
+            errorMessage = error.localizedDescription
+            print("Restore error: \(error)")
+            return false
         }
-
-        // Simulate network delay
-        try? await Task.sleep(nanoseconds: 1_000_000_000)
-
-        // TODO: Integrate with RevenueCat
-        // do {
-        //     let customerInfo = try await Purchases.shared.restorePurchases()
-        //     let isActive = customerInfo.entitlements["premium"]?.isActive ?? false
-        //     await updateSubscriptionStatus(isActive)
-        //     return isActive
-        // } catch {
-        //     await MainActor.run {
-        //         errorMessage = error.localizedDescription
-        //     }
-        //     return false
-        // }
-
-        await MainActor.run {
-            isLoading = false
-            isSubscribed = true
-            storage.setIsSubscribed(true)
-        }
-
-        return true
     }
 
-    // MARK: - Private Methods
+    // MARK: - Helper Properties
 
-    private func purchase(productId: String) async -> Bool {
-        await MainActor.run {
-            isLoading = true
-            errorMessage = nil
-        }
-
-        // Simulate network delay
-        try? await Task.sleep(nanoseconds: 1_500_000_000)
-
-        // TODO: Integrate with RevenueCat
-        // do {
-        //     let product = try await Purchases.shared.products([productId]).first
-        //     guard let product = product else {
-        //         throw PurchaseError.productNotFound
-        //     }
-        //     let (_, customerInfo, _) = try await Purchases.shared.purchase(product: product)
-        //     let isActive = customerInfo.entitlements["premium"]?.isActive ?? false
-        //     await updateSubscriptionStatus(isActive)
-        //     return isActive
-        // } catch {
-        //     await MainActor.run {
-        //         errorMessage = error.localizedDescription
-        //     }
-        //     return false
-        // }
-
-        await MainActor.run {
-            isLoading = false
-            isSubscribed = true
-            storage.setIsSubscribed(true)
-        }
-
-        return true
+    var weeklyProduct: Product? {
+        products.first { $0.id == weeklyID }
     }
 
-    private func updateSubscriptionStatus(_ subscribed: Bool) async {
-        await MainActor.run {
-            isLoading = false
-            isSubscribed = subscribed
-            storage.setIsSubscribed(subscribed)
+    var yearlyProduct: Product? {
+        products.first { $0.id == yearlyID }
+    }
+}
+
+// MARK: - Product Extensions
+extension Product {
+    /// Introductory offer description if available
+    var introOfferDescription: String? {
+        guard let intro = subscription?.introductoryOffer else { return nil }
+
+        let period = intro.period
+        let periodName: String
+
+        switch period.unit {
+        case .day:
+            periodName = period.value == 1 ? "1 day" : "\(period.value) days"
+        case .week:
+            periodName = period.value == 1 ? "1 week" : "\(period.value) weeks"
+        case .month:
+            periodName = period.value == 1 ? "1 month" : "\(period.value) months"
+        case .year:
+            periodName = period.value == 1 ? "1 year" : "\(period.value) years"
+        @unknown default:
+            periodName = "\(period.value) periods"
+        }
+
+        switch intro.paymentMode {
+        case .freeTrial:
+            return "\(periodName) free"
+        case .payAsYouGo:
+            return "\(intro.displayPrice) for \(periodName)"
+        case .payUpFront:
+            return "\(intro.displayPrice) for \(periodName)"
+        default:
+            return nil
         }
     }
 }
 
-// MARK: - RevenueCat Integration Guide
-/*
- To integrate RevenueCat:
-
- 1. Add the RevenueCat SDK to your project:
-    - In Xcode: File > Add Packages
-    - URL: https://github.com/RevenueCat/purchases-ios
-
- 2. Configure in InkApp.swift:
-    ```
-    import RevenueCat
-
-    @main
-    struct InkApp: App {
-        init() {
-            Purchases.configure(withAPIKey: "your_api_key_here")
+// MARK: - StoreProductDiscount Extensions
+extension StoreProductDiscount {
+    var localizedSubscriptionPeriod: String {
+        let unit: String
+        switch subscriptionPeriod.unit {
+        case .day: unit = subscriptionPeriod.value == 1 ? "1 day" : "\(subscriptionPeriod.value) days"
+        case .week: unit = subscriptionPeriod.value == 1 ? "1 week" : "\(subscriptionPeriod.value) weeks"
+        case .month: unit = subscriptionPeriod.value == 1 ? "1 month" : "\(subscriptionPeriod.value) months"
+        case .year: unit = subscriptionPeriod.value == 1 ? "1 year" : "\(subscriptionPeriod.value) years"
+        @unknown default: unit = "\(subscriptionPeriod.value) periods"
+        }
+        switch paymentMode {
+        case .freeTrial:
+            return "\(unit) free"
+        case .payAsYouGo, .payUpFront:
+            // We can't build a localized price string without a locale here; keep period only
+            return unit
+        @unknown default:
+            return unit
         }
     }
-    ```
-
- 3. Create products in App Store Connect:
-    - ink_weekly: $4.99/week auto-renewable subscription
-    - ink_yearly: $99.99/year auto-renewable subscription
-
- 4. Create entitlement "premium" in RevenueCat dashboard
-
- 5. Update the purchase methods in this file to use real RevenueCat calls
-
- 6. Test with sandbox accounts before release
- */
+}
 
 // MARK: - Purchase Errors
 enum PurchaseError: LocalizedError {
     case productNotFound
-    case purchaseFailed
-    case restoreFailed
+    case verificationFailed
+    case pending
     case networkError
 
     var errorDescription: String? {
         switch self {
         case .productNotFound:
-            return "Product not found. Please try again later."
-        case .purchaseFailed:
-            return "Purchase failed. Please try again."
-        case .restoreFailed:
-            return "Could not restore purchases. Please try again."
+            return "Product not found"
+        case .verificationFailed:
+            return "Purchase verification failed"
+        case .pending:
+            return "Purchase is pending"
         case .networkError:
             return "Network error. Please check your connection."
         }
     }
 }
+

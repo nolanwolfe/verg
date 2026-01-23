@@ -9,13 +9,19 @@ struct AppSettings: Codable, Equatable {
     var hasSeenOnboarding: Bool
     var isSubscribed: Bool
 
+    // Coach mark notice flags
+    var hasSeenSetTimerNotice: Bool
+    var uploadPhotoNoticeShownCount: Int
+
     init(
-        timerDuration: TimeInterval = 10, // 10 seconds for testing
+        timerDuration: TimeInterval = 900, // 15 minutes default
         soundEnabled: Bool = true,
         notificationsEnabled: Bool = false,
         notificationTime: Date = AppSettings.defaultNotificationTime,
         hasSeenOnboarding: Bool = false,
-        isSubscribed: Bool = false
+        isSubscribed: Bool = false,
+        hasSeenSetTimerNotice: Bool = false,
+        uploadPhotoNoticeShownCount: Int = 0
     ) {
         self.timerDuration = timerDuration
         self.soundEnabled = soundEnabled
@@ -23,6 +29,8 @@ struct AppSettings: Codable, Equatable {
         self.notificationTime = notificationTime
         self.hasSeenOnboarding = hasSeenOnboarding
         self.isSubscribed = isSubscribed
+        self.hasSeenSetTimerNotice = hasSeenSetTimerNotice
+        self.uploadPhotoNoticeShownCount = uploadPhotoNoticeShownCount
     }
 
     /// Default notification time (8:00 PM)

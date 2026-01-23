@@ -1,8 +1,13 @@
 import SwiftUI
+import RevenueCatUI
 
 /// Settings screen
 struct SettingsView: View {
     @StateObject private var viewModel = SettingsViewModel()
+    @EnvironmentObject private var purchaseService: PurchaseService
+
+    // DEBUG
+    @State private var showPaywallDebug = false
 
     var body: some View {
         ZStack {
@@ -44,6 +49,14 @@ struct SettingsView: View {
             Button("OK", role: .cancel) { }
         } message: {
             Text(viewModel.restoreMessage)
+        }
+        .sheet(isPresented: $viewModel.showCustomerCenter) {
+            CustomerCenterView()
+        }
+        // DEBUG
+        .fullScreenCover(isPresented: $showPaywallDebug) {
+            PaywallView()
+                .environmentObject(purchaseService)
         }
     }
 
@@ -165,19 +178,56 @@ struct SettingsView: View {
                 title: "Terms of Service",
                 action: { viewModel.openTermsOfService() }
             )
+        }
+    }
+
+    // MARK: - DEBUG Section
+    #if DEBUG
+    private var debugSection: some View {
+        SettingsSection(title: "Debug") {
+            SettingsButtonRow(
+                icon: "creditcard",
+                iconColor: .purple,
+                title: "Test Paywall",
+                action: { showPaywallDebug = true }
+            )
 
             Divider()
                 .background(Theme.Colors.secondaryText.opacity(0.2))
 
-            // DEBUG: Reset onboarding for testing
             SettingsButtonRow(
                 icon: "arrow.counterclockwise",
                 iconColor: .red,
-                title: "Reset Onboarding (Debug)",
+                title: "Reset Onboarding",
                 action: { StorageService.shared.setHasSeenOnboarding(false) }
             )
+
+            Divider()
+                .background(Theme.Colors.secondaryText.opacity(0.2))
+
+            SettingsButtonRow(
+                icon: "trash",
+                iconColor: .orange,
+                title: "Reset Free Session Count",
+                action: {
+                    StorageService.shared.resetForTesting()
+                    print("[DEBUG] Free session count reset. Sessions: \(StorageService.shared.sessions.count)")
+                }
+            )
+
+            // Display current session count
+            HStack {
+                Text("Sessions: \(StorageService.shared.sessions.count)")
+                    .font(Theme.Typography.footnote)
+                    .foregroundColor(Theme.Colors.secondaryText)
+                Text("Premium: \(purchaseService.isSubscribed ? "Yes" : "No")")
+                    .font(Theme.Typography.footnote)
+                    .foregroundColor(Theme.Colors.secondaryText)
+            }
+            .padding(.top, Theme.Spacing.xxs)
         }
     }
+    #endif
 
     // MARK: - Version Section
     private var versionSection: some View {

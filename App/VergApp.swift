@@ -10,9 +10,15 @@ struct VergApp: App {
 
     // MARK: - Initialization
     init() {
+        configurePurchases()
         configureAppearance()
-        // Configure RevenueCat here when ready:
-        // Purchases.configure(withAPIKey: "your_api_key")
+    }
+
+    // MARK: - Purchase Configuration
+    private func configurePurchases() {
+        // PurchaseService handles both StoreKit testing and RevenueCat
+        // Set revenueCatAPIKey in PurchaseService.swift when ready for production
+        PurchaseService.shared.configure()
     }
 
     var body: some Scene {
