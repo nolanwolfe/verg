@@ -194,13 +194,13 @@ final class SettingsViewModel: ObservableObject {
     }
 
     func openPrivacyPolicy() {
-        if let url = URL(string: "https://yourapp.com/privacy") {
+        if let url = URL(string: "https://nolanwolfe.github.io/verg/privacy") {
             UIApplication.shared.open(url)
         }
     }
 
     func openTermsOfService() {
-        if let url = URL(string: "https://yourapp.com/terms") {
+        if let url = URL(string: "https://nolanwolfe.github.io/verg/terms") {
             UIApplication.shared.open(url)
         }
     }

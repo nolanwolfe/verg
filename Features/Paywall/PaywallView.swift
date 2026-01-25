@@ -39,16 +39,27 @@ struct PaywallView: View {
 struct PaywallViewWrapper: View {
     let onDismiss: () -> Void
     let onSubscribed: () -> Void
+    @EnvironmentObject private var purchaseService: PurchaseService
 
     var body: some View {
         RevenueCatUI.PaywallView(displayCloseButton: true)
             .onPurchaseCompleted { customerInfo in
                 if customerInfo.entitlements[PurchaseService.entitlementID]?.isActive == true {
+                    // Update the purchase service subscription status
+                    Task { @MainActor in
+                        purchaseService.setSubscribed(true)
+                        print("[RC Paywall] Purchase completed - isSubscribed = true")
+                    }
                     onSubscribed()
                 }
             }
             .onRestoreCompleted { customerInfo in
                 if customerInfo.entitlements[PurchaseService.entitlementID]?.isActive == true {
+                    // Update the purchase service subscription status
+                    Task { @MainActor in
+                        purchaseService.setSubscribed(true)
+                        print("[RC Paywall] Restore completed - isSubscribed = true")
+                    }
                     onSubscribed()
                 }
             }
