@@ -10,6 +10,13 @@ final class PurchaseService: ObservableObject {
 
     // MARK: - Published Properties
     @MainActor @Published private(set) var isSubscribed: Bool = false
+
+    /// Manually set subscription status (used by RevenueCat PaywallView callbacks)
+    @MainActor
+    func setSubscribed(_ value: Bool) {
+        isSubscribed = value
+        print("[PurchaseService] setSubscribed(\(value))")
+    }
     @MainActor @Published private(set) var isLoading: Bool = false
     @MainActor @Published private(set) var weeklyPrice: String = "$3.99"
     @MainActor @Published private(set) var yearlyPrice: String = "$99.99"
@@ -219,7 +226,14 @@ final class PurchaseService: ObservableObject {
                 switch verification {
                 case .verified(let transaction):
                     await transaction.finish()
-                    await checkSubscriptionStatus()
+                    // Set subscribed immediately after successful purchase
+                    isSubscribed = true
+                    print("[Purchase] Success! isSubscribed = true")
+                    // Also sync with RevenueCat if using it
+                    if !revenueCatAPIKey.isEmpty {
+                        // Sync the purchase to RevenueCat
+                        try? await Purchases.shared.syncPurchases()
+                    }
                     return true
                 case .unverified:
                     errorMessage = "Purchase verification failed"
@@ -255,8 +269,20 @@ final class PurchaseService: ObservableObject {
                 isSubscribed = customerInfo.entitlements[Self.entitlementID]?.isActive == true
             } else {
                 try await AppStore.sync()
-                await checkSubscriptionStatus()
+                // Check for active subscriptions
+                for await result in Transaction.currentEntitlements {
+                    if case .verified(let transaction) = result {
+                        if transaction.productID == weeklyID || transaction.productID == yearlyID {
+                            if transaction.revocationDate == nil {
+                                isSubscribed = true
+                                print("[Restore] Found active subscription: \(transaction.productID)")
+                                break
+                            }
+                        }
+                    }
+                }
             }
+            print("[Restore] isSubscribed = \(isSubscribed)")
             return isSubscribed
         } catch {
             errorMessage = error.localizedDescription
