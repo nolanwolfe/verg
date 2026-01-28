@@ -52,6 +52,7 @@ struct HomeView: View {
                     showTimer = true
                 }
             })
+            .environmentObject(purchaseService)
         }
         .onAppear {
             viewModel.refresh()
