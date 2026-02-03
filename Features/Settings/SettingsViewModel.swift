@@ -17,6 +17,7 @@ final class SettingsViewModel: ObservableObject {
     @Published var showRestoreAlert: Bool = false
     @Published var restoreMessage: String = ""
     @Published var showCustomerCenter: Bool = false
+    @Published var showPaywall: Bool = false
 
     // MARK: - Dependencies
     private let storageService: StorageService
