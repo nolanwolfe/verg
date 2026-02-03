@@ -6,9 +6,6 @@ struct SettingsView: View {
     @StateObject private var viewModel = SettingsViewModel()
     @EnvironmentObject private var purchaseService: PurchaseService
 
-    // DEBUG
-    @State private var showPaywallDebug = false
-
     var body: some View {
         ZStack {
             // Background
@@ -53,10 +50,11 @@ struct SettingsView: View {
         .sheet(isPresented: $viewModel.showCustomerCenter) {
             CustomerCenterView()
         }
-        // DEBUG
-        .fullScreenCover(isPresented: $showPaywallDebug) {
-            PaywallView()
-                .environmentObject(purchaseService)
+        .fullScreenCover(isPresented: $viewModel.showPaywall) {
+            PaywallView(onSubscribed: {
+                viewModel.showPaywall = false
+            })
+            .environmentObject(purchaseService)
         }
     }
 
@@ -120,6 +118,18 @@ struct SettingsView: View {
     // MARK: - Account Section
     private var accountSection: some View {
         SettingsSection(title: "Account") {
+            if !purchaseService.isSubscribed {
+                SettingsButtonRow(
+                    icon: "sparkles",
+                    iconColor: Theme.Colors.accent,
+                    title: "Upgrade to Pro",
+                    action: { viewModel.showPaywall = true }
+                )
+
+                Divider()
+                    .background(Theme.Colors.secondaryText.opacity(0.2))
+            }
+
             SettingsButtonRow(
                 icon: "arrow.clockwise",
                 iconColor: .green,
@@ -127,15 +137,17 @@ struct SettingsView: View {
                 action: { viewModel.restorePurchases() }
             )
 
-            Divider()
-                .background(Theme.Colors.secondaryText.opacity(0.2))
+            if purchaseService.isSubscribed {
+                Divider()
+                    .background(Theme.Colors.secondaryText.opacity(0.2))
 
-            SettingsButtonRow(
-                icon: "creditcard",
-                iconColor: Theme.Colors.accent,
-                title: "Manage Subscription",
-                action: { viewModel.manageSubscription() }
-            )
+                SettingsButtonRow(
+                    icon: "creditcard",
+                    iconColor: Theme.Colors.accent,
+                    title: "Manage Subscription",
+                    action: { viewModel.manageSubscription() }
+                )
+            }
         }
     }
 
@@ -189,7 +201,7 @@ struct SettingsView: View {
                 icon: "creditcard",
                 iconColor: .purple,
                 title: "Test Paywall",
-                action: { showPaywallDebug = true }
+                action: { viewModel.showPaywall = true }
             )
 
             Divider()
