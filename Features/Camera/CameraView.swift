@@ -311,30 +311,51 @@ struct PhotoPicker: UIViewControllerRepresentable {
 struct CameraPreviewView: UIViewRepresentable {
     let session: AVCaptureSession
 
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView(frame: .zero)
-        view.backgroundColor = .black
-
-        let previewLayer = AVCaptureVideoPreviewLayer(session: session)
-        previewLayer.videoGravity = .resizeAspectFill
-        previewLayer.frame = view.bounds
-        view.layer.addSublayer(previewLayer)
-
-        context.coordinator.previewLayer = previewLayer
-
+    func makeUIView(context: Context) -> CameraPreviewUIView {
+        let view = CameraPreviewUIView()
+        view.session = session
         return view
     }
 
-    func updateUIView(_ uiView: UIView, context: Context) {
-        context.coordinator.previewLayer?.frame = uiView.bounds
+    func updateUIView(_ uiView: CameraPreviewUIView, context: Context) {
+        // Session is already set in makeUIView
+    }
+}
+
+/// Custom UIView that properly manages the AVCaptureVideoPreviewLayer
+class CameraPreviewUIView: UIView {
+    var session: AVCaptureSession? {
+        didSet {
+            setupPreviewLayer()
+        }
     }
 
-    func makeCoordinator() -> Coordinator {
-        Coordinator()
+    private var previewLayer: AVCaptureVideoPreviewLayer?
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        backgroundColor = .black
     }
 
-    class Coordinator {
-        var previewLayer: AVCaptureVideoPreviewLayer?
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    private func setupPreviewLayer() {
+        previewLayer?.removeFromSuperlayer()
+
+        guard let session = session else { return }
+
+        let layer = AVCaptureVideoPreviewLayer(session: session)
+        layer.videoGravity = .resizeAspectFill
+        layer.frame = bounds
+        self.layer.addSublayer(layer)
+        previewLayer = layer
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        previewLayer?.frame = bounds
     }
 }
 
