@@ -44,18 +44,15 @@ struct PaywallViewWrapper: View {
     var body: some View {
         RevenueCatUI.PaywallView(displayCloseButton: true)
             .onPurchaseCompleted { customerInfo in
-                if customerInfo.entitlements[PurchaseService.entitlementID]?.isActive == true {
-                    // Update the purchase service subscription status
-                    Task { @MainActor in
-                        purchaseService.setSubscribed(true)
-                        print("[RC Paywall] Purchase completed - isSubscribed = true")
-                    }
-                    onSubscribed()
+                // Purchase succeeded -- always proceed regardless of entitlement name
+                Task { @MainActor in
+                    purchaseService.setSubscribed(true)
+                    print("[RC Paywall] Purchase completed - isSubscribed = true, entitlements: \(customerInfo.entitlements.active.keys)")
                 }
+                onSubscribed()
             }
             .onRestoreCompleted { customerInfo in
                 if customerInfo.entitlements[PurchaseService.entitlementID]?.isActive == true {
-                    // Update the purchase service subscription status
                     Task { @MainActor in
                         purchaseService.setSubscribed(true)
                         print("[RC Paywall] Restore completed - isSubscribed = true")
@@ -170,13 +167,10 @@ struct NativePaywallView: View {
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
 
-                            HStack(spacing: 16) {
-                                Button("Privacy Policy") {
-                                    viewModel.openPrivacyPolicy()
-                                }
-                                Button("Terms of Service") {
-                                    viewModel.openTermsOfService()
-                                }
+                            HStack(spacing: 4) {
+                                Link("Terms", destination: URL(string: "https://nolanwolfe.github.io/verg/terms")!)
+                                Text("•").foregroundColor(.secondary)
+                                Link("Privacy", destination: URL(string: "https://nolanwolfe.github.io/verg/privacy")!)
                             }
                             .font(.caption)
                             .foregroundStyle(.tertiary)

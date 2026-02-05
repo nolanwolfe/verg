@@ -174,21 +174,21 @@ struct SettingsView: View {
             Divider()
                 .background(Theme.Colors.secondaryText.opacity(0.2))
 
-            SettingsButtonRow(
+            SettingsLinkRow(
                 icon: "lock.shield",
                 iconColor: .gray,
                 title: "Privacy Policy",
-                action: { viewModel.openPrivacyPolicy() }
+                url: URL(string: "https://nolanwolfe.github.io/verg/privacy")!
             )
 
             Divider()
                 .background(Theme.Colors.secondaryText.opacity(0.2))
 
-            SettingsButtonRow(
+            SettingsLinkRow(
                 icon: "doc.text",
                 iconColor: .gray,
                 title: "Terms of Service",
-                action: { viewModel.openTermsOfService() }
+                url: URL(string: "https://nolanwolfe.github.io/verg/terms")!
             )
         }
     }
@@ -419,6 +419,36 @@ struct SettingsButtonRow: View {
 
     var body: some View {
         Button(action: action) {
+            HStack(spacing: Theme.Spacing.sm) {
+                Image(systemName: icon)
+                    .font(.system(size: 18))
+                    .foregroundColor(iconColor)
+                    .frame(width: 28, height: 28)
+
+                Text(title)
+                    .font(Theme.Typography.body)
+                    .foregroundColor(Theme.Colors.primaryText)
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(Theme.Colors.secondaryText.opacity(0.5))
+            }
+            .padding(.vertical, Theme.Spacing.xxs)
+        }
+    }
+}
+
+// MARK: - Settings Link Row
+struct SettingsLinkRow: View {
+    let icon: String
+    let iconColor: Color
+    let title: String
+    let url: URL
+
+    var body: some View {
+        Link(destination: url) {
             HStack(spacing: Theme.Spacing.sm) {
                 Image(systemName: icon)
                     .font(.system(size: 18))
