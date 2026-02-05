@@ -52,15 +52,17 @@ final class PurchaseService: ObservableObject {
     @MainActor
     func configure() {
         if !revenueCatAPIKey.isEmpty {
-            // Use RevenueCat
+            // Configure RevenueCat for production
             Purchases.logLevel = .debug
             print("[RC] Configuring RevenueCat with API key: \(revenueCatAPIKey.prefix(6))…")
             Purchases.configure(withAPIKey: revenueCatAPIKey)
             Task {
                 await fetchOfferingsFromRevenueCat()
             }
-        } else {
-            // Use StoreKit testing - listen for transactions
+        }
+
+        if isUsingStoreKitTesting {
+            // Listen for StoreKit transactions (DEBUG or when no RC key)
             updateListenerTask = listenForTransactions()
         }
 
@@ -126,10 +128,11 @@ final class PurchaseService: ObservableObject {
 
     @MainActor
     func fetchProducts() async {
-        if !revenueCatAPIKey.isEmpty {
+        if !revenueCatAPIKey.isEmpty && !isUsingStoreKitTesting {
             await fetchOfferingsFromRevenueCat()
-            return
         }
+
+        // Always fetch StoreKit products so the native paywall has products available
         do {
             products = try await Product.products(for: [weeklyID, yearlyID])
 
@@ -143,7 +146,7 @@ final class PurchaseService: ObservableObject {
                 }
             }
         } catch {
-            print("Failed to fetch products: \(error)")
+            print("Failed to fetch StoreKit products: \(error)")
         }
     }
 
@@ -151,7 +154,7 @@ final class PurchaseService: ObservableObject {
 
     @MainActor
     func checkSubscriptionStatus() async {
-        if !revenueCatAPIKey.isEmpty {
+        if !isUsingStoreKitTesting {
             // RevenueCat check
             print("[RC] Checking subscription status…")
             do {
@@ -229,9 +232,8 @@ final class PurchaseService: ObservableObject {
                     // Set subscribed immediately after successful purchase
                     isSubscribed = true
                     print("[Purchase] Success! isSubscribed = true")
-                    // Also sync with RevenueCat if using it
-                    if !revenueCatAPIKey.isEmpty {
-                        // Sync the purchase to RevenueCat
+                    // Sync with RevenueCat in production
+                    if !isUsingStoreKitTesting {
                         try? await Purchases.shared.syncPurchases()
                     }
                     return true
@@ -263,7 +265,7 @@ final class PurchaseService: ObservableObject {
         defer { isLoading = false }
 
         do {
-            if !revenueCatAPIKey.isEmpty {
+            if !isUsingStoreKitTesting {
                 let customerInfo = try await Purchases.shared.restorePurchases()
                 print("[RC] Restore completed. Active entitlements: \(customerInfo.entitlements.active.keys)")
                 isSubscribed = customerInfo.entitlements[Self.entitlementID]?.isActive == true
