@@ -43,6 +43,10 @@ struct PaywallViewWrapper: View {
 
     var body: some View {
         RevenueCatUI.PaywallView(displayCloseButton: true)
+            .onAppear {
+                // Force fresh data before showing paywall
+                Purchases.shared.invalidateCustomerInfoCache()
+            }
             .onPurchaseCompleted { customerInfo in
                 // Purchase succeeded -- always proceed regardless of entitlement name
                 Task { @MainActor in
