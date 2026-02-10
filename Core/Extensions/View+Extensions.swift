@@ -148,7 +148,7 @@ struct PrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(Theme.Typography.headline)
-            .foregroundColor(Theme.Colors.primaryText)
+            .foregroundColor(isEnabled ? Color(hex: "000000") : Theme.Colors.primaryText)
             .frame(maxWidth: .infinity)
             .frame(height: Theme.Layout.buttonHeight)
             .background(

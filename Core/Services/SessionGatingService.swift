@@ -14,7 +14,7 @@ final class SessionGatingService {
     private let purchaseService: PurchaseService
 
     // MARK: - Constants
-    static let freeSessionsLimit = 3
+    nonisolated static let freeSessionsLimit = 3
 
     // MARK: - Initialization
     init(
