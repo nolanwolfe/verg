@@ -34,7 +34,7 @@ final class PurchaseService: ObservableObject {
     // MARK: - Private Properties
     private var products: [Product] = []
     private var updateListenerTask: Task<Void, Error>?
-    private var currentOffering: Offering?
+    @MainActor @Published private(set) var currentOffering: Offering?
 
     var isUsingStoreKitTesting: Bool {
         revenueCatAPIKey.isEmpty
@@ -92,8 +92,8 @@ final class PurchaseService: ObservableObject {
         do {
             print("[RC] Fetching offerings…")
             let offerings = try await Purchases.shared.offerings()
-            self.currentOffering = offerings.current
-            if let current = offerings.current {
+            self.currentOffering = offerings["premium"] ?? offerings.current
+            if let current = self.currentOffering {
                 // Map weekly and yearly packages by identifier or product id
                 if let weeklyPkg = current.availablePackages.first(where: { $0.identifier.lowercased().contains("week") || $0.storeProduct.productIdentifier == weeklyID }) {
                     if let formatted = weeklyPkg.storeProduct.priceFormatter?.string(from: weeklyPkg.storeProduct.price as NSDecimalNumber) {
@@ -234,7 +234,7 @@ final class PurchaseService: ObservableObject {
                     print("[Purchase] Success! isSubscribed = true")
                     // Sync with RevenueCat in production
                     if !isUsingStoreKitTesting {
-                        try? await Purchases.shared.syncPurchases()
+                        _ = try? await Purchases.shared.syncPurchases()
                     }
                     return true
                 case .unverified:

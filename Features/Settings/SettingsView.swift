@@ -122,7 +122,7 @@ struct SettingsView: View {
                 SettingsButtonRow(
                     icon: "sparkles",
                     iconColor: Theme.Colors.accent,
-                    title: "Upgrade to Pro",
+                    title: "Upgrade to Premium",
                     action: { viewModel.showPaywall = true }
                 )
 
@@ -148,6 +148,16 @@ struct SettingsView: View {
                     action: { viewModel.manageSubscription() }
                 )
             }
+
+            Divider()
+                .background(Theme.Colors.secondaryText.opacity(0.2))
+
+            SettingsButtonRow(
+                icon: "cart",
+                iconColor: .yellow,
+                title: "View Subscription Options",
+                action: { viewModel.showPaywall = true }
+            )
         }
     }
 

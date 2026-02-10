@@ -42,11 +42,13 @@ struct PaywallViewWrapper: View {
     @EnvironmentObject private var purchaseService: PurchaseService
 
     var body: some View {
-        RevenueCatUI.PaywallView(displayCloseButton: true)
-            .onAppear {
-                // Force fresh data before showing paywall
-                Purchases.shared.invalidateCustomerInfoCache()
+        Group {
+            if let offering = purchaseService.currentOffering {
+                RevenueCatUI.PaywallView(offering: offering, displayCloseButton: true)
+            } else {
+                RevenueCatUI.PaywallView(displayCloseButton: true)
             }
+        }
             .onPurchaseCompleted { customerInfo in
                 // Purchase succeeded -- always proceed regardless of entitlement name
                 Task { @MainActor in
