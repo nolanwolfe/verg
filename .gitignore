@@ -14,7 +14,6 @@ xcuserdata/
 
 # SwiftPM
 .build/
-Package.resolved
 
 # CocoaPods / Carthage (if used)
 Pods/
