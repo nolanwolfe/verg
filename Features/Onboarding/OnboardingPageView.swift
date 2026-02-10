@@ -36,7 +36,13 @@ struct OnboardingPageView: View {
             // Icon
             Image(systemName: imageName)
                 .font(.system(size: 100, weight: .light))
-                .foregroundStyle(Theme.Colors.accentGradient)
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Color(hex: "BF5AF2"), Color(hex: "FF375F")],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
         }
         .frame(height: 220)
     }
