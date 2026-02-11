@@ -25,8 +25,8 @@ final class PurchaseService: ObservableObject {
     @MainActor @Published var errorMessage: String?
 
     // MARK: - Product IDs
-    private let weeklyID = "verg_weekly"
-    private let yearlyID = "verg_yearly"
+    private let weeklyID = "Verg_Weekly"
+    private let yearlyID = "Verg_Yearly"
 
     // RevenueCat API key - empty means use StoreKit testing
     private let revenueCatAPIKey = "appl_wQqrrrHwpiBHrHJDqnuBKYOfysb"
