@@ -18,14 +18,14 @@ final class PurchaseService: ObservableObject {
         print("[PurchaseService] setSubscribed(\(value))")
     }
     @MainActor @Published private(set) var isLoading: Bool = false
-    @MainActor @Published private(set) var weeklyPrice: String = "$3.99"
-    @MainActor @Published private(set) var yearlyPrice: String = "$99.99"
-    @MainActor @Published private(set) var weeklyIntroOffer: String? = "3 days free"
-    @MainActor @Published private(set) var yearlyIntroOffer: String? = "3 days free"
+    @MainActor @Published private(set) var monthlyPrice: String = "$4.99"
+    @MainActor @Published private(set) var yearlyPrice: String = "$59.99"
+    @MainActor @Published private(set) var monthlyIntroOffer: String? = "30 days free"
+    @MainActor @Published private(set) var yearlyIntroOffer: String? = "30 days free"
     @MainActor @Published var errorMessage: String?
 
     // MARK: - Product IDs
-    private let weeklyID = "verg_weekly"
+    private let monthlyID = "verg_monthly"
     private let yearlyID = "verg_yearly"
 
     // RevenueCat API key - empty means use StoreKit testing
@@ -92,15 +92,15 @@ final class PurchaseService: ObservableObject {
             let offerings = try await Purchases.shared.offerings()
             self.currentOffering = offerings.current
             if let current = offerings.current {
-                // Map weekly and yearly packages by identifier or product id
-                if let weeklyPkg = current.availablePackages.first(where: { $0.identifier.lowercased().contains("week") || $0.storeProduct.productIdentifier == weeklyID }) {
-                    if let formatted = weeklyPkg.storeProduct.priceFormatter?.string(from: weeklyPkg.storeProduct.price as NSDecimalNumber) {
-                        weeklyPrice = formatted
+                // Map monthly and yearly packages by identifier or product id
+                if let monthlyPkg = current.availablePackages.first(where: { $0.identifier.lowercased().contains("month") || $0.storeProduct.productIdentifier == monthlyID }) {
+                    if let formatted = monthlyPkg.storeProduct.priceFormatter?.string(from: monthlyPkg.storeProduct.price as NSDecimalNumber) {
+                        monthlyPrice = formatted
                     } else {
-                        weeklyPrice = "$\(weeklyPkg.storeProduct.price)"
+                        monthlyPrice = "$\(monthlyPkg.storeProduct.price)"
                     }
-                    if let intro = weeklyPkg.storeProduct.introductoryDiscount {
-                        weeklyIntroOffer = intro.localizedSubscriptionPeriod
+                    if let intro = monthlyPkg.storeProduct.introductoryDiscount {
+                        monthlyIntroOffer = intro.localizedSubscriptionPeriod
                     }
                 }
                 if let yearlyPkg = current.availablePackages.first(where: { $0.identifier.lowercased().contains("year") || $0.storeProduct.productIdentifier == yearlyID }) {
@@ -131,12 +131,12 @@ final class PurchaseService: ObservableObject {
             return
         }
         do {
-            products = try await Product.products(for: [weeklyID, yearlyID])
+            products = try await Product.products(for: [monthlyID, yearlyID])
 
             for product in products {
-                if product.id == weeklyID {
-                    weeklyPrice = product.displayPrice
-                    weeklyIntroOffer = product.introOfferDescription
+                if product.id == monthlyID {
+                    monthlyPrice = product.displayPrice
+                    monthlyIntroOffer = product.introOfferDescription
                 } else if product.id == yearlyID {
                     yearlyPrice = product.displayPrice
                     yearlyIntroOffer = product.introOfferDescription
@@ -168,7 +168,7 @@ final class PurchaseService: ObservableObject {
             var hasSubscription = false
             for await result in Transaction.currentEntitlements {
                 if case .verified(let transaction) = result {
-                    if transaction.productID == weeklyID || transaction.productID == yearlyID {
+                    if transaction.productID == monthlyID || transaction.productID == yearlyID {
                         if transaction.revocationDate == nil {
                             hasSubscription = true
                             break
@@ -183,12 +183,12 @@ final class PurchaseService: ObservableObject {
     // MARK: - Purchase Methods
 
     @MainActor
-    func purchaseWeekly() async -> Bool {
-        guard let product = products.first(where: { $0.id == weeklyID }) else {
+    func purchaseMonthly() async -> Bool {
+        guard let product = products.first(where: { $0.id == monthlyID }) else {
             if products.isEmpty {
                 await fetchProducts()
             }
-            guard let product = products.first(where: { $0.id == weeklyID }) else {
+            guard let product = products.first(where: { $0.id == monthlyID }) else {
                 errorMessage = "Product not found"
                 return false
             }
@@ -272,7 +272,7 @@ final class PurchaseService: ObservableObject {
                 // Check for active subscriptions
                 for await result in Transaction.currentEntitlements {
                     if case .verified(let transaction) = result {
-                        if transaction.productID == weeklyID || transaction.productID == yearlyID {
+                        if transaction.productID == monthlyID || transaction.productID == yearlyID {
                             if transaction.revocationDate == nil {
                                 isSubscribed = true
                                 print("[Restore] Found active subscription: \(transaction.productID)")
@@ -293,8 +293,8 @@ final class PurchaseService: ObservableObject {
 
     // MARK: - Helper Properties
 
-    var weeklyProduct: Product? {
-        products.first { $0.id == weeklyID }
+    var monthlyProduct: Product? {
+        products.first { $0.id == monthlyID }
     }
 
     var yearlyProduct: Product? {

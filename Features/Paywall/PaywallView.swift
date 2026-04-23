@@ -117,19 +117,19 @@ struct NativePaywallView: View {
                                 price: viewModel.yearlyPrice,
                                 period: "/year",
                                 badge: "Best Value",
-                                subtitle: viewModel.yearlyIntroOffer ?? "Save 61%",
+                                subtitle: viewModel.yearlyIntroOffer ?? "Save over $0",
                                 isSelected: viewModel.selectedPlan == .yearly,
                                 onTap: { viewModel.selectPlan(.yearly) }
                             )
 
                             PlanCard(
-                                title: "Weekly",
-                                price: viewModel.weeklyPrice,
-                                period: "/week",
+                                title: "Monthly",
+                                price: viewModel.monthlyPrice,
+                                period: "/month",
                                 badge: nil,
-                                subtitle: viewModel.weeklyIntroOffer ?? "Billed weekly",
-                                isSelected: viewModel.selectedPlan == .weekly,
-                                onTap: { viewModel.selectPlan(.weekly) }
+                                subtitle: viewModel.monthlyIntroOffer ?? "Billed monthly",
+                                isSelected: viewModel.selectedPlan == .monthly,
+                                onTap: { viewModel.selectPlan(.monthly) }
                             )
                         }
                         .padding(.horizontal, 24)
