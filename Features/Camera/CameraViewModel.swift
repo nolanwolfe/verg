@@ -79,12 +79,9 @@ final class CameraViewModel: NSObject, ObservableObject {
 
         currentDevice = camera
 
-        // Configure for natural light: low-light boost, continuous white balance, auto exposure
+        // Configure for natural light: continuous white balance and auto exposure
         do {
             try camera.lockForConfiguration()
-            if camera.isLowLightBoostSupported {
-                camera.automaticallyEnablesLowLightBoost = true
-            }
             if camera.isWhiteBalanceModeSupported(.continuousAutoWhiteBalance) {
                 camera.whiteBalanceMode = .continuousAutoWhiteBalance
             }
