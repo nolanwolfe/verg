@@ -22,41 +22,7 @@ struct PaywallView: View {
     }
 }
 
-/// Wrapper for RevenueCat PaywallView with callbacks
-struct PaywallViewWrapper: View {
-    let onDismiss: () -> Void
-    let onSubscribed: () -> Void
-    @EnvironmentObject private var purchaseService: PurchaseService
-
-    var body: some View {
-        Group {
-            if let offering = purchaseService.currentOffering {
-                RevenueCatUI.PaywallView(offering: offering, displayCloseButton: true)
-            } else {
-                RevenueCatUI.PaywallView(displayCloseButton: true)
-            }
-        }
-            .onPurchaseCompleted { customerInfo in
-                // Purchase succeeded -- always proceed regardless of entitlement name
-                Task { @MainActor in
-                    purchaseService.setSubscribed(true)
-                    print("[RC Paywall] Purchase completed - isSubscribed = true, entitlements: \(customerInfo.entitlements.active.keys)")
-                }
-                onSubscribed()
-            }
-            .onRestoreCompleted { customerInfo in
-                if customerInfo.entitlements[PurchaseService.entitlementID]?.isActive == true {
-                    Task { @MainActor in
-                        purchaseService.setSubscribed(true)
-                        print("[RC Paywall] Restore completed - isSubscribed = true")
-                    }
-                    onSubscribed()
-                }
-            }
-    }
-}
-
-/// Native paywall view for StoreKit testing
+/// Native paywall view
 struct NativePaywallView: View {
     @ObservedObject var viewModel: PaywallViewModel
     @Environment(\.dismiss) private var dismiss
