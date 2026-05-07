@@ -92,6 +92,7 @@ final class TimerService: ObservableObject {
         timer?.invalidate()
         timer = nil
         isRunning = false
+        cancelCompletionNotification()
     }
 
     /// Resume the timer
@@ -108,6 +109,8 @@ final class TimerService: ObservableObject {
         if let timer = timer {
             RunLoop.current.add(timer, forMode: .common)
         }
+
+        scheduleCompletionNotification(after: timeRemaining)
     }
 
     /// Reset the timer
