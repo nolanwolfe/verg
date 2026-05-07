@@ -14,19 +14,19 @@ final class PaywallViewModel: ObservableObject {
 
     // MARK: - Plan Types
     enum PlanType: String, CaseIterable {
-        case weekly
+        case monthly
         case yearly
 
         var title: String {
             switch self {
-            case .weekly: return "Weekly"
+            case .monthly: return "Monthly"
             case .yearly: return "Yearly"
             }
         }
 
         var period: String {
             switch self {
-            case .weekly: return "/week"
+            case .monthly: return "/month"
             case .yearly: return "/year"
             }
         }
@@ -58,28 +58,28 @@ final class PaywallViewModel: ObservableObject {
     var onSubscribed: (() -> Void)?
 
     // MARK: - Dynamic Prices from PurchaseService
-    var weeklyPrice: String {
-        purchaseService.weeklyPrice
+    var monthlyPrice: String {
+        purchaseService.monthlyPrice
     }
 
     var yearlyPrice: String {
         purchaseService.yearlyPrice
     }
 
-    var weeklyIntroOffer: String? {
-        purchaseService.weeklyIntroOffer
+    var monthlyIntroOffer: String? {
+        purchaseService.monthlyIntroOffer
     }
 
     var yearlyIntroOffer: String? {
         purchaseService.yearlyIntroOffer
     }
 
-    /// Full trial disclosure text, e.g. "3 days free, then $3.99/week"
-    var weeklyTrialDisclosure: String {
-        if let offer = purchaseService.weeklyIntroOffer {
-            return "\(offer), then \(purchaseService.weeklyPrice)/week"
+    /// Full trial disclosure text, e.g. "30 days free, then $4.99/month"
+    var monthlyTrialDisclosure: String {
+        if let offer = purchaseService.monthlyIntroOffer {
+            return "\(offer), then \(purchaseService.monthlyPrice)/month"
         }
-        return "\(purchaseService.weeklyPrice)/week"
+        return "\(purchaseService.monthlyPrice)/month"
     }
 
     var yearlyTrialDisclosure: String {
@@ -91,7 +91,7 @@ final class PaywallViewModel: ObservableObject {
 
     /// Whether any plan has a free trial
     var hasFreeTrial: Bool {
-        weeklyIntroOffer != nil || yearlyIntroOffer != nil
+        monthlyIntroOffer != nil || yearlyIntroOffer != nil
     }
 
     // MARK: - Initialization
@@ -116,8 +116,8 @@ final class PaywallViewModel: ObservableObject {
             let success: Bool
 
             switch selectedPlan {
-            case .weekly:
-                success = await purchaseService.purchaseWeekly()
+            case .monthly:
+                success = await purchaseService.purchaseMonthly()
             case .yearly:
                 success = await purchaseService.purchaseYearly()
             }

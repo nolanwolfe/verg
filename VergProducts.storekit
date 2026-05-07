@@ -76,7 +76,7 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "3.99",
+          "displayPrice" : "4.99",
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "6478523901",
@@ -85,18 +85,18 @@
             "internalID" : "1234567891",
             "numberOfPeriods" : 1,
             "paymentMode" : "free",
-            "subscriptionPeriod" : "P3D"
+            "subscriptionPeriod" : "P1M"
           },
           "localizations" : [
             {
-              "description" : "Weekly access to Verg Pro features",
-              "displayName" : "Verg Weekly",
+              "description" : "Monthly access to Verg Pro features",
+              "displayName" : "Verg Monthly",
               "locale" : "en_US"
             }
           ],
-          "productID" : "verg_weekly",
-          "recurringSubscriptionPeriod" : "P1W",
-          "referenceName" : "Verg Weekly",
+          "productID" : "verg_monthly",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Verg Monthly",
           "subscriptionGroupID" : "21467892",
           "type" : "RecurringSubscription"
         },
@@ -107,7 +107,7 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "99.99",
+          "displayPrice" : "60.00",
           "familyShareable" : false,
           "groupNumber" : 2,
           "internalID" : "6478523902",
@@ -116,7 +116,7 @@
             "internalID" : "1234567892",
             "numberOfPeriods" : 1,
             "paymentMode" : "free",
-            "subscriptionPeriod" : "P3D"
+            "subscriptionPeriod" : "P1M"
           },
           "localizations" : [
             {

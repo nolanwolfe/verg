@@ -126,13 +126,13 @@ struct NativePaywallView: View {
                             )
 
                             PlanCard(
-                                title: "Weekly",
-                                price: viewModel.weeklyPrice,
-                                period: "/week",
+                                title: "Monthly",
+                                price: viewModel.monthlyPrice,
+                                period: "/month",
                                 badge: nil,
-                                subtitle: viewModel.weeklyTrialDisclosure,
-                                isSelected: viewModel.selectedPlan == .weekly,
-                                onTap: { viewModel.selectPlan(.weekly) }
+                                subtitle: viewModel.monthlyTrialDisclosure,
+                                isSelected: viewModel.selectedPlan == .monthly,
+                                onTap: { viewModel.selectPlan(.monthly) }
                             )
                         }
                         .padding(.horizontal, 24)
@@ -160,7 +160,7 @@ struct NativePaywallView: View {
                             .disabled(viewModel.isLoading)
 
                             Text(viewModel.hasFreeTrial
-                                ? "Free trial auto-renews at \(viewModel.selectedPlan == .yearly ? viewModel.yearlyPrice + "/year" : viewModel.weeklyPrice + "/week") unless cancelled."
+                                ? "Free trial auto-renews at \(viewModel.selectedPlan == .yearly ? viewModel.yearlyPrice + "/year" : viewModel.monthlyPrice + "/month") unless cancelled."
                                 : "Subscription auto-renews unless cancelled.")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
