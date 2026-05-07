@@ -1,8 +1,7 @@
 import SwiftUI
 import RevenueCat
-import RevenueCatUI
 
-/// Paywall screen - uses custom UI for StoreKit testing or RevenueCat Paywall
+/// Paywall screen — always uses native UI so both monthly and yearly show correctly
 struct PaywallView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var purchaseService: PurchaseService
@@ -11,27 +10,15 @@ struct PaywallView: View {
     var onSubscribed: (() -> Void)?
 
     var body: some View {
-        if purchaseService.isUsingStoreKitTesting {
-            // Custom paywall for StoreKit testing
-            NativePaywallView(viewModel: viewModel)
-                .onAppear {
-                    viewModel.purchaseService = purchaseService
-                    viewModel.onDismiss = { dismiss() }
-                    viewModel.onSubscribed = {
-                        onSubscribed?()
-                        dismiss()
-                    }
-                }
-        } else {
-            // RevenueCat paywall for production
-            PaywallViewWrapper(
-                onDismiss: { dismiss() },
-                onSubscribed: {
+        NativePaywallView(viewModel: viewModel)
+            .onAppear {
+                viewModel.purchaseService = purchaseService
+                viewModel.onDismiss = { dismiss() }
+                viewModel.onSubscribed = {
                     onSubscribed?()
                     dismiss()
                 }
-            )
-        }
+            }
     }
 }
 
