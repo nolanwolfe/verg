@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Home screen with candle and begin writing button
 struct HomeView: View {
@@ -9,6 +10,10 @@ struct HomeView: View {
     @State private var showTimer = false
     @State private var showPaywall = false
 
+    // Silent brightness control
+    @State private var brightness: Double = UIScreen.main.brightness
+    @State private var dragStartBrightness: Double = UIScreen.main.brightness
+
     private let gatingService = SessionGatingService.shared
 
     var body: some View {
@@ -17,23 +22,39 @@ struct HomeView: View {
             Theme.Colors.background
                 .ignoresSafeArea()
 
-            VStack(spacing: Theme.Spacing.xl) {
+            // Candle — anchored to top, respects status bar
+            VStack(spacing: 0) {
+                CandleView(progress: 1.0, isBurning: true)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 320)
+                    .shadow(color: Color(hex: "FF9500").opacity(0.4), radius: 30)
+                Spacer()
+            }
+            .padding(.top, 44)
+
+            // Streak + button — anchored well below candle
+            VStack(spacing: 0) {
                 Spacer()
 
-                // Candle illustration (not burning)
-                staticCandleView
-
-                // Streak display
                 streakSection
+                    .padding(.bottom, Theme.Spacing.xl)
 
-                Spacer()
-
-                // Begin writing button
                 actionButton
             }
             .padding(.horizontal, Theme.Spacing.lg)
             .padding(.bottom, Theme.Spacing.xxl)
         }
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 10)
+                .onChanged { value in
+                    let delta = Double(-value.translation.height) / 300.0
+                    brightness = max(0.05, min(1.0, dragStartBrightness + delta))
+                    UIScreen.main.brightness = brightness
+                }
+                .onEnded { _ in
+                    dragStartBrightness = brightness
+                }
+        )
         .fullScreenCover(isPresented: $showTimer) {
             TimerView(onComplete: {
                 showTimer = false
@@ -55,7 +76,12 @@ struct HomeView: View {
             .environmentObject(purchaseService)
         }
         .onAppear {
-            viewModel.refresh()
+            DispatchQueue.main.async {
+                viewModel.refresh()
+            }
+            Task {
+                await purchaseService.checkSubscriptionStatus()
+            }
         }
     }
 
@@ -72,48 +98,6 @@ struct HomeView: View {
         }
     }
 
-    // MARK: - Static Candle
-    private var staticCandleView: some View {
-        VStack(spacing: 0) {
-            // Wick (no flame)
-            RoundedRectangle(cornerRadius: 1)
-                .fill(Theme.Colors.wickColor)
-                .frame(width: 3, height: 20)
-                .offset(y: 5)
-
-            // Candle body
-            ZStack {
-                // Main candle body
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Theme.Colors.candleWax,
-                                Theme.Colors.candleWaxDark
-                            ],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .frame(width: 80, height: 180)
-
-                // Subtle highlight
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                Color.white.opacity(0.3),
-                                Color.clear
-                            ],
-                            startPoint: .leading,
-                            endPoint: .center
-                        )
-                    )
-                    .frame(width: 80, height: 180)
-            }
-        }
-    }
-
     // MARK: - Streak Section
     private var streakSection: some View {
         VStack(spacing: Theme.Spacing.xs) {
@@ -125,7 +109,7 @@ struct HomeView: View {
                         : Theme.Colors.secondaryText
                 )
 
-            Text(viewModel.sessionsTodayText)
+            Text("🕯️ \(viewModel.sessionsTodayText)")
                 .font(Theme.Typography.subheadline)
                 .foregroundColor(Theme.Colors.secondaryText)
         }
@@ -139,7 +123,6 @@ struct HomeView: View {
             Text(viewModel.buttonText)
         }
         .buttonStyle(PrimaryButtonStyle())
-        .padding(.horizontal, Theme.Spacing.lg)
     }
 
 }

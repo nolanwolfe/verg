@@ -15,7 +15,6 @@ final class TimerService: ObservableObject {
     private var timer: Timer?
     private var startTime: Date?
     private var endTime: Date?
-    private var backgroundTask: UIBackgroundTaskIdentifier = .invalid
 
     // MARK: - Computed Properties
     /// Progress from 1.0 (full) to 0.0 (empty)
@@ -63,9 +62,6 @@ final class TimerService: ObservableObject {
         // Keep screen awake
         UIApplication.shared.isIdleTimerDisabled = true
 
-        // Start background task
-        beginBackgroundTask()
-
         // Create timer
         timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
             self?.tick()
@@ -86,8 +82,6 @@ final class TimerService: ObservableObject {
         // Allow screen to sleep
         UIApplication.shared.isIdleTimerDisabled = false
 
-        // End background task
-        endBackgroundTask()
     }
 
     /// Pause the timer
@@ -137,20 +131,6 @@ final class TimerService: ObservableObject {
     private func complete() {
         stopTimer()
         isComplete = true
-    }
-
-    // MARK: - Background Task Management
-    private func beginBackgroundTask() {
-        backgroundTask = UIApplication.shared.beginBackgroundTask { [weak self] in
-            self?.endBackgroundTask()
-        }
-    }
-
-    private func endBackgroundTask() {
-        if backgroundTask != .invalid {
-            UIApplication.shared.endBackgroundTask(backgroundTask)
-            backgroundTask = .invalid
-        }
     }
 
     // MARK: - App Lifecycle Notifications

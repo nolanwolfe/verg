@@ -35,6 +35,20 @@ struct SettingsView: View {
                 .padding(.horizontal, Theme.Spacing.md)
                 .padding(.bottom, Theme.Spacing.xxxl)
             }
+            .mask(
+                VStack(spacing: 0) {
+                    // Fully visible top
+                    Rectangle()
+                        .fill(Color.black)
+                    // Fade out at bottom ~130pt
+                    LinearGradient(
+                        colors: [.black, .clear],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                    .frame(height: 130)
+                }
+            )
         }
         .sheet(isPresented: $viewModel.showDurationPicker) {
             durationPickerSheet
@@ -46,6 +60,14 @@ struct SettingsView: View {
             Button("OK", role: .cancel) { }
         } message: {
             Text(viewModel.restoreMessage)
+        }
+        .alert("Access Code", isPresented: $viewModel.showRedeemResult) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(viewModel.redeemResultMessage)
+        }
+        .sheet(isPresented: $viewModel.showRedeemSheet) {
+            redeemCodeSheet
         }
         .sheet(isPresented: $viewModel.showCustomerCenter) {
             CustomerCenterView()
@@ -135,6 +157,20 @@ struct SettingsView: View {
                 iconColor: .green,
                 title: "Restore Purchases",
                 action: { viewModel.restorePurchases() }
+            )
+
+            Divider()
+                .background(Theme.Colors.secondaryText.opacity(0.2))
+
+            SettingsButtonRow(
+                icon: "gift",
+                iconColor: .purple,
+                title: purchaseService.isFriendsAndFamily ? "Friends & Family Access Active" : "Redeem Access Code",
+                action: {
+                    if !purchaseService.isFriendsAndFamily {
+                        viewModel.showRedeemSheet = true
+                    }
+                }
             )
 
             if purchaseService.isSubscribed {
@@ -259,6 +295,55 @@ struct SettingsView: View {
             .padding(.top, Theme.Spacing.md)
     }
 
+    // MARK: - Redeem Code Sheet
+    private var redeemCodeSheet: some View {
+        NavigationView {
+            ZStack {
+                Theme.Colors.background
+                    .ignoresSafeArea()
+
+                VStack(spacing: Theme.Spacing.lg) {
+                    Text("Enter the access code you received to unlock unlimited access to Verg.")
+                        .font(Theme.Typography.body)
+                        .foregroundColor(Theme.Colors.secondaryText)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, Theme.Spacing.md)
+
+                    TextField("Access code", text: $viewModel.redeemCodeText)
+                        .textFieldStyle(.roundedBorder)
+                        .textInputAutocapitalization(.characters)
+                        .autocorrectionDisabled()
+                        .padding(.horizontal, Theme.Spacing.md)
+
+                    Button {
+                        viewModel.redeemAccessCode()
+                    } label: {
+                        Text("Redeem")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(PrimaryButtonStyle())
+                    .padding(.horizontal, Theme.Spacing.md)
+                    .disabled(viewModel.redeemCodeText.trimmingCharacters(in: .whitespaces).isEmpty)
+
+                    Spacer()
+                }
+                .padding(.top, Theme.Spacing.lg)
+            }
+            .navigationTitle("Redeem Access Code")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        viewModel.redeemCodeText = ""
+                        viewModel.showRedeemSheet = false
+                    }
+                    .foregroundColor(Theme.Colors.accent)
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
+
     // MARK: - Duration Picker Sheet
     private var durationPickerSheet: some View {
         NavigationView {
@@ -267,6 +352,7 @@ struct SettingsView: View {
                     .ignoresSafeArea()
 
                 VStack(spacing: Theme.Spacing.sm) {
+                    // Presets
                     ForEach(DurationOption.allOptions) { option in
                         Button {
                             viewModel.setDuration(option.duration)
@@ -275,9 +361,7 @@ struct SettingsView: View {
                                 Text(option.label)
                                     .font(Theme.Typography.body)
                                     .foregroundColor(Theme.Colors.primaryText)
-
                                 Spacer()
-
                                 if viewModel.timerDuration == option.duration {
                                     Image(systemName: "checkmark")
                                         .foregroundColor(Theme.Colors.accent)
@@ -288,6 +372,39 @@ struct SettingsView: View {
                             .cornerRadius(Theme.CornerRadius.small)
                         }
                     }
+
+                    // Custom — clean tap-to-type field, MM:SS, number pad
+                    HStack {
+                        TextField("00:00", text: $viewModel.customDurationText)
+                            .keyboardType(.numberPad)
+                            .font(Theme.Typography.body)
+                            .foregroundColor(Theme.Colors.primaryText)
+                            .autocorrectionDisabled()
+                            .onChange(of: viewModel.customDurationText) { _, val in
+                                let digits = val.filter { $0.isNumber }
+                                if digits.count >= 2 && !val.contains(":") {
+                                    let mm = String(digits.prefix(2))
+                                    let ss = String(digits.dropFirst(2).prefix(2))
+                                    let formatted = ss.isEmpty ? mm : "\(mm):\(ss)"
+                                    DispatchQueue.main.async {
+                                        viewModel.customDurationText = formatted
+                                    }
+                                }
+                            }
+
+                        Spacer()
+
+                        if !viewModel.customDurationText.isEmpty {
+                            Button("Set") {
+                                viewModel.applyCustomDuration()
+                            }
+                            .foregroundColor(Theme.Colors.accent)
+                            .font(Theme.Typography.body.weight(.semibold))
+                        }
+                    }
+                    .padding(Theme.Spacing.md)
+                    .background(Theme.Colors.cardBackground)
+                    .cornerRadius(Theme.CornerRadius.small)
                 }
                 .padding(Theme.Spacing.md)
             }

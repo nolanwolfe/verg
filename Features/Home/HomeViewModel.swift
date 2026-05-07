@@ -8,7 +8,6 @@ final class HomeViewModel: ObservableObject {
     @Published private(set) var currentStreak: Int = 0
     @Published private(set) var hasWrittenToday: Bool = false
     @Published private(set) var sessionsToday: Int = 0
-    @Published var showTimer: Bool = false
 
     // MARK: - Dependencies
     private let streakService: StreakService
@@ -84,12 +83,7 @@ final class HomeViewModel: ObservableObject {
         sessionsToday = todaySessions.count
     }
 
-    func startWriting() {
-        showTimer = true
-    }
-
     func onSessionComplete() {
-        showTimer = false
         refresh()
     }
 }

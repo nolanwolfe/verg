@@ -87,39 +87,69 @@ struct PageThumbnail: View {
     }
 }
 
-// MARK: - Full Screen Image View
+// MARK: - Full Screen Image View (swipeable)
 struct FullScreenImageView: View {
-    let session: Session
-    let image: UIImage?
+    @State private var sessions: [Session]
+    @State private var currentIndex: Int
+    let getImage: (Session) -> UIImage?
     let onDismiss: () -> Void
-    let onDelete: () -> Void
+    let onDelete: (Session) -> Void
 
     @State private var showDeleteConfirmation = false
 
+    init(
+        sessions: [Session],
+        initialIndex: Int,
+        getImage: @escaping (Session) -> UIImage?,
+        onDismiss: @escaping () -> Void,
+        onDelete: @escaping (Session) -> Void
+    ) {
+        self._sessions = State(initialValue: sessions)
+        self._currentIndex = State(initialValue: min(initialIndex, max(0, sessions.count - 1)))
+        self.getImage = getImage
+        self.onDismiss = onDismiss
+        self.onDelete = onDelete
+    }
+
+    private var currentSession: Session? {
+        guard !sessions.isEmpty, currentIndex < sessions.count else { return nil }
+        return sessions[currentIndex]
+    }
+
     var body: some View {
         ZStack {
-            // Background
-            Color.black
-                .ignoresSafeArea()
+            Color.black.ignoresSafeArea()
 
-            // Image
-            if let image = image {
-                Image(uiImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
+            // Swipeable pages
+            TabView(selection: $currentIndex) {
+                ForEach(Array(sessions.enumerated()), id: \.element.id) { index, session in
+                    ZStack {
+                        Color.black
+                        if let image = getImage(session) {
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFit()
+                        } else {
+                            Image(systemName: "photo")
+                                .font(.system(size: 48))
+                                .foregroundColor(Theme.Colors.secondaryText)
+                        }
+                    }
                     .ignoresSafeArea()
+                    .tag(index)
+                }
             }
+            .tabViewStyle(.page(indexDisplayMode: .never))
+            .ignoresSafeArea()
 
-            // Overlay controls
+            // Overlay
             VStack {
-                // Header
+                // Top bar
                 HStack {
-                    Button {
-                        onDismiss()
-                    } label: {
+                    Button { onDismiss() } label: {
                         Image(systemName: "xmark")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Theme.Colors.primaryText)
+                            .foregroundColor(.white)
                             .frame(width: 44, height: 44)
                             .background(Color.black.opacity(0.5))
                             .clipShape(Circle())
@@ -127,12 +157,21 @@ struct FullScreenImageView: View {
 
                     Spacer()
 
-                    Button {
-                        showDeleteConfirmation = true
-                    } label: {
+                    if sessions.count > 1 {
+                        Text("\(currentIndex + 1) / \(sessions.count)")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(.white.opacity(0.7))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(Capsule().fill(Color.black.opacity(0.4)))
+                    }
+
+                    Spacer()
+
+                    Button { showDeleteConfirmation = true } label: {
                         Image(systemName: "trash")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Theme.Colors.primaryText)
+                            .foregroundColor(.white)
                             .frame(width: 44, height: 44)
                             .background(Color.black.opacity(0.5))
                             .clipShape(Circle())
@@ -143,28 +182,28 @@ struct FullScreenImageView: View {
 
                 Spacer()
 
-                // Footer with date info
-                HStack {
-                    VStack(alignment: .leading, spacing: Theme.Spacing.xxxs) {
-                        Text(session.formattedDate)
-                            .font(Theme.Typography.headline)
-                            .foregroundColor(Theme.Colors.primaryText)
-
-                        Text("\(session.formattedTime) • \(session.formattedDuration)")
-                            .font(Theme.Typography.caption)
-                            .foregroundColor(Theme.Colors.secondaryText)
+                // Bottom info
+                if let session = currentSession {
+                    HStack {
+                        VStack(alignment: .leading, spacing: Theme.Spacing.xxxs) {
+                            Text(session.formattedDate)
+                                .font(Theme.Typography.headline)
+                                .foregroundColor(.white)
+                            Text("\(session.formattedTime) • \(session.formattedDuration)")
+                                .font(Theme.Typography.caption)
+                                .foregroundColor(Theme.Colors.secondaryText)
+                        }
+                        Spacer()
                     }
-
-                    Spacer()
-                }
-                .padding(Theme.Spacing.md)
-                .background(
-                    LinearGradient(
-                        colors: [Color.clear, Color.black.opacity(0.8)],
-                        startPoint: .top,
-                        endPoint: .bottom
+                    .padding(Theme.Spacing.md)
+                    .background(
+                        LinearGradient(
+                            colors: [Color.clear, Color.black.opacity(0.8)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
                     )
-                )
+                }
             }
         }
         .confirmationDialog(
@@ -173,8 +212,14 @@ struct FullScreenImageView: View {
             titleVisibility: .visible
         ) {
             Button("Delete", role: .destructive) {
-                onDelete()
-                onDismiss()
+                guard let session = currentSession else { return }
+                onDelete(session)
+                sessions.remove(at: currentIndex)
+                if sessions.isEmpty {
+                    onDismiss()
+                } else {
+                    currentIndex = min(currentIndex, sessions.count - 1)
+                }
             }
             Button("Cancel", role: .cancel) { }
         } message: {

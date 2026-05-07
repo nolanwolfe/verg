@@ -74,6 +74,26 @@ final class PaywallViewModel: ObservableObject {
         purchaseService.yearlyIntroOffer
     }
 
+    /// Full trial disclosure text, e.g. "3 days free, then $3.99/week"
+    var weeklyTrialDisclosure: String {
+        if let offer = purchaseService.weeklyIntroOffer {
+            return "\(offer), then \(purchaseService.weeklyPrice)/week"
+        }
+        return "\(purchaseService.weeklyPrice)/week"
+    }
+
+    var yearlyTrialDisclosure: String {
+        if let offer = purchaseService.yearlyIntroOffer {
+            return "\(offer), then \(purchaseService.yearlyPrice)/year"
+        }
+        return "\(purchaseService.yearlyPrice)/year"
+    }
+
+    /// Whether any plan has a free trial
+    var hasFreeTrial: Bool {
+        weeklyIntroOffer != nil || yearlyIntroOffer != nil
+    }
+
     // MARK: - Initialization
     init(purchaseService: PurchaseService = .shared) {
         self.purchaseService = purchaseService

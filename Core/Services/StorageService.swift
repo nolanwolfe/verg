@@ -16,6 +16,8 @@ final class StorageService: ObservableObject {
     // MARK: - Private Properties
     private let userDefaults = UserDefaults.standard
     private let fileManager = FileManager.default
+    private let imageCache = NSCache<NSString, UIImage>()
+    private let thumbnailCache = NSCache<NSString, UIImage>()
 
     private let sessionsKey = "verg.sessions"
     private let statsKey = "verg.stats"
@@ -115,7 +117,9 @@ final class StorageService: ObservableObject {
         do {
             try imageData.write(to: imageURL)
         } catch {
+            #if DEBUG
             print("Error saving image: \(error)")
+            #endif
             return nil
         }
 
@@ -158,21 +162,51 @@ final class StorageService: ObservableObject {
     func deleteSession(id: UUID) {
         guard let index = sessions.firstIndex(where: { $0.id == id }) else { return }
 
-        // Delete image file
         let session = sessions[index]
+        imageCache.removeObject(forKey: session.imagePath as NSString)
+        thumbnailCache.removeObject(forKey: "\(session.imagePath)_thumb_200" as NSString)
+
         let imageURL = imagesDirectory.appendingPathComponent(session.imagePath)
         try? fileManager.removeItem(at: imageURL)
 
-        // Remove from array
         sessions.remove(at: index)
         saveSessions()
     }
 
-    /// Get image for a session
+    /// Get image for a session (cached, full resolution)
     func getImage(for session: Session) -> UIImage? {
+        let key = session.imagePath as NSString
+        if let cached = imageCache.object(forKey: key) { return cached }
         let imageURL = imagesDirectory.appendingPathComponent(session.imagePath)
-        guard let data = try? Data(contentsOf: imageURL) else { return nil }
-        return UIImage(data: data)
+        guard let data = try? Data(contentsOf: imageURL),
+              let image = UIImage(data: data) else { return nil }
+        imageCache.setObject(image, forKey: key)
+        return image
+    }
+
+    /// Get downsampled thumbnail for grid display (cached)
+    func getThumbnail(for session: Session, size: CGFloat = 200) -> UIImage? {
+        let key = "\(session.imagePath)_thumb_\(Int(size))" as NSString
+        if let cached = thumbnailCache.object(forKey: key) { return cached }
+        let imageURL = imagesDirectory.appendingPathComponent(session.imagePath)
+        guard let thumbnail = downsample(imageAt: imageURL, to: CGSize(width: size, height: size)) else { return nil }
+        thumbnailCache.setObject(thumbnail, forKey: key)
+        return thumbnail
+    }
+
+    private func downsample(imageAt url: URL, to pointSize: CGSize) -> UIImage? {
+        let scale = UIScreen.main.scale
+        let pixelSize = CGSize(width: pointSize.width * scale, height: pointSize.height * scale)
+        let options: [CFString: Any] = [kCGImageSourceShouldCache: false]
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, options as CFDictionary) else { return nil }
+        let thumbnailOptions: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceShouldCacheImmediately: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: max(pixelSize.width, pixelSize.height)
+        ]
+        guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, thumbnailOptions as CFDictionary) else { return nil }
+        return UIImage(cgImage: cgImage)
     }
 
     /// Get image URL for a session
@@ -258,7 +292,9 @@ final class StorageService: ObservableObject {
         settings.uploadPhotoNoticeShownCount = 0
         saveSettings()
 
+        #if DEBUG
         print("[DEBUG] StorageService: Reset all data for testing")
+        #endif
     }
     #endif
 

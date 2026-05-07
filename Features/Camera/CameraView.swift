@@ -14,19 +14,15 @@ struct CameraView: View {
 
     var body: some View {
         ZStack {
-            // Background
             Theme.Colors.background
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Header
                 headerView
 
                 if viewModel.isShowingPreview, let image = viewModel.capturedImage {
-                    // Preview mode
                     previewView(image: image)
                 } else {
-                    // Camera/Picker mode
                     #if targetEnvironment(simulator)
                     simulatorView
                     #else
@@ -35,7 +31,6 @@ struct CameraView: View {
                 }
             }
 
-            // Loading overlay
             if viewModel.isSaving {
                 savingOverlay
             }
@@ -107,13 +102,12 @@ struct CameraView: View {
         .padding(.bottom, Theme.Spacing.md)
     }
 
-    // MARK: - Simulator View (Photo Picker)
+    // MARK: - Simulator View
     #if targetEnvironment(simulator)
     private var simulatorView: some View {
         VStack(spacing: Theme.Spacing.xl) {
             Spacer()
 
-            // Placeholder area
             ZStack {
                 RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
                     .fill(Theme.Colors.cardBackground)
@@ -137,7 +131,6 @@ struct CameraView: View {
 
             Spacer()
 
-            // Select from Library button
             Button {
                 viewModel.showPhotoPicker = true
             } label: {
@@ -158,7 +151,6 @@ struct CameraView: View {
     // MARK: - Camera View
     private var cameraView: some View {
         VStack(spacing: Theme.Spacing.xl) {
-            // Camera preview
             ZStack {
                 CameraPreviewView(session: viewModel.session)
                     .aspectRatio(3/4, contentMode: .fit)
@@ -173,8 +165,16 @@ struct CameraView: View {
 
             Spacer()
 
-            // Capture button
             captureButton
+
+            // Library picker
+            Button {
+                viewModel.showPhotoPicker = true
+            } label: {
+                Text("Choose from Library")
+                    .font(Theme.Typography.subheadline)
+                    .foregroundColor(Theme.Colors.secondaryText)
+            }
 
             Spacer()
                 .frame(height: Theme.Spacing.xxl)
@@ -187,12 +187,10 @@ struct CameraView: View {
             viewModel.capturePhoto()
         } label: {
             ZStack {
-                // Outer ring
                 Circle()
                     .stroke(Theme.Colors.primaryText, lineWidth: 4)
                     .frame(width: 80, height: 80)
 
-                // Inner circle
                 Circle()
                     .fill(Theme.Colors.primaryText)
                     .frame(width: 66, height: 66)
@@ -205,7 +203,6 @@ struct CameraView: View {
     // MARK: - Preview View
     private func previewView(image: UIImage) -> some View {
         VStack(spacing: Theme.Spacing.xl) {
-            // Image preview
             Image(uiImage: image)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
@@ -214,9 +211,7 @@ struct CameraView: View {
 
             Spacer()
 
-            // Action buttons
             HStack(spacing: Theme.Spacing.md) {
-                // Retake button
                 Button {
                     viewModel.retakePhoto()
                 } label: {
@@ -228,7 +223,6 @@ struct CameraView: View {
                 }
                 .buttonStyle(SecondaryButtonStyle())
 
-                // Use photo button
                 Button {
                     viewModel.usePhoto()
                 } label: {
@@ -262,7 +256,7 @@ struct CameraView: View {
     }
 }
 
-// MARK: - Photo Picker (for Simulator)
+// MARK: - Photo Picker
 struct PhotoPicker: UIViewControllerRepresentable {
     @Binding var selectedImage: UIImage?
     @Environment(\.dismiss) private var dismiss
@@ -317,9 +311,7 @@ struct CameraPreviewView: UIViewRepresentable {
         return view
     }
 
-    func updateUIView(_ uiView: CameraPreviewUIView, context: Context) {
-        // Session is already set in makeUIView
-    }
+    func updateUIView(_ uiView: CameraPreviewUIView, context: Context) {}
 }
 
 /// Custom UIView that properly manages the AVCaptureVideoPreviewLayer

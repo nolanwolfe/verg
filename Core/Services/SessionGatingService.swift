@@ -32,9 +32,9 @@ final class SessionGatingService {
         storageService.sessions.count
     }
 
-    /// Whether the user is a premium subscriber
+    /// Whether the user is a premium subscriber or has friends & family access
     var isPremium: Bool {
-        purchaseService.isSubscribed
+        purchaseService.isSubscribed || purchaseService.isFriendsAndFamily
     }
 
     /// Whether the user can start a new session
@@ -82,7 +82,9 @@ final class SessionGatingService {
 
     /// Logs current gating status (useful for debugging)
     func logGatingStatus() {
+        #if DEBUG
         print("[SessionGating] Premium: \(isPremium), Completed Sessions: \(completedSessionCount), Can Start: \(canStartSession)")
+        #endif
     }
 }
 

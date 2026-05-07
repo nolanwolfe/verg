@@ -1,13 +1,16 @@
 import Foundation
 import Combine
-import UIKit
 import UserNotifications
+#if canImport(UIKit)
+import UIKit
+#endif
 
 /// ViewModel for the Settings screen
 final class SettingsViewModel: ObservableObject {
 
     // MARK: - Published Properties
-    @Published var timerDuration: TimeInterval = 10
+    @Published var timerDuration: TimeInterval = 600
+    @Published var customDurationText: String = ""
     @Published var soundEnabled: Bool = true
     @Published var notificationsEnabled: Bool = false
     @Published var notificationTime: Date = AppSettings.defaultNotificationTime
@@ -18,6 +21,10 @@ final class SettingsViewModel: ObservableObject {
     @Published var restoreMessage: String = ""
     @Published var showCustomerCenter: Bool = false
     @Published var showPaywall: Bool = false
+    @Published var showRedeemSheet: Bool = false
+    @Published var redeemCodeText: String = ""
+    @Published var showRedeemResult: Bool = false
+    @Published var redeemResultMessage: String = ""
 
     // MARK: - Dependencies
     private let storageService: StorageService
@@ -26,8 +33,17 @@ final class SettingsViewModel: ObservableObject {
 
     // MARK: - Computed Properties
     var formattedDuration: String {
-        let minutes = Int(timerDuration / 60)
-        return "\(minutes) minutes"
+        let total = Int(timerDuration)
+        if total < 60 {
+            return "\(total) sec"
+        } else if total % 60 == 0 {
+            let mins = total / 60
+            return mins == 1 ? "1 minute" : "\(mins) minutes"
+        } else {
+            let mins = total / 60
+            let secs = total % 60
+            return "\(mins)m \(secs)s"
+        }
     }
 
     var formattedNotificationTime: String {
@@ -103,6 +119,18 @@ final class SettingsViewModel: ObservableObject {
         showDurationPicker = false
     }
 
+    /// Parse MM:SS input and apply as custom duration
+    func applyCustomDuration() {
+        let text = customDurationText.trimmingCharacters(in: .whitespaces)
+        let parts = text.split(separator: ":").compactMap { Int($0) }
+        guard parts.count == 2 else { return }
+        let seconds = TimeInterval(parts[0] * 60 + parts[1])
+        let clamped = min(max(seconds, 1), 3600)
+        timerDuration = clamped
+        customDurationText = ""
+        showDurationPicker = false
+    }
+
     // MARK: - Notifications
     private func handleNotificationToggle(_ enabled: Bool) {
         if enabled {
@@ -133,8 +161,10 @@ final class SettingsViewModel: ObservableObject {
 
         // Create content
         let content = UNMutableNotificationContent()
-        content.title = "Time to Write"
-        content.body = "Take 10 minutes to journal your thoughts."
+        content.title = "Begin Writing"
+        let mins = Int(timerDuration / 60)
+        let durationLabel = mins > 0 ? "\(mins) minutes" : "\(Int(timerDuration)) seconds"
+        content.body = "Take \(durationLabel) to journal your thoughts."
         content.sound = .default
 
         // Create trigger for daily notification
@@ -153,6 +183,20 @@ final class SettingsViewModel: ObservableObject {
 
     private func cancelNotifications() {
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+    }
+
+    // MARK: - Access Code Redemption
+    func redeemAccessCode() {
+        let code = redeemCodeText
+        Task { @MainActor in
+            let success = purchaseService.redeemAccessCode(code)
+            redeemResultMessage = success
+                ? "Access granted! You now have unlimited access to Verg."
+                : "Invalid code. Please double-check and try again."
+            redeemCodeText = ""
+            showRedeemSheet = false
+            showRedeemResult = true
+        }
     }
 
     // MARK: - Purchases
@@ -174,15 +218,13 @@ final class SettingsViewModel: ObservableObject {
 
     // MARK: - App Actions
     func rateApp() {
-        // Replace with your App Store ID
-        if let url = URL(string: "https://apps.apple.com/app/id123456789?action=write-review") {
+        if let url = URL(string: "https://apps.apple.com/app/id6758077555?action=write-review") {
             UIApplication.shared.open(url)
         }
     }
 
     func shareApp() {
-        // Replace with your App Store URL
-        let url = URL(string: "https://apps.apple.com/app/id123456789")!
+        let url = URL(string: "https://apps.apple.com/app/id6758077555")!
         let activityVC = UIActivityViewController(
             activityItems: ["Check out Verg - a journaling timer app!", url],
             applicationActivities: nil

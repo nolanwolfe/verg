@@ -43,7 +43,6 @@ final class CameraViewModel: NSObject, ObservableObject {
 
     // MARK: - Camera Setup
     func setupCamera() {
-        // Check authorization
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
             configureSession()
@@ -72,7 +71,6 @@ final class CameraViewModel: NSObject, ObservableObject {
         session.beginConfiguration()
         session.sessionPreset = .photo
 
-        // Add input
         guard let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
             errorMessage = "Unable to access camera"
             showError = true
@@ -92,18 +90,16 @@ final class CameraViewModel: NSObject, ObservableObject {
             return
         }
 
-        // Add output
         if session.canAddOutput(photoOutput) {
             session.addOutput(photoOutput)
-            // Configure for maximum resolution
-            if let maxDimensions = currentDevice?.activeFormat.supportedMaxPhotoDimensions.max(by: { $0.width * $0.height < $1.width * $1.height }) {
+            if let maxDimensions = currentDevice?.activeFormat.supportedMaxPhotoDimensions
+                .max(by: { $0.width * $0.height < $1.width * $1.height }) {
                 photoOutput.maxPhotoDimensions = maxDimensions
             }
         }
 
         session.commitConfiguration()
 
-        // Start session on background thread
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             self?.session.startRunning()
             DispatchQueue.main.async {
@@ -117,12 +113,9 @@ final class CameraViewModel: NSObject, ObservableObject {
         guard isCameraReady else { return }
 
         let settings = AVCapturePhotoSettings()
-        // Use max photo dimensions for high resolution capture
         settings.maxPhotoDimensions = photoOutput.maxPhotoDimensions
 
-        // Play shutter haptic
         audioService.playImpact(.medium)
-
         photoOutput.capturePhoto(with: settings, delegate: self)
     }
 
@@ -133,21 +126,16 @@ final class CameraViewModel: NSObject, ObservableObject {
 
     func usePhoto() {
         guard let image = capturedImage else { return }
-
         isSaving = true
 
-        // Save to storage
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let self = self else { return }
-
             let session = self.storageService.saveSession(
                 image: image,
                 duration: self.sessionDuration
             )
-
             DispatchQueue.main.async {
                 self.isSaving = false
-
                 if session != nil {
                     self.audioService.playHaptic(.success)
                     self.onPhotoSaved?()
@@ -172,6 +160,7 @@ final class CameraViewModel: NSObject, ObservableObject {
 }
 
 // MARK: - AVCapturePhotoCaptureDelegate
+
 extension CameraViewModel: AVCapturePhotoCaptureDelegate {
     func photoOutput(
         _ output: AVCapturePhotoOutput,

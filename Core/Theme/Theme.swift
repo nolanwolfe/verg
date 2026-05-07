@@ -14,13 +14,13 @@ enum Theme {
         static let accent = Color(hex: "BF5AF2")
 
         static let accentGradient = LinearGradient(
-            colors: [Color(hex: "FBED59"), Color(hex: "FDF5B0")],
+            colors: [Color(hex: "F7F1E2"), Color(hex: "F7F1E2")],
             startPoint: .leading,
             endPoint: .trailing
         )
 
         static let accentGradientVertical = LinearGradient(
-            colors: [Color(hex: "FBED59"), Color(hex: "FDF5B0")],
+            colors: [Color(hex: "F7F1E2"), Color(hex: "F7F1E2")],
             startPoint: .top,
             endPoint: .bottom
         )

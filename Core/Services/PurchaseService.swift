@@ -8,14 +8,27 @@ final class PurchaseService: ObservableObject {
     // MARK: - Constants
     static let entitlementID = "premium"
 
+    // Friends & Family / UGC partner access codes
+    // Share these codes with friends, family, and UGC marketing partners
+    // Add new codes here as needed; existing codes never expire
+    static let validAccessCodes: Set<String> = [
+        "VERGFAM",      // friends & family (legacy)
+        "VERGVIP",      // UGC / marketing partners
+        "ONTHEVERG"     // Verg 2.0 launch campaign
+    ]
+    private let friendsAndFamilyKey = "verg.isFriendsAndFamily"
+
     // MARK: - Published Properties
     @MainActor @Published private(set) var isSubscribed: Bool = false
+    @MainActor @Published private(set) var isFriendsAndFamily: Bool = false
 
     /// Manually set subscription status (used by RevenueCat PaywallView callbacks)
     @MainActor
     func setSubscribed(_ value: Bool) {
         isSubscribed = value
+        #if DEBUG
         print("[PurchaseService] setSubscribed(\(value))")
+        #endif
     }
     @MainActor @Published private(set) var isLoading: Bool = false
     @MainActor @Published private(set) var weeklyPrice: String = "$3.99"
@@ -51,10 +64,15 @@ final class PurchaseService: ObservableObject {
 
     @MainActor
     func configure() {
+        // Load persisted friends & family status
+        isFriendsAndFamily = UserDefaults.standard.bool(forKey: friendsAndFamilyKey)
+
         if !revenueCatAPIKey.isEmpty {
             // Configure RevenueCat for production
             Purchases.logLevel = .debug
+            #if DEBUG
             print("[RC] Configuring RevenueCat with API key: \(revenueCatAPIKey.prefix(6))…")
+            #endif
             Purchases.configure(withAPIKey: revenueCatAPIKey)
             Task {
                 await fetchOfferingsFromRevenueCat()
@@ -90,7 +108,9 @@ final class PurchaseService: ObservableObject {
     @MainActor
     func fetchOfferingsFromRevenueCat() async {
         do {
+            #if DEBUG
             print("[RC] Fetching offerings…")
+            #endif
             let offerings = try await Purchases.shared.offerings()
             self.currentOffering = offerings["premium"] ?? offerings.current
             if let current = self.currentOffering {
@@ -116,10 +136,14 @@ final class PurchaseService: ObservableObject {
                     }
                 }
             } else {
+                #if DEBUG
                 print("[RC][WARN] No current offering configured.")
+                #endif
             }
         } catch {
+            #if DEBUG
             print("[RC][ERROR] Failed to fetch offerings: \(error)")
+            #endif
             self.errorMessage = "RevenueCat offerings error: \(error.localizedDescription)"
         }
     }
@@ -146,7 +170,9 @@ final class PurchaseService: ObservableObject {
                 }
             }
         } catch {
+            #if DEBUG
             print("Failed to fetch StoreKit products: \(error)")
+            #endif
         }
     }
 
@@ -156,13 +182,19 @@ final class PurchaseService: ObservableObject {
     func checkSubscriptionStatus() async {
         if !isUsingStoreKitTesting {
             // RevenueCat check
+            #if DEBUG
             print("[RC] Checking subscription status…")
+            #endif
             do {
                 let customerInfo = try await Purchases.shared.customerInfo()
+                #if DEBUG
                 print("[RC] CustomerInfo received. Active entitlements: \(customerInfo.entitlements.active.keys)")
+                #endif
                 isSubscribed = customerInfo.entitlements[Self.entitlementID]?.isActive == true
             } catch {
+                #if DEBUG
                 print("[RC][ERROR] customerInfo() failed: \(error)")
+                #endif
                 self.errorMessage = "RevenueCat error: \(error.localizedDescription)"
                 isSubscribed = false
             }
@@ -231,7 +263,9 @@ final class PurchaseService: ObservableObject {
                     await transaction.finish()
                     // Set subscribed immediately after successful purchase
                     isSubscribed = true
+                    #if DEBUG
                     print("[Purchase] Success! isSubscribed = true")
+                    #endif
                     // Sync with RevenueCat in production
                     if !isUsingStoreKitTesting {
                         _ = try? await Purchases.shared.syncPurchases()
@@ -251,9 +285,30 @@ final class PurchaseService: ObservableObject {
             }
         } catch {
             errorMessage = error.localizedDescription
+            #if DEBUG
             print("Purchase error: \(error)")
+            #endif
             return false
         }
+    }
+
+    // MARK: - Friends & Family / Access Code Redemption
+
+    /// Redeem an access code to grant friends-and-family unlimited access.
+    /// Returns true if the code is valid.
+    @MainActor
+    @discardableResult
+    func redeemAccessCode(_ code: String) -> Bool {
+        let normalized = code.uppercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        guard Self.validAccessCodes.contains(normalized) else {
+            return false
+        }
+        isFriendsAndFamily = true
+        UserDefaults.standard.set(true, forKey: friendsAndFamilyKey)
+        #if DEBUG
+        print("[PurchaseService] Friends & Family access granted via code: \(normalized)")
+        #endif
+        return true
     }
 
     // MARK: - Restore Purchases
@@ -267,7 +322,9 @@ final class PurchaseService: ObservableObject {
         do {
             if !isUsingStoreKitTesting {
                 let customerInfo = try await Purchases.shared.restorePurchases()
+                #if DEBUG
                 print("[RC] Restore completed. Active entitlements: \(customerInfo.entitlements.active.keys)")
+                #endif
                 isSubscribed = customerInfo.entitlements[Self.entitlementID]?.isActive == true
             } else {
                 try await AppStore.sync()
@@ -277,18 +334,24 @@ final class PurchaseService: ObservableObject {
                         if transaction.productID == weeklyID || transaction.productID == yearlyID {
                             if transaction.revocationDate == nil {
                                 isSubscribed = true
+                                #if DEBUG
                                 print("[Restore] Found active subscription: \(transaction.productID)")
+                                #endif
                                 break
                             }
                         }
                     }
                 }
             }
+            #if DEBUG
             print("[Restore] isSubscribed = \(isSubscribed)")
+            #endif
             return isSubscribed
         } catch {
             errorMessage = error.localizedDescription
+            #if DEBUG
             print("Restore error: \(error)")
+            #endif
             return false
         }
     }

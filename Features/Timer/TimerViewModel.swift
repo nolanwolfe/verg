@@ -83,15 +83,13 @@ final class TimerViewModel: ObservableObject {
     // MARK: - Actions
     func startTimer(duration: TimeInterval? = nil) {
         let duration = duration ?? storageService.settings.timerDuration
-        totalDuration = duration
-        timeRemaining = duration
 
         // Play start bell if sound enabled
         if storageService.settings.soundEnabled {
             audioService.playStartBell()
         }
 
-        // Start timer
+        // Start timer — publishes totalDuration/timeRemaining via Combine pipeline
         timerService.start(duration: duration)
     }
 
@@ -141,7 +139,9 @@ final class TimerViewModel: ObservableObject {
 
         // Session saved - log for debugging
         let sessionCount = storageService.sessions.count
+        #if DEBUG
         print("[SessionGating] Photo saved. Total sessions: \(sessionCount)")
+        #endif
 
         // Complete the session - paywall will show when user tries to START their 4th session
         onComplete?()

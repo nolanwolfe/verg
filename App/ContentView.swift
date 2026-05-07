@@ -5,14 +5,15 @@ struct ContentView: View {
     @EnvironmentObject private var storageService: StorageService
     @EnvironmentObject private var purchaseService: PurchaseService
 
-    @State private var selectedTab: Tab = .home
+    @State private var selectedTab: Tab = .write
     @State private var showOnboarding: Bool = true
     @State private var showStartTimerNotice: Bool = false
     @State private var showTimerFromNotice: Bool = false
 
     enum Tab: String {
-        case home
-        case stats
+        case write
+        case journal
+        case verg
         case settings
     }
 
@@ -111,27 +112,27 @@ struct ContentView: View {
     }
 
     // MARK: - Main Tab View
+
     private var mainTabView: some View {
-        TabView(selection: $selectedTab) {
+        currentTabContent
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                CustomTabBar(selectedTab: $selectedTab)
+            }
+    }
+
+    @ViewBuilder
+    private var currentTabContent: some View {
+        switch selectedTab {
+        case .write:
             HomeView()
-                .tabItem {
-                    Label("Home", systemImage: "house.fill")
-                }
-                .tag(Tab.home)
-
+        case .journal:
             StatsView()
-                .tabItem {
-                    Label("Stats", systemImage: "chart.bar.fill")
-                }
-                .tag(Tab.stats)
-
+        case .verg:
+            VergFlameView()
+                .ignoresSafeArea()
+        case .settings:
             SettingsView()
-                .tabItem {
-                    Label("Settings", systemImage: "gearshape.fill")
-                }
-                .tag(Tab.settings)
         }
-        .tint(Theme.Colors.accent)
     }
 }
 

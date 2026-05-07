@@ -120,7 +120,7 @@ struct NativePaywallView: View {
                                 price: viewModel.yearlyPrice,
                                 period: "/year",
                                 badge: "Best Value",
-                                subtitle: viewModel.yearlyIntroOffer ?? "Save 61%",
+                                subtitle: viewModel.yearlyTrialDisclosure,
                                 isSelected: viewModel.selectedPlan == .yearly,
                                 onTap: { viewModel.selectPlan(.yearly) }
                             )
@@ -130,7 +130,7 @@ struct NativePaywallView: View {
                                 price: viewModel.weeklyPrice,
                                 period: "/week",
                                 badge: nil,
-                                subtitle: viewModel.weeklyIntroOffer ?? "Billed weekly",
+                                subtitle: viewModel.weeklyTrialDisclosure,
                                 isSelected: viewModel.selectedPlan == .weekly,
                                 onTap: { viewModel.selectPlan(.weekly) }
                             )
@@ -159,9 +159,12 @@ struct NativePaywallView: View {
                             }
                             .disabled(viewModel.isLoading)
 
-                            Text("No purchase necessary")
+                            Text(viewModel.hasFreeTrial
+                                ? "Free trial auto-renews at \(viewModel.selectedPlan == .yearly ? viewModel.yearlyPrice + "/year" : viewModel.weeklyPrice + "/week") unless cancelled."
+                                : "Subscription auto-renews unless cancelled.")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
                         }
                         .padding(.horizontal, 24)
 
