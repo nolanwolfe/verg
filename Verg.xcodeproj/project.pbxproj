@@ -46,6 +46,9 @@
 		A10000010000000000000031 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000031 /* OnboardingView.swift */; };
 		A10000010000000000000032 /* OnboardingPageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000032 /* OnboardingPageView.swift */; };
 		A10000010000000000000033 /* OnboardingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000033 /* OnboardingViewModel.swift */; };
+		A10000010000000000000034 /* CustomTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000034 /* CustomTabBar.swift */; };
+		A10000010000000000000035 /* VergFlameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000035 /* VergFlameView.swift */; };
+		A10000010000000000000036 /* CandleAmbientView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000036 /* CandleAmbientView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -88,6 +91,9 @@
 		A20000010000000000000031 /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
 		A20000010000000000000032 /* OnboardingPageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingPageView.swift; sourceTree = "<group>"; };
 		A20000010000000000000033 /* OnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModel.swift; sourceTree = "<group>"; };
+		A20000010000000000000034 /* CustomTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTabBar.swift; sourceTree = "<group>"; };
+		A20000010000000000000035 /* VergFlameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VergFlameView.swift; sourceTree = "<group>"; };
+		A20000010000000000000036 /* CandleAmbientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandleAmbientView.swift; sourceTree = "<group>"; };
 		E0E9AAF30597470AE40B5615 /* SessionGatingService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionGatingService.swift; path = Core/Services/SessionGatingService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -140,6 +146,7 @@
 			children = (
 				A20000010000000000000001 /* VergApp.swift */,
 				A20000010000000000000002 /* ContentView.swift */,
+				A20000010000000000000034 /* CustomTabBar.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -159,12 +166,14 @@
 			isa = PBXGroup;
 			children = (
 				A40000010000000000000012 /* Camera */,
+				A40000010000000000000021 /* Candle */,
 				A40000010000000000000013 /* Home */,
 				A40000010000000000000020 /* Onboarding */,
 				A40000010000000000000014 /* Paywall */,
 				A40000010000000000000015 /* Settings */,
 				A40000010000000000000016 /* Stats */,
 				A40000010000000000000017 /* Timer */,
+				A40000010000000000000022 /* VergFlame */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -342,6 +351,22 @@
 			name = Features;
 			sourceTree = "<group>";
 		};
+		A40000010000000000000021 /* Candle */ = {
+			isa = PBXGroup;
+			children = (
+				A20000010000000000000036 /* CandleAmbientView.swift */,
+			);
+			path = Candle;
+			sourceTree = "<group>";
+		};
+		A40000010000000000000022 /* VergFlame */ = {
+			isa = PBXGroup;
+			children = (
+				A20000010000000000000035 /* VergFlameView.swift */,
+			);
+			path = VergFlame;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -450,6 +475,9 @@
 				84D808917CA182531D07412E /* AppStrings.swift in Sources */,
 				4596C9C4F2E503561B307EC6 /* CoachMarkNoticeView.swift in Sources */,
 				41720B928E05C6F67AA0E2E8 /* SessionGatingService.swift in Sources */,
+				A10000010000000000000034 /* CustomTabBar.swift in Sources */,
+				A10000010000000000000035 /* VergFlameView.swift in Sources */,
+				A10000010000000000000036 /* CandleAmbientView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
