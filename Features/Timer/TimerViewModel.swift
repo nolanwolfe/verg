@@ -114,7 +114,8 @@ final class TimerViewModel: ObservableObject {
 
         // Always show "Save your page" notice after session completes
         // This prompts user to upload a photo of their writing
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+        // Delay matches burnout sequence duration: stutter (0.5s) + extinguish (0.22s) + margin
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in
             self?.showUploadPhotoNotice = true
         }
     }

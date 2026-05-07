@@ -11,6 +11,7 @@ struct TimerView: View {
     @State private var showControls: Bool = true
     @State private var hideTask: Task<Void, Never>?
     @State private var glowPulse: Double = 0.0
+    @State private var completionFlash: Double = 0.0
 
     // Brightness (swipe up/down, no visual indicator)
     @State private var brightness: Double = 0.7
@@ -45,6 +46,12 @@ struct TimerView: View {
                     .transition(.opacity.animation(Theme.Animation.standard))
             }
 
+            // Warm flash when candle extinguishes
+            Color(hex: "FF6000")
+                .opacity(completionFlash)
+                .ignoresSafeArea()
+                .allowsHitTesting(false)
+
             // Coach mark
             if viewModel.showUploadPhotoNotice {
                 CoachMarkNoticeView(
@@ -62,6 +69,14 @@ struct TimerView: View {
             }
         }
         // Tap toggles controls — must be on ZStack, not inner views
+        .onChange(of: viewModel.isComplete) { _, complete in
+            guard complete else { return }
+            // Brief warm flash as candle extinguishes
+            withAnimation(.easeOut(duration: 0.12)) { completionFlash = 0.28 }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) {
+                withAnimation(.easeIn(duration: 0.9)) { completionFlash = 0.0 }
+            }
+        }
         .onTapGesture { toggleControls() }
         // Swipe brightness — simultaneous so tap still fires
         .simultaneousGesture(

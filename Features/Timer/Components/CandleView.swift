@@ -2,72 +2,110 @@ import SwiftUI
 
 /// Animated candle view that burns down over time
 struct CandleView: View {
-    /// Progress from 1.0 (full) to 0.0 (empty)
     let progress: Double
-
-    /// Whether the candle should be burning
     var isBurning: Bool = true
 
-    // MARK: - Animation State
+    // Flicker animation state
     @State private var flameOffset: CGFloat = 0
     @State private var flameScale: CGFloat = 1.0
     @State private var innerFlameOffset: CGFloat = 0
-    @State private var glowOpacity: Double = 0.3
+    @State private var glowOpacity: Double = 0.35
 
-    // MARK: - Constants
+    // Burnout-only state
+    @State private var burnoutAnimating: Bool = false
+    @State private var emberOpacity: Double = 0.0
+
     private let candleWidth: CGFloat = 80
     private let maxCandleHeight: CGFloat = 200
-    private let minCandleHeight: CGFloat = 30
     private let wickLength: CGFloat = 15
 
-    // MARK: - Computed Properties
-    private var candleHeight: CGFloat {
-        max(minCandleHeight, minCandleHeight + (maxCandleHeight - minCandleHeight) * progress)
-    }
-
-    private var wickHeight: CGFloat {
-        wickLength * (0.5 + progress * 0.5)
-    }
-
-    // Flame fully scales and fades to zero as candle burns out
-    private var flameProgress: Double { progress }
+    private var candleHeight: CGFloat { maxCandleHeight * progress }
+    private var wickHeight: CGFloat { max(8, wickLength * progress) }
 
     var body: some View {
         VStack(spacing: 0) {
-            // Glow effect
-            if isBurning {
+            // Flame only shows while burning or during the burnout sequence
+            if isBurning || burnoutAnimating {
                 glowEffect
-            }
-
-            // Flame — fully gone at progress 0
-            if isBurning && progress > 0.01 {
                 flameView
                     .offset(y: 10)
             }
-
-            // Wick
             wickView
                 .offset(y: 5)
-
-            // Candle body
             candleBody
         }
-        .onAppear {
-            if isBurning { startFlameAnimation() }
-        }
-        .onChange(of: isBurning) { _, burning in
-            if burning { startFlameAnimation() }
+        .task(id: isBurning) {
+            if isBurning {
+                // Reset in case a previous burnout left scale at 0
+                flameScale = 1.0
+                flameOffset = 0
+                innerFlameOffset = 0
+                glowOpacity = 0.35
+                await runFlickerLoop()
+            } else if progress <= 0.02 {
+                burnoutAnimating = true
+                await runBurnoutSequence()
+                burnoutAnimating = false
+            }
         }
     }
 
+    // MARK: - Flicker Loop
+
+    @MainActor
+    private func runFlickerLoop() async {
+        while !Task.isCancelled {
+            let duration = Double.random(in: 0.08...0.18)
+            withAnimation(.easeInOut(duration: duration)) {
+                flameOffset = CGFloat.random(in: -2...2)
+                flameScale = CGFloat.random(in: 0.93...1.07)
+                innerFlameOffset = CGFloat.random(in: -1.5...1.5)
+                glowOpacity = Double.random(in: 0.28...0.45)
+            }
+            try? await Task.sleep(nanoseconds: UInt64(duration * 0.75 * 1_000_000_000))
+        }
+    }
+
+    // MARK: - Burnout Sequence
+
+    @MainActor
+    private func runBurnoutSequence() async {
+        // Rapid stutter for ~0.5s
+        let end = Date().addingTimeInterval(0.5)
+        while Date() < end && !Task.isCancelled {
+            withAnimation(.easeInOut(duration: 0.04)) {
+                flameOffset = CGFloat.random(in: -5...5)
+                flameScale = CGFloat.random(in: 0.55...1.3)
+                innerFlameOffset = CGFloat.random(in: -3...3)
+                glowOpacity = Double.random(in: 0.1...0.7)
+            }
+            try? await Task.sleep(nanoseconds: 45_000_000)
+        }
+        guard !Task.isCancelled else { return }
+
+        // Collapse flame to nothing
+        withAnimation(.easeIn(duration: 0.25)) {
+            flameScale = 0.001
+            glowOpacity = 0
+        }
+        try? await Task.sleep(nanoseconds: 260_000_000)
+        burnoutAnimating = false
+
+        // Ember: brief orange glow on wick tip
+        withAnimation(.easeIn(duration: 0.1)) { emberOpacity = 1.0 }
+        try? await Task.sleep(nanoseconds: 500_000_000)
+        withAnimation(.easeOut(duration: 2.0)) { emberOpacity = 0.0 }
+    }
+
     // MARK: - Glow Effect
+
     private var glowEffect: some View {
         Circle()
             .fill(
                 RadialGradient(
                     colors: [
-                        Theme.Colors.flameOuter.opacity(glowOpacity * progress),
-                        Theme.Colors.flameOuter.opacity(glowOpacity * progress * 0.5),
+                        Theme.Colors.flameOuter.opacity(glowOpacity),
+                        Theme.Colors.flameOuter.opacity(glowOpacity * 0.5),
                         Color.clear
                     ],
                     center: .center,
@@ -80,9 +118,9 @@ struct CandleView: View {
     }
 
     // MARK: - Flame View
+
     private var flameView: some View {
-        let fp = max(0.01, flameProgress)
-        return ZStack {
+        ZStack {
             // Outer flame
             FlameShape()
                 .fill(
@@ -91,7 +129,7 @@ struct CandleView: View {
                         startPoint: .bottom, endPoint: .top
                     )
                 )
-                .frame(width: 30 * fp, height: 50 * fp)
+                .frame(width: 30, height: 50)
                 .scaleEffect(x: flameScale, y: flameScale * 1.1)
                 .offset(x: flameOffset)
 
@@ -103,11 +141,11 @@ struct CandleView: View {
                         startPoint: .bottom, endPoint: .top
                     )
                 )
-                .frame(width: 18 * fp, height: 35 * fp)
+                .frame(width: 18, height: 35)
                 .scaleEffect(x: flameScale * 0.9, y: flameScale)
-                .offset(x: innerFlameOffset, y: 5 * fp)
+                .offset(x: innerFlameOffset, y: 5)
 
-            // Core (white hot)
+            // Core (white-hot)
             FlameShape()
                 .fill(
                     LinearGradient(
@@ -115,33 +153,40 @@ struct CandleView: View {
                         startPoint: .bottom, endPoint: .top
                     )
                 )
-                .frame(width: 8 * fp, height: 18 * fp)
-                .offset(y: 12 * fp)
+                .frame(width: 8, height: 18)
+                .offset(y: 12)
         }
-        .opacity(fp)
-        .shadow(color: Theme.Colors.flameOuter.opacity(0.8 * fp), radius: 15, x: 0, y: 0)
+        .shadow(color: Theme.Colors.flameOuter.opacity(0.8), radius: 15, x: 0, y: 0)
     }
 
     // MARK: - Wick View
+
     private var wickView: some View {
         ZStack(alignment: .top) {
             RoundedRectangle(cornerRadius: 1)
                 .fill(Theme.Colors.wickColor)
                 .frame(width: 3, height: wickHeight)
 
-            if isBurning && progress > 0.01 {
+            if isBurning && progress > 0.02 {
                 Circle()
-                    .fill(Color.orange.opacity(0.8 * progress))
+                    .fill(Color.orange.opacity(0.8))
                     .frame(width: 5, height: 5)
                     .offset(y: -1)
             }
+
+            Circle()
+                .fill(Color.orange)
+                .frame(width: 6, height: 6)
+                .shadow(color: Color.orange.opacity(0.8), radius: 6)
+                .opacity(emberOpacity)
+                .offset(y: -1)
         }
     }
 
     // MARK: - Candle Body
+
     private var candleBody: some View {
         ZStack(alignment: .top) {
-            // Main wax body
             RoundedRectangle(cornerRadius: 8)
                 .fill(
                     LinearGradient(
@@ -151,7 +196,6 @@ struct CandleView: View {
                 )
                 .frame(width: candleWidth, height: candleHeight)
 
-            // Left highlight
             RoundedRectangle(cornerRadius: 8)
                 .fill(
                     LinearGradient(
@@ -161,8 +205,7 @@ struct CandleView: View {
                 )
                 .frame(width: candleWidth, height: candleHeight)
 
-            // Melted wax pool at top
-            if isBurning {
+            if isBurning && progress > 0 {
                 Ellipse()
                     .fill(
                         RadialGradient(
@@ -176,23 +219,10 @@ struct CandleView: View {
         }
         .animation(.easeInOut(duration: 0.5), value: candleHeight)
     }
-
-    // MARK: - Animation
-    private func startFlameAnimation() {
-        withAnimation(Animation.easeInOut(duration: 0.15).repeatForever(autoreverses: true)) {
-            flameOffset = CGFloat.random(in: -2...2)
-            flameScale = CGFloat.random(in: 0.95...1.05)
-        }
-        withAnimation(Animation.easeInOut(duration: 0.12).repeatForever(autoreverses: true)) {
-            innerFlameOffset = CGFloat.random(in: -1.5...1.5)
-        }
-        withAnimation(Animation.easeInOut(duration: 0.8).repeatForever(autoreverses: true)) {
-            glowOpacity = 0.4
-        }
-    }
 }
 
 // MARK: - Flame Shape
+
 struct FlameShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
@@ -209,6 +239,7 @@ struct FlameShape: Shape {
 }
 
 // MARK: - Preview
+
 #Preview {
     ZStack {
         Color(hex: "080400").ignoresSafeArea()
