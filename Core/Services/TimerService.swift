@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import UIKit
+import UserNotifications
 
 /// Service for managing the countdown timer
 final class TimerService: ObservableObject {
@@ -15,6 +16,7 @@ final class TimerService: ObservableObject {
     private var timer: Timer?
     private var startTime: Date?
     private var endTime: Date?
+    private let notificationID = "verg.timer.complete"
 
     // MARK: - Computed Properties
     /// Progress from 1.0 (full) to 0.0 (empty)
@@ -71,6 +73,9 @@ final class TimerService: ObservableObject {
         if let timer = timer {
             RunLoop.current.add(timer, forMode: .common)
         }
+
+        scheduleCompletionNotification(after: duration)
+        requestNotificationPermission()
     }
 
     /// Stop the timer
@@ -78,10 +83,8 @@ final class TimerService: ObservableObject {
         timer?.invalidate()
         timer = nil
         isRunning = false
-
-        // Allow screen to sleep
         UIApplication.shared.isIdleTimerDisabled = false
-
+        cancelCompletionNotification()
     }
 
     /// Pause the timer
@@ -159,16 +162,43 @@ final class TimerService: ObservableObject {
     }
 
     @objc private func appWillEnterForeground() {
-        // Recalculate remaining time based on end time
         guard isRunning, let endTime = endTime else { return }
 
         let remaining = endTime.timeIntervalSinceNow
 
         if remaining <= 0 {
+            cancelCompletionNotification()
             timeRemaining = 0
             complete()
         } else {
             timeRemaining = remaining
+        }
+    }
+
+    // MARK: - Local Notifications
+
+    private func scheduleCompletionNotification(after duration: TimeInterval) {
+        cancelCompletionNotification()
+
+        let content = UNMutableNotificationContent()
+        content.title = "Session Complete"
+        content.body = "Your writing session is done. Capture your page!"
+        content.sound = UNNotificationSound(named: UNNotificationSoundName("185822__lloydevans09__single-chime.wav"))
+        content.interruptionLevel = .timeSensitive
+
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: duration, repeats: false)
+        let request = UNNotificationRequest(identifier: notificationID, content: content, trigger: trigger)
+        UNUserNotificationCenter.current().add(request)
+    }
+
+    private func cancelCompletionNotification() {
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [notificationID])
+    }
+
+    private func requestNotificationPermission() {
+        UNUserNotificationCenter.current().getNotificationSettings { settings in
+            guard settings.authorizationStatus == .notDetermined else { return }
+            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { _, _ in }
         }
     }
 }

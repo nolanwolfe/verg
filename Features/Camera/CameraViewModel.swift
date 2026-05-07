@@ -79,6 +79,23 @@ final class CameraViewModel: NSObject, ObservableObject {
 
         currentDevice = camera
 
+        // Configure for natural light: low-light boost, continuous white balance, auto exposure
+        do {
+            try camera.lockForConfiguration()
+            if camera.isLowLightBoostSupported {
+                camera.automaticallyEnablesLowLightBoost = true
+            }
+            if camera.isWhiteBalanceModeSupported(.continuousAutoWhiteBalance) {
+                camera.whiteBalanceMode = .continuousAutoWhiteBalance
+            }
+            if camera.isExposureModeSupported(.continuousAutoExposure) {
+                camera.exposureMode = .continuousAutoExposure
+            }
+            camera.unlockForConfiguration()
+        } catch {
+            // Continue with defaults if configuration fails
+        }
+
         do {
             let input = try AVCaptureDeviceInput(device: camera)
             if session.canAddInput(input) {
@@ -92,6 +109,7 @@ final class CameraViewModel: NSObject, ObservableObject {
 
         if session.canAddOutput(photoOutput) {
             session.addOutput(photoOutput)
+            photoOutput.maxPhotoQualityPrioritization = .quality
             if let maxDimensions = currentDevice?.activeFormat.supportedMaxPhotoDimensions
                 .max(by: { $0.width * $0.height < $1.width * $1.height }) {
                 photoOutput.maxPhotoDimensions = maxDimensions
@@ -114,6 +132,7 @@ final class CameraViewModel: NSObject, ObservableObject {
 
         let settings = AVCapturePhotoSettings()
         settings.maxPhotoDimensions = photoOutput.maxPhotoDimensions
+        settings.photoQualityPrioritization = .quality
 
         audioService.playImpact(.medium)
         photoOutput.capturePhoto(with: settings, delegate: self)
