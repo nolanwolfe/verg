@@ -58,9 +58,13 @@ struct TimerView: View {
                     title: AppStrings.CoachMark.UploadPhoto.title,
                     message: AppStrings.CoachMark.UploadPhoto.body,
                     primaryButtonText: AppStrings.CoachMark.UploadPhoto.primaryButton,
+                    tertiaryButtonText: AppStrings.CoachMark.UploadPhoto.tertiaryButton,
                     secondaryButtonText: AppStrings.CoachMark.UploadPhoto.secondaryButton,
                     onPrimaryTap: {
                         DispatchQueue.main.async { viewModel.onUploadPhotoTapped() }
+                    },
+                    onTertiaryTap: {
+                        DispatchQueue.main.async { viewModel.onAddFiveMinutesTapped() }
                     },
                     onSecondaryTap: {
                         DispatchQueue.main.async { viewModel.onSkipPhotoTapped() }

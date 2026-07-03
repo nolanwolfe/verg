@@ -120,6 +120,33 @@ final class TimerService: ObservableObject {
         isComplete = false
     }
 
+    /// Extend the session — while running, or relight after completion
+    func addTime(_ seconds: TimeInterval) {
+        if isRunning, let end = endTime {
+            endTime = end.addingTimeInterval(seconds)
+            totalDuration += seconds
+            timeRemaining = endTime?.timeIntervalSinceNow ?? seconds
+            scheduleCompletionNotification(after: timeRemaining)
+        } else if isComplete {
+            totalDuration += seconds
+            timeRemaining = seconds
+            isComplete = false
+            isRunning = true
+            endTime = Date().addingTimeInterval(seconds)
+
+            UIApplication.shared.isIdleTimerDisabled = true
+
+            timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
+                self?.tick()
+            }
+            if let timer = timer {
+                RunLoop.current.add(timer, forMode: .common)
+            }
+
+            scheduleCompletionNotification(after: seconds)
+        }
+    }
+
     // MARK: - Private Methods
     private func tick() {
         guard let endTime = endTime else { return }

@@ -94,15 +94,19 @@ final class TimerViewModel: ObservableObject {
     }
 
     func stopTimer() {
+        noticeWorkItem?.cancel()
         timerService.stopTimer()
     }
 
     func cancelSession() {
+        noticeWorkItem?.cancel()
         timerService.stopTimer()
         onComplete?()
     }
 
     // MARK: - Private Methods
+    private var noticeWorkItem: DispatchWorkItem?
+
     private func handleTimerComplete() {
         // Play end bell if sound enabled
         if storageService.settings.soundEnabled {
@@ -115,9 +119,12 @@ final class TimerViewModel: ObservableObject {
         // Always show "Save your page" notice after session completes
         // This prompts user to upload a photo of their writing
         // Delay matches burnout sequence duration: stutter (0.5s) + extinguish (0.22s) + margin
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in
+        noticeWorkItem?.cancel()
+        let workItem = DispatchWorkItem { [weak self] in
             self?.showUploadPhotoNotice = true
         }
+        noticeWorkItem = workItem
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2, execute: workItem)
     }
 
     // MARK: - Upload Photo Notice Handlers
@@ -126,6 +133,13 @@ final class TimerViewModel: ObservableObject {
     func onUploadPhotoTapped() {
         showUploadPhotoNotice = false
         showCamera = true
+    }
+
+    /// Called when user taps "+5 more minutes" on the coach mark notice
+    func onAddFiveMinutesTapped() {
+        showUploadPhotoNotice = false
+        audioService.playImpact(.medium)
+        timerService.addTime(300)
     }
 
     /// Called when user taps "Skip" on the coach mark notice

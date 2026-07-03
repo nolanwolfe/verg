@@ -1,14 +1,16 @@
 import SwiftUI
 
 /// Reusable coach-mark notice modal component
-/// Displays a title, body text, and one or two action buttons
+/// Displays a title, body text, and up to three action buttons
 struct CoachMarkNoticeView: View {
     let title: String
     let message: String
     let primaryButtonText: String
+    var tertiaryButtonText: String? = nil
     var secondaryButtonText: String? = nil
 
     var onPrimaryTap: () -> Void
+    var onTertiaryTap: (() -> Void)? = nil
     var onSecondaryTap: (() -> Void)? = nil
 
     var body: some View {
@@ -44,6 +46,24 @@ struct CoachMarkNoticeView: View {
                         Text(primaryButtonText)
                     }
                     .buttonStyle(PrimaryButtonStyle())
+
+                    // Tertiary button (optional, bordered)
+                    if let tertiaryText = tertiaryButtonText,
+                       let tertiaryAction = onTertiaryTap {
+                        Button {
+                            tertiaryAction()
+                        } label: {
+                            Text(tertiaryText)
+                                .font(Theme.Typography.body)
+                                .foregroundColor(Theme.Colors.primaryText)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, Theme.Spacing.sm)
+                                .background(
+                                    RoundedRectangle(cornerRadius: Theme.CornerRadius.small)
+                                        .stroke(Theme.Colors.secondaryText.opacity(0.4), lineWidth: 1)
+                                )
+                        }
+                    }
 
                     // Secondary button (optional)
                     if let secondaryText = secondaryButtonText,

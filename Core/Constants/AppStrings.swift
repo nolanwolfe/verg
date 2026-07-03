@@ -50,6 +50,7 @@ enum AppStrings {
             static let title = "Save your page"
             static let body = "Take a photo of what you wrote to keep your streak and archive."
             static let primaryButton = "Upload photo"
+            static let tertiaryButton = "+5 more minutes"
             static let secondaryButton = "Skip"
         }
     }
