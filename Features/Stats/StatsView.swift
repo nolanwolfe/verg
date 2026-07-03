@@ -5,6 +5,7 @@ import UIKit
 struct StatsView: View {
     @StateObject private var viewModel = StatsViewModel()
     @State private var currentCard = 0
+    @State private var showMilestones = false
 
     var body: some View {
         ZStack {
@@ -84,9 +85,63 @@ struct StatsView: View {
                     .font(.system(size: 20))
             }
             .tag(2)
+
+            milestoneCard
+                .tag(3)
         }
         .tabViewStyle(.page(indexDisplayMode: .always))
         .frame(height: 170)
+        .sheet(isPresented: $showMilestones) {
+            MilestonesView(totalSessions: viewModel.totalSessions)
+        }
+    }
+
+    // MARK: - Milestone Card
+    private var milestoneCard: some View {
+        Button {
+            showMilestones = true
+        } label: {
+            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                HStack(spacing: Theme.Spacing.xs) {
+                    Image(systemName: "rosette")
+                        .foregroundColor(Color(hex: "FF9500"))
+                        .font(.system(size: 20))
+
+                    Text("Milestones")
+                        .font(Theme.Typography.subheadline)
+                        .foregroundColor(Theme.Colors.secondaryText)
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(Theme.Colors.secondaryText.opacity(0.5))
+                }
+
+                if let next = Milestone.nextMilestone(after: viewModel.totalSessions) {
+                    Text("\(viewModel.totalSessions) / \(next.threshold) pages")
+                        .font(.system(size: 32, weight: .bold, design: .rounded))
+                        .foregroundColor(Theme.Colors.primaryText)
+
+                    ProgressView(value: Milestone.progress(totalSessions: viewModel.totalSessions))
+                        .tint(Theme.Colors.accent)
+
+                    Text("Next: \(next.title)")
+                        .font(Theme.Typography.caption)
+                        .foregroundColor(Theme.Colors.secondaryText)
+                } else {
+                    Text("All milestones unlocked!")
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .foregroundColor(Theme.Colors.primaryText)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(Theme.Spacing.lg)
+            .background(Theme.Colors.cardBackground)
+            .cornerRadius(Theme.CornerRadius.medium)
+            .padding(.bottom, 28) // room for page dots
+        }
+        .buttonStyle(.plain)
     }
 }
 

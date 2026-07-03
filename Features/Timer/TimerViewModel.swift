@@ -13,6 +13,7 @@ final class TimerViewModel: ObservableObject {
     @Published private(set) var isComplete: Bool = false
     @Published var showCamera: Bool = false
     @Published var showUploadPhotoNotice: Bool = false
+    @Published var celebratedMilestone: Milestone?
 
     // MARK: - Dependencies
     private let timerService: TimerService
@@ -158,7 +159,21 @@ final class TimerViewModel: ObservableObject {
         print("[SessionGating] Photo saved. Total sessions: \(sessionCount)")
         #endif
 
+        // Crossed a page milestone? Celebrate before completing.
+        if let milestone = AchievementService.shared.checkForNewMilestones(
+            totalSessions: storageService.stats.totalSessions
+        ) {
+            celebratedMilestone = milestone
+            return
+        }
+
         // Complete the session - paywall will show when user tries to START their 4th session
+        onComplete?()
+    }
+
+    /// Called when the milestone celebration is dismissed
+    func dismissCelebration() {
+        celebratedMilestone = nil
         onComplete?()
     }
 

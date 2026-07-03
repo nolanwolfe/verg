@@ -50,6 +50,10 @@
 		A10000010000000000000035 /* VergFlameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000035 /* VergFlameView.swift */; };
 		A10000010000000000000036 /* CandleAmbientView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000036 /* CandleAmbientView.swift */; };
 		A10000010000000000000037 /* JournalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000037 /* JournalView.swift */; };
+		A10000010000000000000038 /* Milestone.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000038 /* Milestone.swift */; };
+		A10000010000000000000039 /* AchievementService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000039 /* AchievementService.swift */; };
+		A10000010000000000000040 /* MilestonesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000040 /* MilestonesView.swift */; };
+		A10000010000000000000041 /* MilestoneCelebrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000041 /* MilestoneCelebrationView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -96,6 +100,10 @@
 		A20000010000000000000035 /* VergFlameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VergFlameView.swift; sourceTree = "<group>"; };
 		A20000010000000000000036 /* CandleAmbientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandleAmbientView.swift; sourceTree = "<group>"; };
 		A20000010000000000000037 /* JournalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalView.swift; sourceTree = "<group>"; };
+		A20000010000000000000038 /* Milestone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Milestone.swift; sourceTree = "<group>"; };
+		A20000010000000000000039 /* AchievementService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementService.swift; sourceTree = "<group>"; };
+		A20000010000000000000040 /* MilestonesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MilestonesView.swift; sourceTree = "<group>"; };
+		A20000010000000000000041 /* MilestoneCelebrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MilestoneCelebrationView.swift; sourceTree = "<group>"; };
 		E0E9AAF30597470AE40B5615 /* SessionGatingService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionGatingService.swift; path = Core/Services/SessionGatingService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -219,6 +227,7 @@
 		A40000010000000000000009 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				A20000010000000000000038 /* Milestone.swift */,
 				A20000010000000000000006 /* Session.swift */,
 				A20000010000000000000007 /* Settings.swift */,
 				A20000010000000000000008 /* UserStats.swift */,
@@ -229,6 +238,7 @@
 		A40000010000000000000010 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				A20000010000000000000039 /* AchievementService.swift */,
 				A20000010000000000000009 /* AudioService.swift */,
 				A20000010000000000000010 /* PurchaseService.swift */,
 				A20000010000000000000011 /* StorageService.swift */,
@@ -306,6 +316,7 @@
 			isa = PBXGroup;
 			children = (
 				A20000010000000000000022 /* CalendarView.swift */,
+				A20000010000000000000040 /* MilestonesView.swift */,
 				A20000010000000000000023 /* PageGridView.swift */,
 			);
 			path = Components;
@@ -315,6 +326,7 @@
 			isa = PBXGroup;
 			children = (
 				A20000010000000000000026 /* CandleView.swift */,
+				A20000010000000000000041 /* MilestoneCelebrationView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -490,6 +502,10 @@
 				A10000010000000000000035 /* VergFlameView.swift in Sources */,
 				A10000010000000000000036 /* CandleAmbientView.swift in Sources */,
 				A10000010000000000000037 /* JournalView.swift in Sources */,
+				A10000010000000000000038 /* Milestone.swift in Sources */,
+				A10000010000000000000039 /* AchievementService.swift in Sources */,
+				A10000010000000000000040 /* MilestonesView.swift in Sources */,
+				A10000010000000000000041 /* MilestoneCelebrationView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

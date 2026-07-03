@@ -71,6 +71,14 @@ struct TimerView: View {
                     }
                 )
             }
+
+            // Milestone celebration — above everything
+            if let milestone = viewModel.celebratedMilestone {
+                MilestoneCelebrationView(milestone: milestone) {
+                    DispatchQueue.main.async { viewModel.dismissCelebration() }
+                }
+                .zIndex(2)
+            }
         }
         // Tap toggles controls — must be on ZStack, not inner views
         .onChange(of: viewModel.isComplete) { _, complete in
