@@ -33,6 +33,33 @@ struct AppSettings: Codable, Equatable {
         self.uploadPhotoNoticeShownCount = uploadPhotoNoticeShownCount
     }
 
+    // MARK: - Codable (tolerant decoding)
+    // Custom decoder so that adding new settings keys never breaks decoding of
+    // JSON saved by older app versions — missing keys fall back to defaults.
+
+    enum CodingKeys: String, CodingKey {
+        case timerDuration
+        case soundEnabled
+        case notificationsEnabled
+        case notificationTime
+        case hasSeenOnboarding
+        case isSubscribed
+        case hasSeenSetTimerNotice
+        case uploadPhotoNoticeShownCount
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        timerDuration = try container.decodeIfPresent(TimeInterval.self, forKey: .timerDuration) ?? 900
+        soundEnabled = try container.decodeIfPresent(Bool.self, forKey: .soundEnabled) ?? true
+        notificationsEnabled = try container.decodeIfPresent(Bool.self, forKey: .notificationsEnabled) ?? false
+        notificationTime = try container.decodeIfPresent(Date.self, forKey: .notificationTime) ?? AppSettings.defaultNotificationTime
+        hasSeenOnboarding = try container.decodeIfPresent(Bool.self, forKey: .hasSeenOnboarding) ?? false
+        isSubscribed = try container.decodeIfPresent(Bool.self, forKey: .isSubscribed) ?? false
+        hasSeenSetTimerNotice = try container.decodeIfPresent(Bool.self, forKey: .hasSeenSetTimerNotice) ?? false
+        uploadPhotoNoticeShownCount = try container.decodeIfPresent(Int.self, forKey: .uploadPhotoNoticeShownCount) ?? 0
+    }
+
     /// Default notification time (8:00 PM)
     static var defaultNotificationTime: Date {
         var components = DateComponents()
