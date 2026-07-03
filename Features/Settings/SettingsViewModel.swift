@@ -10,7 +10,6 @@ final class SettingsViewModel: ObservableObject {
 
     // MARK: - Published Properties
     @Published var timerDuration: TimeInterval = 600
-    @Published var customDurationText: String = ""
     @Published var soundEnabled: Bool = true
     @Published var notificationsEnabled: Bool = false
     @Published var notificationTime: Date = AppSettings.defaultNotificationTime
@@ -119,16 +118,14 @@ final class SettingsViewModel: ObservableObject {
         showDurationPicker = false
     }
 
-    /// Parse MM:SS input and apply as custom duration
-    func applyCustomDuration() {
-        let text = customDurationText.trimmingCharacters(in: .whitespaces)
-        let parts = text.split(separator: ":").compactMap { Int($0) }
-        guard parts.count == 2 else { return }
+    /// Parse MM:SS input into a clamped duration (1s...60min). Shared by
+    /// the settings and home duration pickers.
+    static func parseCustomDuration(_ text: String) -> TimeInterval? {
+        let trimmed = text.trimmingCharacters(in: .whitespaces)
+        let parts = trimmed.split(separator: ":").compactMap { Int($0) }
+        guard parts.count == 2 else { return nil }
         let seconds = TimeInterval(parts[0] * 60 + parts[1])
-        let clamped = min(max(seconds, 1), 3600)
-        timerDuration = clamped
-        customDurationText = ""
-        showDurationPicker = false
+        return min(max(seconds, 1), 3600)
     }
 
     // MARK: - Notifications

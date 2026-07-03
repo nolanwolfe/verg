@@ -346,80 +346,11 @@ struct SettingsView: View {
 
     // MARK: - Duration Picker Sheet
     private var durationPickerSheet: some View {
-        NavigationView {
-            ZStack {
-                Theme.Colors.background
-                    .ignoresSafeArea()
-
-                VStack(spacing: Theme.Spacing.sm) {
-                    // Presets
-                    ForEach(DurationOption.allOptions) { option in
-                        Button {
-                            viewModel.setDuration(option.duration)
-                        } label: {
-                            HStack {
-                                Text(option.label)
-                                    .font(Theme.Typography.body)
-                                    .foregroundColor(Theme.Colors.primaryText)
-                                Spacer()
-                                if viewModel.timerDuration == option.duration {
-                                    Image(systemName: "checkmark")
-                                        .foregroundColor(Theme.Colors.accent)
-                                }
-                            }
-                            .padding(Theme.Spacing.md)
-                            .background(Theme.Colors.cardBackground)
-                            .cornerRadius(Theme.CornerRadius.small)
-                        }
-                    }
-
-                    // Custom — clean tap-to-type field, MM:SS, number pad
-                    HStack {
-                        TextField("00:00", text: $viewModel.customDurationText)
-                            .keyboardType(.numberPad)
-                            .font(Theme.Typography.body)
-                            .foregroundColor(Theme.Colors.primaryText)
-                            .autocorrectionDisabled()
-                            .onChange(of: viewModel.customDurationText) { _, val in
-                                let digits = val.filter { $0.isNumber }
-                                if digits.count >= 2 && !val.contains(":") {
-                                    let mm = String(digits.prefix(2))
-                                    let ss = String(digits.dropFirst(2).prefix(2))
-                                    let formatted = ss.isEmpty ? mm : "\(mm):\(ss)"
-                                    DispatchQueue.main.async {
-                                        viewModel.customDurationText = formatted
-                                    }
-                                }
-                            }
-
-                        Spacer()
-
-                        if !viewModel.customDurationText.isEmpty {
-                            Button("Set") {
-                                viewModel.applyCustomDuration()
-                            }
-                            .foregroundColor(Theme.Colors.accent)
-                            .font(Theme.Typography.body.weight(.semibold))
-                        }
-                    }
-                    .padding(Theme.Spacing.md)
-                    .background(Theme.Colors.cardBackground)
-                    .cornerRadius(Theme.CornerRadius.small)
-                }
-                .padding(Theme.Spacing.md)
-            }
-            .navigationTitle("Timer Duration")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        viewModel.showDurationPicker = false
-                    }
-                    .foregroundColor(Theme.Colors.accent)
-                }
-            }
-        }
-        .presentationDetents([.medium])
+        DurationPickerSheet(
+            currentDuration: viewModel.timerDuration,
+            onSelect: { viewModel.setDuration($0) },
+            onDone: { viewModel.showDurationPicker = false }
+        )
     }
 
     // MARK: - Time Picker Sheet
@@ -594,6 +525,95 @@ struct SettingsLinkRow: View {
             }
             .padding(.vertical, Theme.Spacing.xxs)
         }
+    }
+}
+
+// MARK: - Duration Picker Sheet (shared with Home)
+struct DurationPickerSheet: View {
+    let currentDuration: TimeInterval
+    let onSelect: (TimeInterval) -> Void
+    let onDone: () -> Void
+
+    @State private var customText: String = ""
+
+    var body: some View {
+        NavigationView {
+            ZStack {
+                Theme.Colors.background
+                    .ignoresSafeArea()
+
+                VStack(spacing: Theme.Spacing.sm) {
+                    // Presets
+                    ForEach(DurationOption.allOptions) { option in
+                        Button {
+                            onSelect(option.duration)
+                        } label: {
+                            HStack {
+                                Text(option.label)
+                                    .font(Theme.Typography.body)
+                                    .foregroundColor(Theme.Colors.primaryText)
+                                Spacer()
+                                if currentDuration == option.duration {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(Theme.Colors.accent)
+                                }
+                            }
+                            .padding(Theme.Spacing.md)
+                            .background(Theme.Colors.cardBackground)
+                            .cornerRadius(Theme.CornerRadius.small)
+                        }
+                    }
+
+                    // Custom — clean tap-to-type field, MM:SS, number pad
+                    HStack {
+                        TextField("00:00", text: $customText)
+                            .keyboardType(.numberPad)
+                            .font(Theme.Typography.body)
+                            .foregroundColor(Theme.Colors.primaryText)
+                            .autocorrectionDisabled()
+                            .onChange(of: customText) { _, val in
+                                let digits = val.filter { $0.isNumber }
+                                if digits.count >= 2 && !val.contains(":") {
+                                    let mm = String(digits.prefix(2))
+                                    let ss = String(digits.dropFirst(2).prefix(2))
+                                    let formatted = ss.isEmpty ? mm : "\(mm):\(ss)"
+                                    DispatchQueue.main.async {
+                                        customText = formatted
+                                    }
+                                }
+                            }
+
+                        Spacer()
+
+                        if !customText.isEmpty {
+                            Button("Set") {
+                                if let duration = SettingsViewModel.parseCustomDuration(customText) {
+                                    customText = ""
+                                    onSelect(duration)
+                                }
+                            }
+                            .foregroundColor(Theme.Colors.accent)
+                            .font(Theme.Typography.body.weight(.semibold))
+                        }
+                    }
+                    .padding(Theme.Spacing.md)
+                    .background(Theme.Colors.cardBackground)
+                    .cornerRadius(Theme.CornerRadius.small)
+                }
+                .padding(Theme.Spacing.md)
+            }
+            .navigationTitle("Timer Duration")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        onDone()
+                    }
+                    .foregroundColor(Theme.Colors.accent)
+                }
+            }
+        }
+        .presentationDetents([.medium])
     }
 }
 

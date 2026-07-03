@@ -9,6 +9,7 @@ struct HomeView: View {
 
     @State private var showTimer = false
     @State private var showPaywall = false
+    @State private var showDurationPicker = false
 
     // Silent brightness control
     @State private var brightness: Double = UIScreen.main.brightness
@@ -40,6 +41,9 @@ struct HomeView: View {
                     .padding(.bottom, Theme.Spacing.xl)
 
                 actionButton
+
+                durationPill
+                    .padding(.top, Theme.Spacing.sm)
             }
             .padding(.horizontal, Theme.Spacing.lg)
             .padding(.bottom, Theme.Spacing.xxl)
@@ -55,6 +59,16 @@ struct HomeView: View {
                     dragStartBrightness = brightness
                 }
         )
+        .sheet(isPresented: $showDurationPicker) {
+            DurationPickerSheet(
+                currentDuration: storageService.settings.timerDuration,
+                onSelect: { duration in
+                    storageService.setTimerDuration(duration)
+                    showDurationPicker = false
+                },
+                onDone: { showDurationPicker = false }
+            )
+        }
         .fullScreenCover(isPresented: $showTimer) {
             TimerView(onComplete: {
                 showTimer = false
@@ -118,6 +132,29 @@ struct HomeView: View {
                 .font(Theme.Typography.subheadline)
                 .foregroundColor(Theme.Colors.secondaryText)
         }
+    }
+
+    // MARK: - Duration Pill
+    private var durationPill: some View {
+        Button {
+            showDurationPicker = true
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: "clock")
+                    .font(.system(size: 11, weight: .medium))
+                Text(storageService.settings.shortFormattedDuration)
+                    .font(Theme.Typography.caption)
+            }
+            .foregroundColor(Theme.Colors.secondaryText)
+            .padding(.horizontal, Theme.Spacing.sm)
+            .padding(.vertical, Theme.Spacing.xxs)
+            .background(
+                Capsule()
+                    .stroke(Theme.Colors.secondaryText.opacity(0.25), lineWidth: 1)
+            )
+            .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Action Button
