@@ -8,6 +8,7 @@ final class StatsViewModel: ObservableObject {
     // MARK: - Published Properties
     @Published private(set) var sessions: [Session] = []
     @Published private(set) var currentStreak: Int = 0
+    @Published private(set) var longestStreak: Int = 0
     @Published private(set) var totalSessions: Int = 0
     @Published private(set) var datesWithSessions: Set<Date> = []
     @Published private(set) var sessionCountsByDate: [Date: Int] = [:]
@@ -52,6 +53,11 @@ final class StatsViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .map { $0.totalSessions }
             .assign(to: &$totalSessions)
+
+        storageService.$stats
+            .receive(on: DispatchQueue.main)
+            .map { $0.longestStreak }
+            .assign(to: &$longestStreak)
     }
 
     // MARK: - Data Loading
@@ -59,6 +65,7 @@ final class StatsViewModel: ObservableObject {
         sessions = storageService.getAllSessions()
         let stats = storageService.getStats()
         currentStreak = stats.currentStreak
+        longestStreak = stats.longestStreak
         totalSessions = stats.totalSessions
         datesWithSessions = storageService.getDatesWithSessions()
         sessionCountsByDate = storageService.getSessionCountsByDate()

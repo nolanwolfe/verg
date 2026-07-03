@@ -4,8 +4,6 @@ import SwiftUI
 struct CalendarView: View {
     @Binding var currentMonth: Date
     let sessionCountsByDate: [Date: Int]
-    let currentStreak: Int
-    let totalSessions: Int
     let onPreviousMonth: () -> Void
     let onNextMonth: () -> Void
 
@@ -13,38 +11,7 @@ struct CalendarView: View {
     private let weekdays = ["S", "M", "T", "W", "T", "F", "S"]
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: Theme.Spacing.lg) {
-                // Stats cards
-                statsSection
-
-                // Calendar
-                calendarSection
-            }
-            .padding(.horizontal, Theme.Spacing.md)
-            .padding(.vertical, Theme.Spacing.sm)
-        }
-    }
-
-    // MARK: - Stats Section
-    private var statsSection: some View {
-        HStack(spacing: Theme.Spacing.sm) {
-            StatCard(
-                title: "Current Streak",
-                value: "\(currentStreak)",
-                unit: currentStreak == 1 ? "day" : "days",
-                icon: "flame.fill",
-                iconColor: Color.orange
-            )
-
-            StatCard(
-                title: "Total Sessions",
-                value: "\(totalSessions)",
-                unit: totalSessions == 1 ? "page" : "pages",
-                icon: "doc.text.fill",
-                iconColor: Theme.Colors.accent
-            )
-        }
+        calendarSection
     }
 
     // MARK: - Calendar Section
@@ -270,8 +237,6 @@ struct DayCell: View {
         CalendarView(
             currentMonth: .constant(Date()),
             sessionCountsByDate: [Date().startOfDay: 2],
-            currentStreak: 5,
-            totalSessions: 12,
             onPreviousMonth: {},
             onNextMonth: {}
         )
