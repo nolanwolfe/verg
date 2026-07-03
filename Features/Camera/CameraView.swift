@@ -8,6 +8,10 @@ struct CameraView: View {
     @StateObject private var viewModel = CameraViewModel()
     @Environment(\.dismiss) private var dismiss
 
+    @State private var focusPoint: CGPoint?
+    @State private var focusRingScale: CGFloat = 1.4
+    @State private var focusRingOpacity: Double = 0
+
     var duration: TimeInterval = 10
     var onPhotoSaved: (() -> Void)?
     var onCancel: (() -> Void)?
@@ -152,10 +156,24 @@ struct CameraView: View {
     private var cameraView: some View {
         VStack(spacing: Theme.Spacing.xl) {
             ZStack {
-                CameraPreviewView(session: viewModel.session)
-                    .aspectRatio(3/4, contentMode: .fit)
-                    .cornerRadius(Theme.CornerRadius.medium)
-                    .padding(.horizontal, Theme.Spacing.md)
+                CameraPreviewView(session: viewModel.session, onTap: { devicePoint, layerPoint in
+                    viewModel.focus(at: devicePoint)
+                    showFocusRing(at: layerPoint)
+                })
+                .overlay {
+                    if let focusPoint {
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color(hex: "FF9500"), lineWidth: 1.5)
+                            .frame(width: 70, height: 70)
+                            .scaleEffect(focusRingScale)
+                            .opacity(focusRingOpacity)
+                            .position(focusPoint)
+                            .allowsHitTesting(false)
+                    }
+                }
+                .aspectRatio(3/4, contentMode: .fit)
+                .cornerRadius(Theme.CornerRadius.medium)
+                .padding(.horizontal, Theme.Spacing.md)
 
                 if !viewModel.isCameraReady {
                     ProgressView()
@@ -178,6 +196,20 @@ struct CameraView: View {
 
             Spacer()
                 .frame(height: Theme.Spacing.xxl)
+        }
+    }
+
+    private func showFocusRing(at point: CGPoint) {
+        focusPoint = point
+        focusRingScale = 1.4
+        focusRingOpacity = 1
+        withAnimation(.easeOut(duration: 0.25)) {
+            focusRingScale = 1.0
+        }
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            withAnimation(.easeOut(duration: 0.3)) {
+                focusRingOpacity = 0
+            }
         }
     }
 
@@ -304,14 +336,19 @@ struct PhotoPicker: UIViewControllerRepresentable {
 // MARK: - Camera Preview View (UIViewRepresentable)
 struct CameraPreviewView: UIViewRepresentable {
     let session: AVCaptureSession
+    /// Called on tap with (devicePoint 0...1 for focus, layerPoint for UI indicator)
+    var onTap: ((CGPoint, CGPoint) -> Void)?
 
     func makeUIView(context: Context) -> CameraPreviewUIView {
         let view = CameraPreviewUIView()
         view.session = session
+        view.onTap = onTap
         return view
     }
 
-    func updateUIView(_ uiView: CameraPreviewUIView, context: Context) {}
+    func updateUIView(_ uiView: CameraPreviewUIView, context: Context) {
+        uiView.onTap = onTap
+    }
 }
 
 /// Custom UIView that properly manages the AVCaptureVideoPreviewLayer
@@ -322,15 +359,26 @@ class CameraPreviewUIView: UIView {
         }
     }
 
+    var onTap: ((CGPoint, CGPoint) -> Void)?
+
     private var previewLayer: AVCaptureVideoPreviewLayer?
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = .black
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
+        addGestureRecognizer(tap)
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+
+    @objc private func handleTap(_ gesture: UITapGestureRecognizer) {
+        guard let previewLayer else { return }
+        let layerPoint = gesture.location(in: self)
+        let devicePoint = previewLayer.captureDevicePointConverted(fromLayerPoint: layerPoint)
+        onTap?(devicePoint, layerPoint)
     }
 
     private func setupPreviewLayer() {

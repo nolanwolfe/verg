@@ -88,10 +88,25 @@ final class CameraViewModel: NSObject, ObservableObject {
             if camera.isExposureModeSupported(.continuousAutoExposure) {
                 camera.exposureMode = .continuousAutoExposure
             }
+            if camera.isFocusModeSupported(.continuousAutoFocus) {
+                camera.focusMode = .continuousAutoFocus
+            }
+            // Journal pages are shot at close range — bias the AF scan near
+            if camera.isAutoFocusRangeRestrictionSupported {
+                camera.autoFocusRangeRestriction = .near
+            }
+            camera.isSubjectAreaChangeMonitoringEnabled = true
             camera.unlockForConfiguration()
         } catch {
             // Continue with defaults if configuration fails
         }
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(subjectAreaDidChange),
+            name: .AVCaptureDeviceSubjectAreaDidChange,
+            object: camera
+        )
 
         do {
             let input = try AVCaptureDeviceInput(device: camera)
@@ -169,8 +184,60 @@ final class CameraViewModel: NSObject, ObservableObject {
     }
 
     func stopCamera() {
+        NotificationCenter.default.removeObserver(
+            self,
+            name: .AVCaptureDeviceSubjectAreaDidChange,
+            object: currentDevice
+        )
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             self?.session.stopRunning()
+        }
+    }
+
+    // MARK: - Focus
+
+    /// Tap-to-focus at a point in capture-device coordinates (0...1)
+    func focus(at devicePoint: CGPoint) {
+        guard let camera = currentDevice else { return }
+        do {
+            try camera.lockForConfiguration()
+            if camera.isFocusPointOfInterestSupported, camera.isFocusModeSupported(.autoFocus) {
+                camera.focusPointOfInterest = devicePoint
+                camera.focusMode = .autoFocus
+            }
+            if camera.isExposurePointOfInterestSupported, camera.isExposureModeSupported(.autoExpose) {
+                camera.exposurePointOfInterest = devicePoint
+                camera.exposureMode = .autoExpose
+            }
+            // Keep monitoring so continuous focus resumes when the scene changes
+            camera.isSubjectAreaChangeMonitoringEnabled = true
+            camera.unlockForConfiguration()
+        } catch {
+            // Focus is best-effort; ignore configuration failures
+        }
+    }
+
+    /// Scene changed after a tap-to-focus — return to continuous auto focus/exposure
+    @objc private func subjectAreaDidChange() {
+        guard let camera = currentDevice else { return }
+        do {
+            try camera.lockForConfiguration()
+            let center = CGPoint(x: 0.5, y: 0.5)
+            if camera.isFocusPointOfInterestSupported {
+                camera.focusPointOfInterest = center
+            }
+            if camera.isFocusModeSupported(.continuousAutoFocus) {
+                camera.focusMode = .continuousAutoFocus
+            }
+            if camera.isExposurePointOfInterestSupported {
+                camera.exposurePointOfInterest = center
+            }
+            if camera.isExposureModeSupported(.continuousAutoExposure) {
+                camera.exposureMode = .continuousAutoExposure
+            }
+            camera.unlockForConfiguration()
+        } catch {
+            // Best-effort
         }
     }
 }
