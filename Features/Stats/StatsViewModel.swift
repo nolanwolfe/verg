@@ -84,6 +84,14 @@ final class StatsViewModel: ObservableObject {
         return storageService.getThumbnail(for: session)
     }
 
+    func loadImageAsync(for session: Session) async -> UIImage? {
+        await storageService.loadImageAsync(for: session)
+    }
+
+    func loadThumbnailAsync(for session: Session) async -> UIImage? {
+        await storageService.loadThumbnailAsync(for: session)
+    }
+
     func getImageURL(for session: Session) -> URL {
         return storageService.getImageURL(for: session)
     }

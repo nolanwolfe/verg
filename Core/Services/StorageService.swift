@@ -18,6 +18,9 @@ final class StorageService: ObservableObject {
     private let fileManager = FileManager.default
     private let imageCache = NSCache<NSString, UIImage>()
     private let thumbnailCache = NSCache<NSString, UIImage>()
+    private let imageIOQueue = DispatchQueue(label: "verg.imageio", qos: .userInitiated, attributes: .concurrent)
+    // Captured at init (main thread) so downsample never touches UIScreen off-main
+    private let displayScale: CGFloat = UIScreen.main.scale
 
     private let sessionsKey = "verg.sessions"
     private let statsKey = "verg.stats"
@@ -25,6 +28,8 @@ final class StorageService: ObservableObject {
 
     // MARK: - Initialization
     private init() {
+        imageCache.countLimit = 8
+        thumbnailCache.countLimit = 400
         loadAllData()
     }
 
@@ -109,8 +114,9 @@ final class StorageService: ObservableObject {
         let filename = "\(UUID().uuidString).jpg"
         let imageURL = imagesDirectory.appendingPathComponent(filename)
 
-        // Compress and save image
-        guard let imageData = image.jpegData(compressionQuality: 0.8) else {
+        // Downsize + normalize orientation, then compress and save
+        let normalized = normalizeForStorage(image)
+        guard let imageData = normalized.jpegData(compressionQuality: 0.8) else {
             return nil
         }
 
@@ -194,8 +200,51 @@ final class StorageService: ObservableObject {
         return thumbnail
     }
 
+    /// Cap stored photos at maxDimension px on the long edge and bake orientation
+    /// into the pixels so every later decode is cheap and upright.
+    private func normalizeForStorage(_ image: UIImage, maxDimension: CGFloat = 2048) -> UIImage {
+        let pixelWidth = image.size.width * image.scale
+        let pixelHeight = image.size.height * image.scale
+        let longEdge = max(pixelWidth, pixelHeight)
+
+        if longEdge <= maxDimension && image.imageOrientation == .up && image.scale == 1 {
+            return image
+        }
+
+        let ratio = min(1, maxDimension / longEdge)
+        let targetSize = CGSize(width: pixelWidth * ratio, height: pixelHeight * ratio)
+
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        let renderer = UIGraphicsImageRenderer(size: targetSize, format: format)
+        return renderer.image { _ in
+            image.draw(in: CGRect(origin: .zero, size: targetSize))
+        }
+    }
+
+    /// Async full-resolution image load off the main thread
+    func loadImageAsync(for session: Session) async -> UIImage? {
+        if let cached = imageCache.object(forKey: session.imagePath as NSString) { return cached }
+        return await withCheckedContinuation { continuation in
+            imageIOQueue.async { [weak self] in
+                continuation.resume(returning: self?.getImage(for: session))
+            }
+        }
+    }
+
+    /// Async thumbnail load off the main thread
+    func loadThumbnailAsync(for session: Session, size: CGFloat = 200) async -> UIImage? {
+        let key = "\(session.imagePath)_thumb_\(Int(size))" as NSString
+        if let cached = thumbnailCache.object(forKey: key) { return cached }
+        return await withCheckedContinuation { continuation in
+            imageIOQueue.async { [weak self] in
+                continuation.resume(returning: self?.getThumbnail(for: session, size: size))
+            }
+        }
+    }
+
     private func downsample(imageAt url: URL, to pointSize: CGSize) -> UIImage? {
-        let scale = UIScreen.main.scale
+        let scale = displayScale
         let pixelSize = CGSize(width: pointSize.width * scale, height: pointSize.height * scale)
         let options: [CFString: Any] = [kCGImageSourceShouldCache: false]
         guard let source = CGImageSourceCreateWithURL(url as CFURL, options as CFDictionary) else { return nil }

@@ -22,7 +22,8 @@ struct StatsView: View {
             FullScreenImageView(
                 sessions: viewModel.sessions,
                 initialIndex: viewModel.selectedSessionIndex,
-                getImage: { viewModel.getImage(for: $0) },
+                loadImage: { await viewModel.loadImageAsync(for: $0) },
+                loadThumbnail: { await viewModel.loadThumbnailAsync(for: $0) },
                 onDismiss: {
                     viewModel.showFullScreenImage = false
                     viewModel.selectedSession = nil
@@ -100,7 +101,7 @@ struct StatsView: View {
         case .pages:
             PageGridView(
                 sessions: viewModel.sessions,
-                getImage: { viewModel.getThumbnail(for: $0) },
+                loadThumbnail: { await viewModel.loadThumbnailAsync(for: $0) },
                 onSelect: { viewModel.selectSession($0) }
             )
 

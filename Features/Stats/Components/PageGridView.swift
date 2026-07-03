@@ -4,8 +4,9 @@ import UIKit
 /// Grid view of captured journal pages
 struct PageGridView: View {
     let sessions: [Session]
-    let getImage: (Session) -> UIImage?
+    let loadThumbnail: (Session) async -> UIImage?
     let onSelect: (Session) -> Void
+    var emptyStateMessage: String = "Complete a writing session to capture your first page"
 
     private let columns = [
         GridItem(.flexible(), spacing: Theme.Spacing.xxs),
@@ -22,7 +23,7 @@ struct PageGridView: View {
                     ForEach(sessions) { session in
                         PageThumbnail(
                             session: session,
-                            image: getImage(session),
+                            loadThumbnail: loadThumbnail,
                             onTap: { onSelect(session) }
                         )
                     }
@@ -45,7 +46,7 @@ struct PageGridView: View {
                 .font(Theme.Typography.headline)
                 .foregroundColor(Theme.Colors.secondaryText)
 
-            Text("Complete a writing session to capture your first page")
+            Text(emptyStateMessage)
                 .font(Theme.Typography.subheadline)
                 .foregroundColor(Theme.Colors.secondaryText.opacity(0.7))
                 .multilineTextAlignment(.center)
@@ -59,8 +60,10 @@ struct PageGridView: View {
 // MARK: - Page Thumbnail
 struct PageThumbnail: View {
     let session: Session
-    let image: UIImage?
+    let loadThumbnail: (Session) async -> UIImage?
     let onTap: () -> Void
+
+    @State private var image: UIImage?
 
     var body: some View {
         Button(action: onTap) {
@@ -78,11 +81,14 @@ struct PageThumbnail: View {
                         .aspectRatio(1, contentMode: .fit)
                         .overlay(
                             Image(systemName: "photo")
-                                .foregroundColor(Theme.Colors.secondaryText)
+                                .foregroundColor(Theme.Colors.secondaryText.opacity(0.4))
                         )
                 }
             }
             .cornerRadius(Theme.CornerRadius.small)
+        }
+        .task(id: session.id) {
+            image = await loadThumbnail(session)
         }
     }
 }
@@ -91,24 +97,30 @@ struct PageThumbnail: View {
 struct FullScreenImageView: View {
     @State private var sessions: [Session]
     @State private var currentIndex: Int
-    let getImage: (Session) -> UIImage?
+    let loadImage: (Session) async -> UIImage?
+    let loadThumbnail: (Session) async -> UIImage?
     let onDismiss: () -> Void
     let onDelete: (Session) -> Void
+    let allowsDelete: Bool
 
     @State private var showDeleteConfirmation = false
 
     init(
         sessions: [Session],
         initialIndex: Int,
-        getImage: @escaping (Session) -> UIImage?,
+        loadImage: @escaping (Session) async -> UIImage?,
+        loadThumbnail: @escaping (Session) async -> UIImage?,
         onDismiss: @escaping () -> Void,
-        onDelete: @escaping (Session) -> Void
+        onDelete: @escaping (Session) -> Void = { _ in },
+        allowsDelete: Bool = true
     ) {
         self._sessions = State(initialValue: sessions)
         self._currentIndex = State(initialValue: min(initialIndex, max(0, sessions.count - 1)))
-        self.getImage = getImage
+        self.loadImage = loadImage
+        self.loadThumbnail = loadThumbnail
         self.onDismiss = onDismiss
         self.onDelete = onDelete
+        self.allowsDelete = allowsDelete
     }
 
     private var currentSession: Session? {
@@ -120,21 +132,15 @@ struct FullScreenImageView: View {
         ZStack {
             Color.black.ignoresSafeArea()
 
-            // Swipeable pages
+            // Swipeable pages — full-res only near the current index
             TabView(selection: $currentIndex) {
                 ForEach(Array(sessions.enumerated()), id: \.element.id) { index, session in
-                    ZStack {
-                        Color.black
-                        if let image = getImage(session) {
-                            Image(uiImage: image)
-                                .resizable()
-                                .scaledToFit()
-                        } else {
-                            Image(systemName: "photo")
-                                .font(.system(size: 48))
-                                .foregroundColor(Theme.Colors.secondaryText)
-                        }
-                    }
+                    FullScreenPageView(
+                        session: session,
+                        isNearCurrent: abs(index - currentIndex) <= 1,
+                        loadImage: loadImage,
+                        loadThumbnail: loadThumbnail
+                    )
                     .ignoresSafeArea()
                     .tag(index)
                 }
@@ -168,13 +174,17 @@ struct FullScreenImageView: View {
 
                     Spacer()
 
-                    Button { showDeleteConfirmation = true } label: {
-                        Image(systemName: "trash")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(.white)
-                            .frame(width: 44, height: 44)
-                            .background(Color.black.opacity(0.5))
-                            .clipShape(Circle())
+                    if allowsDelete {
+                        Button { showDeleteConfirmation = true } label: {
+                            Image(systemName: "trash")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(.white)
+                                .frame(width: 44, height: 44)
+                                .background(Color.black.opacity(0.5))
+                                .clipShape(Circle())
+                        }
+                    } else {
+                        Color.clear.frame(width: 44, height: 44)
                     }
                 }
                 .padding(.horizontal, Theme.Spacing.md)
@@ -228,11 +238,60 @@ struct FullScreenImageView: View {
     }
 }
 
+// MARK: - Full Screen Page
+/// One page of the fullscreen viewer. Loads the full-resolution image only
+/// while it is the current page or an immediate neighbor; distant pages show
+/// the (cheap, cached) thumbnail so opening the viewer stays fast at any count.
+private struct FullScreenPageView: View {
+    let session: Session
+    let isNearCurrent: Bool
+    let loadImage: (Session) async -> UIImage?
+    let loadThumbnail: (Session) async -> UIImage?
+
+    @State private var image: UIImage?
+    @State private var hasFullRes = false
+
+    private struct LoadKey: Equatable {
+        let id: UUID
+        let near: Bool
+    }
+
+    var body: some View {
+        ZStack {
+            Color.black
+            if let image = image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+            } else {
+                Image(systemName: "photo")
+                    .font(.system(size: 48))
+                    .foregroundColor(Theme.Colors.secondaryText)
+            }
+        }
+        .task(id: LoadKey(id: session.id, near: isNearCurrent)) {
+            if isNearCurrent {
+                if !hasFullRes, let full = await loadImage(session) {
+                    image = full
+                    hasFullRes = true
+                }
+            } else {
+                // Downgrade distant pages to the cached thumbnail so memory
+                // stays bounded (~3 full-res images) however far the user swipes.
+                if hasFullRes || image == nil {
+                    image = await loadThumbnail(session) ?? image
+                    hasFullRes = false
+                }
+            }
+        }
+    }
+}
+
 // MARK: - Preview
 #Preview {
     PageGridView(
         sessions: [],
-        getImage: { _ in nil },
+        loadThumbnail: { _ in nil },
         onSelect: { _ in }
     )
     .background(Theme.Colors.background)
