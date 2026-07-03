@@ -56,6 +56,9 @@
 		A10000010000000000000041 /* MilestoneCelebrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000041 /* MilestoneCelebrationView.swift */; };
 		A10000010000000000000042 /* Book.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000042 /* Book.swift */; };
 		A10000010000000000000043 /* BookDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000043 /* BookDetailView.swift */; };
+		A10000010000000000000044 /* ambient_rain.caf in Resources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000044 /* ambient_rain.caf */; };
+		A10000010000000000000045 /* ambient_fire.caf in Resources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000045 /* ambient_fire.caf */; };
+		A10000010000000000000046 /* ambient_focus.caf in Resources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000046 /* ambient_focus.caf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -108,6 +111,9 @@
 		A20000010000000000000041 /* MilestoneCelebrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MilestoneCelebrationView.swift; sourceTree = "<group>"; };
 		A20000010000000000000042 /* Book.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Book.swift; sourceTree = "<group>"; };
 		A20000010000000000000043 /* BookDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookDetailView.swift; sourceTree = "<group>"; };
+		A20000010000000000000044 /* ambient_rain.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.caf; name = ambient_rain.caf; path = Sounds/ambient_rain.caf; sourceTree = "<group>"; };
+		A20000010000000000000045 /* ambient_fire.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.caf; name = ambient_fire.caf; path = Sounds/ambient_fire.caf; sourceTree = "<group>"; };
+		A20000010000000000000046 /* ambient_focus.caf */ = {isa = PBXFileReference; lastKnownFileType = audio.caf; name = ambient_focus.caf; path = Sounds/ambient_focus.caf; sourceTree = "<group>"; };
 		E0E9AAF30597470AE40B5615 /* SessionGatingService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionGatingService.swift; path = Core/Services/SessionGatingService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -198,6 +204,9 @@
 			children = (
 				95F6805B2F1D205D00B93C28 /* 27421__kerri__zenbell_1.mp3 */,
 				95F6805C2F1D205D00B93C28 /* 185822__lloydevans09__single-chime.wav */,
+				A20000010000000000000044 /* ambient_rain.caf */,
+				A20000010000000000000045 /* ambient_fire.caf */,
+				A20000010000000000000046 /* ambient_focus.caf */,
 				A20000010000000000000029 /* Assets.xcassets */,
 			);
 			path = Resources;
@@ -460,6 +469,9 @@
 				A10000010000000000000029 /* Assets.xcassets in Resources */,
 				95F6805D2F1D205D00B93C28 /* 27421__kerri__zenbell_1.mp3 in Resources */,
 				95F6805E2F1D205D00B93C28 /* 185822__lloydevans09__single-chime.wav in Resources */,
+				A10000010000000000000044 /* ambient_rain.caf in Resources */,
+				A10000010000000000000045 /* ambient_fire.caf in Resources */,
+				A10000010000000000000046 /* ambient_focus.caf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

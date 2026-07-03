@@ -47,7 +47,8 @@ final class PaywallViewModel: ObservableObject {
         Feature(icon: "checkmark.circle.fill", text: "Daily focused writing sessions"),
         Feature(icon: "checkmark.circle.fill", text: "Track your daily streak"),
         Feature(icon: "checkmark.circle.fill", text: "Build a gallery of your pages"),
-        Feature(icon: "checkmark.circle.fill", text: "Daily reminders to write")
+        Feature(icon: "checkmark.circle.fill", text: "Daily reminders to write"),
+        Feature(icon: "music.note", text: "Ambient sounds while you write")
     ]
 
     // MARK: - Dependencies

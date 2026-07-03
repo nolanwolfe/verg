@@ -13,6 +13,10 @@ struct AppSettings: Codable, Equatable {
     var hasSeenSetTimerNotice: Bool
     var uploadPhotoNoticeShownCount: Int
 
+    // Ambient sound during sessions (Pro)
+    var ambientSoundEnabled: Bool
+    var ambientSoundID: String
+
     init(
         timerDuration: TimeInterval = 900, // 15 minutes default
         soundEnabled: Bool = true,
@@ -21,7 +25,9 @@ struct AppSettings: Codable, Equatable {
         hasSeenOnboarding: Bool = false,
         isSubscribed: Bool = false,
         hasSeenSetTimerNotice: Bool = false,
-        uploadPhotoNoticeShownCount: Int = 0
+        uploadPhotoNoticeShownCount: Int = 0,
+        ambientSoundEnabled: Bool = false,
+        ambientSoundID: String = "rain"
     ) {
         self.timerDuration = timerDuration
         self.soundEnabled = soundEnabled
@@ -31,6 +37,8 @@ struct AppSettings: Codable, Equatable {
         self.isSubscribed = isSubscribed
         self.hasSeenSetTimerNotice = hasSeenSetTimerNotice
         self.uploadPhotoNoticeShownCount = uploadPhotoNoticeShownCount
+        self.ambientSoundEnabled = ambientSoundEnabled
+        self.ambientSoundID = ambientSoundID
     }
 
     // MARK: - Codable (tolerant decoding)
@@ -46,6 +54,8 @@ struct AppSettings: Codable, Equatable {
         case isSubscribed
         case hasSeenSetTimerNotice
         case uploadPhotoNoticeShownCount
+        case ambientSoundEnabled
+        case ambientSoundID
     }
 
     init(from decoder: Decoder) throws {
@@ -58,6 +68,8 @@ struct AppSettings: Codable, Equatable {
         isSubscribed = try container.decodeIfPresent(Bool.self, forKey: .isSubscribed) ?? false
         hasSeenSetTimerNotice = try container.decodeIfPresent(Bool.self, forKey: .hasSeenSetTimerNotice) ?? false
         uploadPhotoNoticeShownCount = try container.decodeIfPresent(Int.self, forKey: .uploadPhotoNoticeShownCount) ?? 0
+        ambientSoundEnabled = try container.decodeIfPresent(Bool.self, forKey: .ambientSoundEnabled) ?? false
+        ambientSoundID = try container.decodeIfPresent(String.self, forKey: .ambientSoundID) ?? "rain"
     }
 
     /// Default notification time (8:00 PM)

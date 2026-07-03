@@ -92,23 +92,43 @@ final class TimerViewModel: ObservableObject {
 
         // Start timer — publishes totalDuration/timeRemaining via Combine pipeline
         timerService.start(duration: duration)
+
+        // Ambient sound during the session (Pro)
+        startAmbienceIfEnabled()
     }
 
     func stopTimer() {
         noticeWorkItem?.cancel()
+        audioService.stopAmbience()
         timerService.stopTimer()
     }
 
     func cancelSession() {
         noticeWorkItem?.cancel()
+        audioService.stopAmbience()
         timerService.stopTimer()
         onComplete?()
+    }
+
+    /// Start looping ambience if the option is on and the user is Pro.
+    /// Always called on the main thread (view-driven).
+    private func startAmbienceIfEnabled() {
+        guard storageService.settings.ambientSoundEnabled,
+              let sound = AudioService.AmbientSound(rawValue: storageService.settings.ambientSoundID) else {
+            return
+        }
+        let isPremium = MainActor.assumeIsolated { SessionGatingService.shared.isPremium }
+        guard isPremium else { return }
+        audioService.startAmbience(sound)
     }
 
     // MARK: - Private Methods
     private var noticeWorkItem: DispatchWorkItem?
 
     private func handleTimerComplete() {
+        // Fade the ambience out as the bell rings
+        audioService.stopAmbience()
+
         // Play end bell if sound enabled
         if storageService.settings.soundEnabled {
             audioService.playEndBell()
@@ -141,6 +161,7 @@ final class TimerViewModel: ObservableObject {
         showUploadPhotoNotice = false
         audioService.playImpact(.medium)
         timerService.addTime(300)
+        startAmbienceIfEnabled()
     }
 
     /// Called when user taps "Skip" on the coach mark notice

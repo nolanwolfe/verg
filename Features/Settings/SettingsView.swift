@@ -56,6 +56,9 @@ struct SettingsView: View {
         .sheet(isPresented: $viewModel.showTimePicker) {
             timePickerSheet
         }
+        .sheet(isPresented: $viewModel.showAmbiencePicker) {
+            ambiencePickerSheet
+        }
         .alert("Restore Purchases", isPresented: $viewModel.showRestoreAlert) {
             Button("OK", role: .cancel) { }
         } message: {
@@ -109,7 +112,28 @@ struct SettingsView: View {
                 title: "Sound",
                 isOn: $viewModel.soundEnabled
             )
+
+            Divider()
+                .background(Theme.Colors.secondaryText.opacity(0.2))
+
+            SettingsRow(
+                icon: "music.note",
+                iconColor: .purple,
+                title: isPremium ? "Ambience" : "Ambience  🔒",
+                value: viewModel.ambienceLabel,
+                action: {
+                    if isPremium {
+                        viewModel.showAmbiencePicker = true
+                    } else {
+                        viewModel.showPaywall = true
+                    }
+                }
+            )
         }
+    }
+
+    private var isPremium: Bool {
+        purchaseService.isSubscribed || purchaseService.isFriendsAndFamily
     }
 
     // MARK: - Notifications Section
@@ -351,6 +375,82 @@ struct SettingsView: View {
             onSelect: { viewModel.setDuration($0) },
             onDone: { viewModel.showDurationPicker = false }
         )
+    }
+
+    // MARK: - Ambience Picker Sheet
+    private var ambiencePickerSheet: some View {
+        NavigationView {
+            ZStack {
+                Theme.Colors.background
+                    .ignoresSafeArea()
+
+                VStack(spacing: Theme.Spacing.sm) {
+                    // Off
+                    Button {
+                        viewModel.ambientSoundEnabled = false
+                    } label: {
+                        HStack {
+                            Image(systemName: "speaker.slash")
+                                .foregroundColor(Theme.Colors.secondaryText)
+                                .frame(width: 24)
+                            Text("Off")
+                                .font(Theme.Typography.body)
+                                .foregroundColor(Theme.Colors.primaryText)
+                            Spacer()
+                            if !viewModel.ambientSoundEnabled {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(Theme.Colors.accent)
+                            }
+                        }
+                        .padding(Theme.Spacing.md)
+                        .background(Theme.Colors.cardBackground)
+                        .cornerRadius(Theme.CornerRadius.small)
+                    }
+
+                    // Sounds
+                    ForEach(AudioService.AmbientSound.allCases) { sound in
+                        Button {
+                            viewModel.ambientSoundEnabled = true
+                            viewModel.ambientSoundID = sound.rawValue
+                        } label: {
+                            HStack {
+                                Image(systemName: sound.icon)
+                                    .foregroundColor(Color(hex: "FF9500"))
+                                    .frame(width: 24)
+                                Text(sound.displayName)
+                                    .font(Theme.Typography.body)
+                                    .foregroundColor(Theme.Colors.primaryText)
+                                Spacer()
+                                if viewModel.ambientSoundEnabled && viewModel.ambientSoundID == sound.rawValue {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(Theme.Colors.accent)
+                                }
+                            }
+                            .padding(Theme.Spacing.md)
+                            .background(Theme.Colors.cardBackground)
+                            .cornerRadius(Theme.CornerRadius.small)
+                        }
+                    }
+
+                    Text("Plays softly while you write.")
+                        .font(Theme.Typography.caption)
+                        .foregroundColor(Theme.Colors.secondaryText.opacity(0.7))
+                        .padding(.top, Theme.Spacing.xs)
+                }
+                .padding(Theme.Spacing.md)
+            }
+            .navigationTitle("Ambience")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        viewModel.showAmbiencePicker = false
+                    }
+                    .foregroundColor(Theme.Colors.accent)
+                }
+            }
+        }
+        .presentationDetents([.medium])
     }
 
     // MARK: - Time Picker Sheet

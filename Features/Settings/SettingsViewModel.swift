@@ -13,8 +13,11 @@ final class SettingsViewModel: ObservableObject {
     @Published var soundEnabled: Bool = true
     @Published var notificationsEnabled: Bool = false
     @Published var notificationTime: Date = AppSettings.defaultNotificationTime
+    @Published var ambientSoundEnabled: Bool = false
+    @Published var ambientSoundID: String = "rain"
 
     @Published var showDurationPicker: Bool = false
+    @Published var showAmbiencePicker: Bool = false
     @Published var showTimePicker: Bool = false
     @Published var showRestoreAlert: Bool = false
     @Published var restoreMessage: String = ""
@@ -52,6 +55,14 @@ final class SettingsViewModel: ObservableObject {
         return formatter.string(from: notificationTime)
     }
 
+    var ambienceLabel: String {
+        guard ambientSoundEnabled,
+              let sound = AudioService.AmbientSound(rawValue: ambientSoundID) else {
+            return "Off"
+        }
+        return sound.displayName
+    }
+
     var appVersion: String {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
@@ -76,6 +87,8 @@ final class SettingsViewModel: ObservableObject {
         soundEnabled = settings.soundEnabled
         notificationsEnabled = settings.notificationsEnabled
         notificationTime = settings.notificationTime
+        ambientSoundEnabled = settings.ambientSoundEnabled
+        ambientSoundID = settings.ambientSoundID
     }
 
     private func setupBindings() {
@@ -108,6 +121,20 @@ final class SettingsViewModel: ObservableObject {
                 if self?.notificationsEnabled == true {
                     self?.scheduleNotification()
                 }
+            }
+            .store(in: &cancellables)
+
+        $ambientSoundEnabled
+            .dropFirst()
+            .sink { [weak self] enabled in
+                self?.storageService.setAmbientSoundEnabled(enabled)
+            }
+            .store(in: &cancellables)
+
+        $ambientSoundID
+            .dropFirst()
+            .sink { [weak self] id in
+                self?.storageService.setAmbientSoundID(id)
             }
             .store(in: &cancellables)
     }

@@ -375,6 +375,16 @@ final class StorageService: ObservableObject {
         saveSettings()
     }
 
+    func setAmbientSoundEnabled(_ enabled: Bool) {
+        settings.ambientSoundEnabled = enabled
+        saveSettings()
+    }
+
+    func setAmbientSoundID(_ id: String) {
+        settings.ambientSoundID = id
+        saveSettings()
+    }
+
     // MARK: - Coach Mark Notice Management
     func setHasSeenSetTimerNotice(_ seen: Bool) {
         settings.hasSeenSetTimerNotice = seen

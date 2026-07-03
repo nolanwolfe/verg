@@ -10,6 +10,7 @@ final class AudioService: ObservableObject {
 
     // MARK: - Private Properties
     private var audioPlayer: AVAudioPlayer?
+    private var ambientPlayer: AVAudioPlayer?
     private var soundEnabled: Bool = true
 
     // MARK: - Sound Types
@@ -29,6 +30,34 @@ final class AudioService: ObservableObject {
                 return "wav"
             }
         }
+    }
+
+    // MARK: - Ambient Sounds
+    /// Looping ambience played during writing sessions (Pro feature)
+    enum AmbientSound: String, CaseIterable, Identifiable {
+        case rain
+        case fireplace = "fire"
+        case deepFocus = "focus"
+
+        var id: String { rawValue }
+
+        var displayName: String {
+            switch self {
+            case .rain: return "Rain"
+            case .fireplace: return "Fireplace"
+            case .deepFocus: return "Deep Focus"
+            }
+        }
+
+        var icon: String {
+            switch self {
+            case .rain: return "cloud.rain.fill"
+            case .fireplace: return "flame.fill"
+            case .deepFocus: return "waveform"
+            }
+        }
+
+        var filename: String { "ambient_\(rawValue)" }
     }
 
     // MARK: - Initialization
@@ -83,6 +112,38 @@ final class AudioService: ObservableObject {
     func stop() {
         audioPlayer?.stop()
         audioPlayer = nil
+    }
+
+    /// Start a looping ambient track with a gentle fade-in
+    func startAmbience(_ sound: AmbientSound) {
+        guard let url = Bundle.main.url(forResource: sound.filename, withExtension: "caf") else {
+            #if DEBUG
+            print("AudioService: missing ambient sound \(sound.filename).caf")
+            #endif
+            return
+        }
+
+        do {
+            let player = try AVAudioPlayer(contentsOf: url)
+            player.numberOfLoops = -1
+            player.volume = 0
+            player.prepareToPlay()
+            player.play()
+            player.setVolume(0.55, fadeDuration: 1.5)
+            ambientPlayer = player
+        } catch {
+            print("Failed to start ambience: \(error)")
+        }
+    }
+
+    /// Fade out and stop the ambient track
+    func stopAmbience(fadeOut: TimeInterval = 1.0) {
+        guard let player = ambientPlayer else { return }
+        ambientPlayer = nil
+        player.setVolume(0, fadeDuration: fadeOut)
+        DispatchQueue.main.asyncAfter(deadline: .now() + fadeOut + 0.1) {
+            player.stop()
+        }
     }
 
     // MARK: - Private Methods
