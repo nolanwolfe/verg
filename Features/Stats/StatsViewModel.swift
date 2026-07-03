@@ -7,6 +7,8 @@ final class StatsViewModel: ObservableObject {
 
     // MARK: - Published Properties
     @Published private(set) var sessions: [Session] = []
+    @Published private(set) var currentSessions: [Session] = []
+    @Published private(set) var books: [Book] = []
     @Published private(set) var currentStreak: Int = 0
     @Published private(set) var longestStreak: Int = 0
     @Published private(set) var totalSessions: Int = 0
@@ -43,6 +45,19 @@ final class StatsViewModel: ObservableObject {
             .receive(on: DispatchQueue.main)
             .assign(to: &$sessions)
 
+        // Current journal = sessions not archived into a book
+        storageService.$sessions
+            .combineLatest(storageService.$books)
+            .receive(on: DispatchQueue.main)
+            .map { sessions, books in
+                Book.currentSessions(from: sessions, books: books)
+            }
+            .assign(to: &$currentSessions)
+
+        storageService.$books
+            .receive(on: DispatchQueue.main)
+            .assign(to: &$books)
+
         // Listen to stats changes
         storageService.$stats
             .receive(on: DispatchQueue.main)
@@ -63,6 +78,8 @@ final class StatsViewModel: ObservableObject {
     // MARK: - Data Loading
     func loadData() {
         sessions = storageService.getAllSessions()
+        currentSessions = storageService.currentSessions
+        books = storageService.books
         let stats = storageService.getStats()
         currentStreak = stats.currentStreak
         longestStreak = stats.longestStreak
@@ -98,9 +115,35 @@ final class StatsViewModel: ObservableObject {
 
     // MARK: - Actions
     func selectSession(_ session: Session) {
+        selectSession(session, in: sessions)
+    }
+
+    /// Select a session for fullscreen viewing within a specific list
+    /// (e.g. the current journal, which excludes archived pages)
+    func selectSession(_ session: Session, in list: [Session]) {
         selectedSession = session
-        selectedSessionIndex = sessions.firstIndex(where: { $0.id == session.id }) ?? 0
+        selectedSessionIndex = list.firstIndex(where: { $0.id == session.id }) ?? 0
         showFullScreenImage = true
+    }
+
+    // MARK: - Books
+    /// Archive the current journal as a book; returns true on success
+    @discardableResult
+    func finishCurrentJournal(title: String) -> Bool {
+        let trimmed = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let finalTitle = trimmed.isEmpty ? "Journal \(storageService.books.count + 1)" : trimmed
+        let book = storageService.finishCurrentJournal(title: finalTitle)
+        loadData()
+        return book != nil
+    }
+
+    func deleteBook(_ book: Book) {
+        storageService.deleteBook(id: book.id)
+        loadData()
+    }
+
+    func sessions(for book: Book) -> [Session] {
+        storageService.sessions(for: book)
     }
 
     func deleteSession(_ session: Session) {

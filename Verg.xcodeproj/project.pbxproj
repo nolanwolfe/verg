@@ -54,6 +54,8 @@
 		A10000010000000000000039 /* AchievementService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000039 /* AchievementService.swift */; };
 		A10000010000000000000040 /* MilestonesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000040 /* MilestonesView.swift */; };
 		A10000010000000000000041 /* MilestoneCelebrationView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000041 /* MilestoneCelebrationView.swift */; };
+		A10000010000000000000042 /* Book.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000042 /* Book.swift */; };
+		A10000010000000000000043 /* BookDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000043 /* BookDetailView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -104,6 +106,8 @@
 		A20000010000000000000039 /* AchievementService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementService.swift; sourceTree = "<group>"; };
 		A20000010000000000000040 /* MilestonesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MilestonesView.swift; sourceTree = "<group>"; };
 		A20000010000000000000041 /* MilestoneCelebrationView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MilestoneCelebrationView.swift; sourceTree = "<group>"; };
+		A20000010000000000000042 /* Book.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Book.swift; sourceTree = "<group>"; };
+		A20000010000000000000043 /* BookDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookDetailView.swift; sourceTree = "<group>"; };
 		E0E9AAF30597470AE40B5615 /* SessionGatingService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionGatingService.swift; path = Core/Services/SessionGatingService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -227,6 +231,7 @@
 		A40000010000000000000009 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				A20000010000000000000042 /* Book.swift */,
 				A20000010000000000000038 /* Milestone.swift */,
 				A20000010000000000000006 /* Session.swift */,
 				A20000010000000000000007 /* Settings.swift */,
@@ -377,6 +382,7 @@
 		A40000010000000000000023 /* Journal */ = {
 			isa = PBXGroup;
 			children = (
+				A20000010000000000000043 /* BookDetailView.swift */,
 				A20000010000000000000037 /* JournalView.swift */,
 			);
 			path = Journal;
@@ -506,6 +512,8 @@
 				A10000010000000000000039 /* AchievementService.swift in Sources */,
 				A10000010000000000000040 /* MilestonesView.swift in Sources */,
 				A10000010000000000000041 /* MilestoneCelebrationView.swift in Sources */,
+				A10000010000000000000042 /* Book.swift in Sources */,
+				A10000010000000000000043 /* BookDetailView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

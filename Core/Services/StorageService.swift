@@ -10,6 +10,7 @@ final class StorageService: ObservableObject {
 
     // MARK: - Published Properties
     @Published private(set) var sessions: [Session] = []
+    @Published private(set) var books: [Book] = []
     @Published private(set) var stats: UserStats = UserStats()
     @Published var settings: AppSettings = AppSettings()
 
@@ -23,6 +24,7 @@ final class StorageService: ObservableObject {
     private let displayScale: CGFloat = UIScreen.main.scale
 
     private let sessionsKey = "verg.sessions"
+    private let booksKey = "verg.books"
     private let statsKey = "verg.stats"
     private let settingsKey = "verg.settings"
 
@@ -49,6 +51,7 @@ final class StorageService: ObservableObject {
     // MARK: - Load Data
     private func loadAllData() {
         loadSessions()
+        loadBooks()
         loadStats()
         loadSettings()
 
@@ -70,6 +73,15 @@ final class StorageService: ObservableObject {
             return
         }
         sessions = decoded.sorted { $0.createdAt > $1.createdAt }
+    }
+
+    private func loadBooks() {
+        guard let data = userDefaults.data(forKey: booksKey),
+              let decoded = try? JSONDecoder().decode([Book].self, from: data) else {
+            books = []
+            return
+        }
+        books = decoded.sorted { $0.createdAt > $1.createdAt }
     }
 
     private func loadStats() {
@@ -94,6 +106,11 @@ final class StorageService: ObservableObject {
     private func saveSessions() {
         guard let encoded = try? JSONEncoder().encode(sessions) else { return }
         userDefaults.set(encoded, forKey: sessionsKey)
+    }
+
+    private func saveBooks() {
+        guard let encoded = try? JSONEncoder().encode(books) else { return }
+        userDefaults.set(encoded, forKey: booksKey)
     }
 
     private func saveStats() {
@@ -177,6 +194,55 @@ final class StorageService: ObservableObject {
 
         sessions.remove(at: index)
         saveSessions()
+
+        // Strip the id from any book referencing it
+        var booksChanged = false
+        for (bookIndex, book) in books.enumerated() where book.sessionIDs.contains(id) {
+            books[bookIndex] = Book(
+                id: book.id,
+                title: book.title,
+                startDate: book.startDate,
+                endDate: book.endDate,
+                sessionIDs: book.sessionIDs.filter { $0 != id },
+                coverStyle: book.coverStyle,
+                createdAt: book.createdAt
+            )
+            booksChanged = true
+        }
+        if booksChanged {
+            saveBooks()
+        }
+    }
+
+    // MARK: - Book Management
+    /// Sessions not yet archived into a book — the current journal
+    var currentSessions: [Session] {
+        Book.currentSessions(from: sessions, books: books)
+    }
+
+    /// Archive the current journal's pages as a book and start fresh
+    @discardableResult
+    func finishCurrentJournal(title: String) -> Book? {
+        guard let book = Book.make(
+            title: title,
+            archiving: currentSessions,
+            coverStyle: books.count % 5
+        ) else { return nil }
+
+        books.insert(book, at: 0)
+        saveBooks()
+        return book
+    }
+
+    /// Resolve a book's pages (tolerates deleted sessions)
+    func sessions(for book: Book) -> [Session] {
+        book.resolveSessions(from: sessions)
+    }
+
+    /// Delete a book record — its pages return to the current journal
+    func deleteBook(id: UUID) {
+        books.removeAll { $0.id == id }
+        saveBooks()
     }
 
     /// Get image for a session (cached, full resolution)
