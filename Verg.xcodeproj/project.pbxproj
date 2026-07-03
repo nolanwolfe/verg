@@ -49,6 +49,7 @@
 		A10000010000000000000034 /* CustomTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000034 /* CustomTabBar.swift */; };
 		A10000010000000000000035 /* VergFlameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000035 /* VergFlameView.swift */; };
 		A10000010000000000000036 /* CandleAmbientView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000036 /* CandleAmbientView.swift */; };
+		A10000010000000000000037 /* JournalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000037 /* JournalView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -94,6 +95,7 @@
 		A20000010000000000000034 /* CustomTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTabBar.swift; sourceTree = "<group>"; };
 		A20000010000000000000035 /* VergFlameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VergFlameView.swift; sourceTree = "<group>"; };
 		A20000010000000000000036 /* CandleAmbientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandleAmbientView.swift; sourceTree = "<group>"; };
+		A20000010000000000000037 /* JournalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalView.swift; sourceTree = "<group>"; };
 		E0E9AAF30597470AE40B5615 /* SessionGatingService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionGatingService.swift; path = Core/Services/SessionGatingService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -168,6 +170,7 @@
 				A40000010000000000000012 /* Camera */,
 				A40000010000000000000021 /* Candle */,
 				A40000010000000000000013 /* Home */,
+				A40000010000000000000023 /* Journal */,
 				A40000010000000000000020 /* Onboarding */,
 				A40000010000000000000014 /* Paywall */,
 				A40000010000000000000015 /* Settings */,
@@ -359,6 +362,14 @@
 			path = Candle;
 			sourceTree = "<group>";
 		};
+		A40000010000000000000023 /* Journal */ = {
+			isa = PBXGroup;
+			children = (
+				A20000010000000000000037 /* JournalView.swift */,
+			);
+			path = Journal;
+			sourceTree = "<group>";
+		};
 		A40000010000000000000022 /* VergFlame */ = {
 			isa = PBXGroup;
 			children = (
@@ -478,6 +489,7 @@
 				A10000010000000000000034 /* CustomTabBar.swift in Sources */,
 				A10000010000000000000035 /* VergFlameView.swift in Sources */,
 				A10000010000000000000036 /* CandleAmbientView.swift in Sources */,
+				A10000010000000000000037 /* JournalView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -612,7 +624,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 9GHNQ3ZYX9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -633,7 +645,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1;
+				MARKETING_VERSION = 2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.verg.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -649,7 +661,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 4;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_TEAM = 9GHNQ3ZYX9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -670,7 +682,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 2.1;
+				MARKETING_VERSION = 2.2;
 				PRODUCT_BUNDLE_IDENTIFIER = com.verg.app;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

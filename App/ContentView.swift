@@ -14,6 +14,7 @@ struct ContentView: View {
         case write
         case journal
         case verg
+        case stats
         case settings
     }
 
@@ -126,10 +127,12 @@ struct ContentView: View {
         case .write:
             HomeView()
         case .journal:
-            StatsView()
+            JournalView()
         case .verg:
             VergFlameView()
                 .ignoresSafeArea()
+        case .stats:
+            StatsView()
         case .settings:
             SettingsView()
         }

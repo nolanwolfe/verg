@@ -5,14 +5,7 @@ import UIKit
 /// ViewModel for the Stats screen
 final class StatsViewModel: ObservableObject {
 
-    // MARK: - Tab Selection
-    enum Tab: String, CaseIterable {
-        case pages = "Pages"
-        case calendar = "Calendar"
-    }
-
     // MARK: - Published Properties
-    @Published var selectedTab: Tab = .pages
     @Published private(set) var sessions: [Session] = []
     @Published private(set) var currentStreak: Int = 0
     @Published private(set) var totalSessions: Int = 0

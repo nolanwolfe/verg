@@ -5,9 +5,10 @@ struct CustomTabBar: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            standardItem(tab: .journal, icon: "book.closed.fill", label: "Journal")
             writeItem
+            standardItem(tab: .journal, icon: "book.closed.fill", label: "Journal")
             vergCandleItem
+            standardItem(tab: .stats, icon: "chart.bar.fill", label: "Stats")
             standardItem(tab: .settings, icon: "gearshape.fill", label: "Settings")
         }
         .frame(height: 56)
@@ -113,7 +114,11 @@ struct CustomTabBar: View {
         Button { selectedTab = .verg } label: {
             VStack(spacing: 4) {
                 CandleTabIcon(isSelected: selectedTab == .verg)
-                    .frame(width: 20, height: 28)
+                    .frame(width: 22, height: 31)
+                    .shadow(
+                        color: Color(hex: "FF9500").opacity(selectedTab == .verg ? 0.5 : 0.25),
+                        radius: 8
+                    )
 
                 Text("Verg")
                     .font(.system(size: 10, weight: selectedTab == .verg ? .semibold : .regular))
@@ -121,6 +126,7 @@ struct CustomTabBar: View {
                         ? Color(hex: "FF9500")
                         : Theme.Colors.secondaryText.opacity(0.45))
             }
+            .offset(y: -6)
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
         }
