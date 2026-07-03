@@ -72,12 +72,12 @@ final class StreakService: ObservableObject {
         }
     }
 
-    /// Get formatted streak with emoji
+    /// Get formatted streak text (pair with StreakFlameIcon in the UI)
     var streakDisplayText: String {
         if currentStreak == 0 {
             return "Start your streak today!"
         } else {
-            return "\u{1F525} \(streakText)"  // Fire emoji
+            return streakText
         }
     }
 

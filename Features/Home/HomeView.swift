@@ -101,13 +101,18 @@ struct HomeView: View {
     // MARK: - Streak Section
     private var streakSection: some View {
         VStack(spacing: Theme.Spacing.xs) {
-            Text(viewModel.streakDisplayText)
-                .font(Theme.Typography.streakDisplay)
-                .foregroundColor(
-                    viewModel.currentStreak > 0
-                        ? Theme.Colors.primaryText
-                        : Theme.Colors.secondaryText
-                )
+            HStack(spacing: Theme.Spacing.xs) {
+                if viewModel.currentStreak > 0 {
+                    StreakFlameIcon()
+                }
+                Text(viewModel.streakDisplayText)
+                    .font(Theme.Typography.streakDisplay)
+                    .foregroundColor(
+                        viewModel.currentStreak > 0
+                            ? Theme.Colors.primaryText
+                            : Theme.Colors.secondaryText
+                    )
+            }
 
             Text("🕯️ \(viewModel.sessionsTodayText)")
                 .font(Theme.Typography.subheadline)

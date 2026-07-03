@@ -238,6 +238,39 @@ struct FlameShape: Shape {
     }
 }
 
+// MARK: - Streak Flame Icon
+
+/// Small static flame in the app's candle-flame visual language.
+/// Replaces the generic fire emoji in streak displays.
+struct StreakFlameIcon: View {
+    var size: CGFloat = 16
+
+    var body: some View {
+        ZStack {
+            FlameShape()
+                .fill(
+                    LinearGradient(
+                        colors: [Color(hex: "FF4500"), Color(hex: "FFCC00")],
+                        startPoint: .bottom,
+                        endPoint: .top
+                    )
+                )
+                .frame(width: size, height: size * 1.4)
+
+            FlameShape()
+                .fill(
+                    LinearGradient(
+                        colors: [Color(hex: "FFE000"), Color.white.opacity(0.9)],
+                        startPoint: .bottom,
+                        endPoint: .top
+                    )
+                )
+                .frame(width: size * 0.5, height: size * 0.8)
+                .offset(y: size * 0.15)
+        }
+    }
+}
+
 // MARK: - Preview
 
 #Preview {
@@ -247,6 +280,7 @@ struct FlameShape: Shape {
             CandleView(progress: 1.0, isBurning: true)
             CandleView(progress: 0.5, isBurning: true)
             CandleView(progress: 0.1, isBurning: true)
+            StreakFlameIcon()
         }
     }
 }

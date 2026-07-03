@@ -26,10 +26,7 @@ final class HomeViewModel: ObservableObject {
     }
 
     var streakDisplayText: String {
-        if currentStreak > 0 {
-            return "\u{1F525} \(streakText)"
-        }
-        return streakText
+        streakText
     }
 
     var sessionsTodayText: String {
