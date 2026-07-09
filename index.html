@@ -16,8 +16,10 @@
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #0a0a0a;
-            color: #f5f5f5;
+            background-color: #120b22;
+            background-image: radial-gradient(ellipse 120% 80% at 50% 42%, #261745 0%, #1a1030 55%, #120b22 100%);
+            background-attachment: fixed;
+            color: #f5f0fa;
             min-height: 100svh;
             display: flex;
             flex-direction: column;
@@ -33,13 +35,13 @@
             margin-bottom: 10px;
         }
         .tagline {
-            color: #888;
+            color: #9b8fb8;
             font-size: 1.1rem;
             max-width: 400px;
         }
 
         .candle-hint {
-            color: #666;
+            color: #776b96;
             font-size: 0.9rem;
             margin-top: 26px;
             min-height: 1.4em;
@@ -58,7 +60,7 @@
         .glow {
             position: absolute; left: 50%; bottom: 90px; transform: translateX(-50%);
             width: 420px; height: 420px; border-radius: 50%;
-            background: radial-gradient(circle, rgba(245,166,35,0.28), rgba(245,166,35,0.07) 45%, transparent 70%);
+            background: radial-gradient(circle, rgba(255, 200, 120, 0.20), rgba(150, 100, 220, 0.18) 38%, rgba(120, 60, 180, 0.08) 55%, transparent 72%);
             opacity: 0; transition: opacity 1.2s ease; pointer-events: none;
         }
         .lit .glow { opacity: 1; animation: glowPulse 3.2s ease-in-out infinite; }
@@ -72,9 +74,9 @@
         .wax {
             position: absolute; left: 50%; bottom: 56px; transform: translateX(-50%);
             width: 92px; height: var(--wax-h);
-            background: linear-gradient(90deg, #e8d9bd, #fdf3dd 30%, #f3e5c8 55%, #d9c6a3);
+            background: linear-gradient(180deg, #fdf3dd 0%, #f6ead6 35%, #ddc9e0 75%, #bda6d8 100%);
             border-radius: 14px 14px 8px 8px;
-            box-shadow: inset -8px 0 16px rgba(120, 90, 40, 0.25), inset 8px 0 16px rgba(255, 250, 235, 0.4);
+            box-shadow: inset -10px 0 18px rgba(90, 55, 130, 0.35), inset 10px 0 18px rgba(255, 250, 240, 0.35);
         }
         .wax::before {
             content: ''; position: absolute; top: -7px; left: -3px; right: -3px; height: 16px;
@@ -89,10 +91,10 @@
         .wick {
             position: absolute; left: 50%; bottom: calc(56px + var(--wax-h) + 2px);
             transform: translateX(-50%);
-            width: 5px; height: 16px; background: linear-gradient(#1c1712, #4a3b28);
+            width: 5px; height: 16px; background: linear-gradient(#2b2140, #4a3960);
             border-radius: 3px 3px 0 0;
         }
-        .lit .wick { background: linear-gradient(#ff9d2e, #3a2c1a 60%); }
+        .lit .wick { background: linear-gradient(#ff9d2e, #3a2c50 60%); }
 
         .flame {
             position: absolute; left: 50%; bottom: calc(56px + var(--wax-h) + 12px);
@@ -144,9 +146,9 @@
         .holder {
             position: absolute; left: 50%; bottom: 32px; transform: translateX(-50%);
             width: 164px; height: 30px;
-            background: linear-gradient(#3a2f22, #241c12);
+            background: linear-gradient(#332650, #1e1535);
             border-radius: 50% / 55%;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 3px 6px rgba(255, 220, 160, 0.12);
+            box-shadow: 0 10px 30px rgba(8, 4, 20, 0.6), inset 0 3px 6px rgba(200, 170, 255, 0.14);
         }
         .holder::after {
             content: ''; position: absolute; left: 50%; top: 42%; transform: translateX(-50%);
@@ -165,10 +167,10 @@
         .lit-timer { color: #f5a623; }
         .timer-actions { min-height: 1.6em; }
         .timer-actions button {
-            background: none; border: none; color: #555; cursor: pointer;
+            background: none; border: none; color: #5f5480; cursor: pointer;
             font-size: 0.85rem; font-family: inherit; text-decoration: underline;
         }
-        .timer-actions button:hover { color: #888; }
+        .timer-actions button:hover { color: #9b8fb8; }
 
         .download-btn {
             display: inline-flex;
@@ -213,16 +215,16 @@
 
         footer {
             margin-top: 48px;
-            color: #444;
+            color: #4d4268;
             font-size: 0.8rem;
         }
         footer a {
-            color: #555;
+            color: #5f5480;
             text-decoration: none;
             margin: 0 8px;
         }
         footer a:hover {
-            color: #888;
+            color: #9b8fb8;
         }
         footer p { margin-top: 6px; }
 
