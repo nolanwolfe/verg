@@ -114,6 +114,7 @@ struct FullScreenImageView: View {
     let allowsDelete: Bool
 
     @State private var showDeleteConfirmation = false
+    @State private var dismissDragProgress: CGFloat = 0
 
     init(
         sessions: [Session],
@@ -142,7 +143,7 @@ struct FullScreenImageView: View {
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            Color.black.opacity(1 - dismissDragProgress * 0.6).ignoresSafeArea()
 
             // Swipeable pages. A paged TabView is NOT lazy — every page view
             // in the ForEach is built when the viewer opens. With 100+ pages
@@ -158,7 +159,9 @@ struct FullScreenImageView: View {
                                 isNearCurrent: abs(index - currentIndex) <= 1,
                                 loadImage: loadImage,
                                 loadThumbnail: loadThumbnail,
-                                peekThumbnail: peekThumbnail
+                                peekThumbnail: peekThumbnail,
+                                onDismiss: onDismiss,
+                                onDragProgressChanged: { dismissDragProgress = $0 }
                             )
                         } else {
                             Color.black
@@ -171,7 +174,8 @@ struct FullScreenImageView: View {
             .tabViewStyle(.page(indexDisplayMode: .never))
             .ignoresSafeArea()
 
-            // Overlay
+            // Overlay — fades out while dragging to dismiss so it doesn't
+            // sit on top of the photo mid-gesture
             VStack {
                 // Top bar
                 HStack {
@@ -238,6 +242,7 @@ struct FullScreenImageView: View {
                     )
                 }
             }
+            .opacity(1 - dismissDragProgress)
         }
         .confirmationDialog(
             "Delete this page?",
@@ -271,6 +276,8 @@ private struct FullScreenPageView: View {
     let loadImage: (Session) async -> UIImage?
     let loadThumbnail: (Session) async -> UIImage?
     var peekThumbnail: (Session) -> UIImage? = { _ in nil }
+    var onDismiss: () -> Void = {}
+    var onDragProgressChanged: (CGFloat) -> Void = { _ in }
 
     @State private var image: UIImage?
     @State private var hasFullRes = false
@@ -284,9 +291,11 @@ private struct FullScreenPageView: View {
         ZStack {
             Color.black
             if let image = image {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFit()
+                ZoomableImageView(
+                    image: image,
+                    onDismiss: onDismiss,
+                    onDragProgressChanged: onDragProgressChanged
+                )
             } else {
                 Image(systemName: "photo")
                     .font(.system(size: 48))
