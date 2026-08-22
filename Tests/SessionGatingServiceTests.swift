@@ -61,34 +61,34 @@ final class AppStringsTests: XCTestCase {
         let page = AppStrings.Onboarding.pages[0]
         XCTAssertEqual(page.title, "One simple ritual")
         XCTAssertEqual(page.subtitle, "Track your pages. Watch your progress and thoughts grow.")
-        XCTAssertEqual(page.buttonText, "Begin")
+        XCTAssertEqual(page.buttonText, "Leave the phone alone.")
     }
 
     func testOnboardingPage2_HasCorrectCopy() {
         let page = AppStrings.Onboarding.pages[1]
-        XCTAssertEqual(page.title, "Not typing. Writing.")
-        XCTAssertEqual(page.subtitle, "Grab a pen and paper.")
-        XCTAssertEqual(page.buttonText, "I'm ready")
+        XCTAssertEqual(page.title, "This app isn't for typing — it's for writing")
+        XCTAssertEqual(page.subtitle, "Do you have a pen and paper?")
+        XCTAssertEqual(page.buttonText, "I'm ready to write on paper")
     }
 
     func testOnboardingPage3_HasCorrectCopy() {
         let page = AppStrings.Onboarding.pages[2]
-        XCTAssertEqual(page.title, "Your thoughts need quiet")
-        XCTAssertEqual(page.subtitle, "Put the phone down. Write like you mean it.")
-        XCTAssertEqual(page.buttonText, "Start my first session")
+        XCTAssertEqual(page.title, "Your phone steals your thoughts")
+        XCTAssertEqual(page.subtitle, "Endless attention. Zero reflection.")
+        XCTAssertEqual(page.buttonText, "This is the door out.")
     }
 
-    func testSetTimerNotice_HasCorrectCopy() {
-        XCTAssertEqual(AppStrings.CoachMark.SetTimer.title, "Set the timer")
-        XCTAssertEqual(AppStrings.CoachMark.SetTimer.body, "Choose your session length, then start. Keep the phone down until it ends.")
-        XCTAssertEqual(AppStrings.CoachMark.SetTimer.primaryButton, "Got it")
+    func testStartTimerNotice_HasCorrectCopy() {
+        XCTAssertEqual(AppStrings.CoachMark.StartTimer.title, "Start the timer")
+        XCTAssertEqual(AppStrings.CoachMark.StartTimer.body, "Set your phone down. Write on paper while the candle burns.")
+        XCTAssertEqual(AppStrings.CoachMark.StartTimer.primaryButton, "Start session")
     }
 
     func testUploadPhotoNotice_HasCorrectCopy() {
         XCTAssertEqual(AppStrings.CoachMark.UploadPhoto.title, "Save your page")
-        XCTAssertEqual(AppStrings.CoachMark.UploadPhoto.body, "Snap a photo of what you wrote. It helps you track your streak and pages.")
+        XCTAssertEqual(AppStrings.CoachMark.UploadPhoto.body, "Take a photo of what you wrote to keep your streak and archive.")
         XCTAssertEqual(AppStrings.CoachMark.UploadPhoto.primaryButton, "Upload photo")
-        XCTAssertEqual(AppStrings.CoachMark.UploadPhoto.secondaryButton, "Not now")
+        XCTAssertEqual(AppStrings.CoachMark.UploadPhoto.secondaryButton, "Skip")
     }
 
     func testSessionGatingLimit_IsThree() {
