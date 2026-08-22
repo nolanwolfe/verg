@@ -15,6 +15,8 @@ final class StatsViewModel: ObservableObject {
     @Published private(set) var datesWithSessions: Set<Date> = []
     @Published private(set) var sessionCountsByDate: [Date: Int] = [:]
     @Published private(set) var timeReclaimed: TimeReclaimedSummary = .zero
+    @Published private(set) var weeklyCommitmentDaysPerWeek: Int?
+    @Published private(set) var weeksGoalMet: Int = 0
     @Published var selectedSession: Session?
     @Published var selectedSessionIndex: Int = 0
     @Published var showFullScreenImage: Bool = false
@@ -88,6 +90,13 @@ final class StatsViewModel: ObservableObject {
         datesWithSessions = storageService.getDatesWithSessions()
         sessionCountsByDate = storageService.getSessionCountsByDate()
         timeReclaimed = storageService.timeReclaimedSummary()
+
+        weeklyCommitmentDaysPerWeek = storageService.settings.weeklyCommitmentDaysPerWeek
+        if let goalDaysPerWeek = weeklyCommitmentDaysPerWeek {
+            weeksGoalMet = WeeklyGoalTracker.weeksGoalMet(sessions: sessions, goalDaysPerWeek: goalDaysPerWeek)
+        } else {
+            weeksGoalMet = 0
+        }
     }
 
     func refresh() {

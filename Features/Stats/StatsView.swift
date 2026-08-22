@@ -1,7 +1,10 @@
 import SwiftUI
 import UIKit
 
-/// Stats screen — swipeable stat cards and writing calendar
+/// Stats screen — swipeable stat cards and writing calendar. Warmed to
+/// match the candle/celebration visual language used elsewhere (gradient
+/// icons, soft glow) rather than flat system-style cards, since this is
+/// meant to be a screen people actually want to open.
 struct StatsView: View {
     @StateObject private var viewModel = StatsViewModel()
     @State private var currentCard = 0
@@ -9,9 +12,10 @@ struct StatsView: View {
 
     var body: some View {
         ZStack {
-            // Background
             Theme.Colors.background
                 .ignoresSafeArea()
+
+            ambientGlow
 
             VStack(spacing: 0) {
                 headerSection
@@ -43,15 +47,47 @@ struct StatsView: View {
         }
     }
 
+    // MARK: - Ambient Glow
+    /// Same warm radial language as the timer/celebration screens, just
+    /// dialed way down — this isn't a celebration moment, just a reminder
+    /// this app is one whole thing, not a utility bolted onto a journal.
+    private var ambientGlow: some View {
+        RadialGradient(
+            colors: [
+                Color(hex: "FF9500").opacity(0.10),
+                Color(hex: "FF7000").opacity(0.04),
+                Color.clear
+            ],
+            center: UnitPoint(x: 0.5, y: 0),
+            startRadius: 10,
+            endRadius: 380
+        )
+        .ignoresSafeArea()
+        .allowsHitTesting(false)
+    }
+
     // MARK: - Header Section
     private var headerSection: some View {
-        Text("Stats")
-            .font(Theme.Typography.title)
-            .foregroundColor(Theme.Colors.primaryText)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, Theme.Spacing.md)
-            .padding(.top, Theme.Spacing.sm)
-            .padding(.bottom, Theme.Spacing.md)
+        VStack(alignment: .leading, spacing: 2) {
+            Text("Your Progress")
+                .font(Theme.Typography.title)
+                .foregroundColor(Theme.Colors.primaryText)
+
+            Text(headerSubtitle)
+                .font(Theme.Typography.subheadline)
+                .foregroundColor(Theme.Colors.secondaryText)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, Theme.Spacing.md)
+        .padding(.top, Theme.Spacing.sm)
+        .padding(.bottom, Theme.Spacing.md)
+    }
+
+    /// Neutral and factual either way — never a nag on a quiet stretch.
+    private var headerSubtitle: String {
+        viewModel.totalSessions == 0
+            ? "Every page starts here."
+            : "\(viewModel.totalSessions) \(viewModel.totalSessions == 1 ? "page" : "pages") and counting."
     }
 
     // MARK: - Stat Carousel
@@ -62,7 +98,7 @@ struct StatsView: View {
                 value: "\(viewModel.currentStreak)",
                 unit: viewModel.currentStreak == 1 ? "day" : "days"
             ) {
-                StreakFlameIcon(size: 20)
+                warmIcon("flame.fill")
             }
             .tag(0)
 
@@ -71,9 +107,7 @@ struct StatsView: View {
                 value: "\(viewModel.totalSessions)",
                 unit: viewModel.totalSessions == 1 ? "page" : "pages"
             ) {
-                Image(systemName: "doc.text.fill")
-                    .foregroundColor(Theme.Colors.accent)
-                    .font(.system(size: 20))
+                warmIcon("doc.text.fill")
             }
             .tag(1)
 
@@ -82,9 +116,7 @@ struct StatsView: View {
                 value: "\(viewModel.longestStreak)",
                 unit: viewModel.longestStreak == 1 ? "day" : "days"
             ) {
-                Image(systemName: "trophy.fill")
-                    .foregroundColor(Color(hex: "FFCC00"))
-                    .font(.system(size: 20))
+                warmIcon("trophy.fill")
             }
             .tag(2)
 
@@ -93,14 +125,17 @@ struct StatsView: View {
                 value: formattedDuration(minutes: viewModel.timeReclaimed.allTimeMinutes),
                 unit: "written"
             ) {
-                Image(systemName: "hourglass")
-                    .foregroundColor(Theme.Colors.accent)
-                    .font(.system(size: 20))
+                warmIcon("hourglass")
             }
             .tag(3)
 
+            if viewModel.weeklyCommitmentDaysPerWeek != nil {
+                weeklyGoalCard
+                    .tag(4)
+            }
+
             milestoneCard
-                .tag(4)
+                .tag(5)
         }
         .tabViewStyle(.page(indexDisplayMode: .always))
         .frame(height: 170)
@@ -109,14 +144,69 @@ struct StatsView: View {
         }
     }
 
+    /// Icon treatment shared by every carousel card — the same warm
+    /// gradient + glow used on the milestone/Time Reclaimed reveal screens.
+    private func warmIcon(_ systemName: String) -> some View {
+        Image(systemName: systemName)
+            .font(.system(size: 20))
+            .foregroundStyle(
+                LinearGradient(
+                    colors: [Color(hex: "FFCC00"), Color(hex: "FF9500")],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+            .shadow(color: Color(hex: "FF9500").opacity(0.35), radius: 6)
+    }
+
+    // MARK: - Weekly Goal Card
+    /// Only shown once a commitment exists — progress toward the next
+    /// goal-adherence milestone, the stats-tab half of the loop that
+    /// closes in TimerViewModel's celebration sequencing.
+    private var weeklyGoalCard: some View {
+        let goalDays = viewModel.weeklyCommitmentDaysPerWeek ?? 0
+        return Button {
+            showMilestones = true
+        } label: {
+            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                HStack(spacing: Theme.Spacing.xs) {
+                    warmIcon("target")
+                    Text("Weekly Goal")
+                        .font(Theme.Typography.subheadline)
+                        .foregroundColor(Theme.Colors.secondaryText)
+                    Spacer()
+                }
+
+                if let next = WeeklyGoalMilestone.nextMilestone(after: viewModel.weeksGoalMet) {
+                    HStack(alignment: .firstTextBaseline, spacing: Theme.Spacing.xxs) {
+                        Text("\(viewModel.weeksGoalMet)")
+                            .font(.system(size: 40, weight: .bold, design: .rounded))
+                            .foregroundColor(Theme.Colors.primaryText)
+                        Text("of \(next.weeksThreshold) weeks at \(goalDays)/wk")
+                            .font(Theme.Typography.subheadline)
+                            .foregroundColor(Theme.Colors.secondaryText)
+                    }
+                } else {
+                    Text("All goal milestones unlocked!")
+                        .font(.system(size: 26, weight: .bold, design: .rounded))
+                        .foregroundColor(Theme.Colors.primaryText)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(Theme.Spacing.lg)
+            .background(Theme.Colors.cardBackground)
+            .cornerRadius(Theme.CornerRadius.medium)
+            .padding(.bottom, 28) // room for page dots
+        }
+        .buttonStyle(.plain)
+    }
+
     // MARK: - Time Reclaimed Week Card
     private var timeReclaimedWeekCard: some View {
         let summary = viewModel.timeReclaimed
         return VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
             HStack(spacing: Theme.Spacing.xs) {
-                Image(systemName: "hourglass")
-                    .foregroundColor(Theme.Colors.accent)
-                    .font(.system(size: 16))
+                warmIcon("hourglass")
 
                 Text("This Week")
                     .font(Theme.Typography.subheadline)
@@ -178,9 +268,7 @@ struct StatsView: View {
         } label: {
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                 HStack(spacing: Theme.Spacing.xs) {
-                    Image(systemName: "rosette")
-                        .foregroundColor(Color(hex: "FF9500"))
-                        .font(.system(size: 20))
+                    warmIcon("rosette")
 
                     Text("Milestones")
                         .font(Theme.Typography.subheadline)
