@@ -79,6 +79,14 @@ struct TimerView: View {
                 }
                 .zIndex(2)
             }
+
+            // Time Reclaimed reveal — the last thing shown before returning home
+            if let moment = viewModel.timeReclaimedMoment {
+                TimeReclaimedCardView(moment: moment) {
+                    DispatchQueue.main.async { viewModel.dismissTimeReclaimed() }
+                }
+                .zIndex(3)
+            }
         }
         // Tap toggles controls — must be on ZStack, not inner views
         .onChange(of: viewModel.isComplete) { _, complete in

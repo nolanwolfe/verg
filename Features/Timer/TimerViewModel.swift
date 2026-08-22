@@ -15,6 +15,7 @@ final class TimerViewModel: ObservableObject {
     @Published var showCamera: Bool = false
     @Published var showUploadPhotoNotice: Bool = false
     @Published var celebratedMilestone: Milestone?
+    @Published var timeReclaimedMoment: TimeReclaimedMoment?
 
     // MARK: - Dependencies
     private let timerService: TimerService
@@ -181,8 +182,8 @@ final class TimerViewModel: ObservableObject {
     }
 
     /// The just-saved session, held between `onPhotoSaved` and the eventual
-    /// `onComplete` call so a milestone celebration can sit in between
-    /// without losing track of what to report.
+    /// `onComplete` call so a milestone celebration and the Time Reclaimed
+    /// reveal can sit in between without losing track of what to report.
     private var pendingSession: Session?
 
     func onPhotoSaved(_ session: Session) {
@@ -195,7 +196,7 @@ final class TimerViewModel: ObservableObject {
         print("[SessionGating] Photo saved. Total sessions: \(sessionCount)")
         #endif
 
-        // Crossed a page milestone? Celebrate before completing.
+        // Crossed a page milestone? Celebrate before the Time Reclaimed reveal.
         if let milestone = AchievementService.shared.checkForNewMilestones(
             totalSessions: storageService.stats.totalSessions
         ) {
@@ -203,13 +204,39 @@ final class TimerViewModel: ObservableObject {
             return
         }
 
-        // Complete the session - paywall will show when user tries to START their 4th session
-        onComplete?(session)
+        presentTimeReclaimedMoment(for: session)
     }
 
     /// Called when the milestone celebration is dismissed
     func dismissCelebration() {
         celebratedMilestone = nil
+        guard let session = pendingSession else {
+            onComplete?(nil)
+            return
+        }
+        presentTimeReclaimedMoment(for: session)
+    }
+
+    /// Builds the post-session reveal from today's sessions (including the
+    /// one just saved). Uses the running daily total — not just this
+    /// session's length — once a second session lands the same day, per
+    /// the "no per-session repeats" rule.
+    private func presentTimeReclaimedMoment(for session: Session) {
+        let calendar = Calendar.current
+        let todaysSessions = storageService.sessions.filter { calendar.isDateInToday($0.date) }
+        let isFirstSessionToday = todaysSessions.count <= 1
+        let todaySeconds = todaysSessions.reduce(0) { $0 + $1.activeDuration }
+        timeReclaimedMoment = TimeReclaimed.moment(
+            todaySeconds: todaySeconds,
+            isFirstSessionToday: isFirstSessionToday,
+            streak: storageService.stats.currentStreak
+        )
+    }
+
+    /// Called when the Time Reclaimed reveal is dismissed — the last step
+    /// before the session screen closes.
+    func dismissTimeReclaimed() {
+        timeReclaimedMoment = nil
         onComplete?(pendingSession)
     }
 
