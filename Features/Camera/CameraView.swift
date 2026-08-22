@@ -53,6 +53,14 @@ struct CameraView: View {
                     }
                 }
         }
+        .fullScreenCover(isPresented: $viewModel.showPaywall) {
+            PaywallView(onSubscribed: {
+                viewModel.showPaywall = false
+                // Now premium — retry the save that triggered the paywall
+                viewModel.usePhoto()
+            })
+            .environmentObject(PurchaseService.shared)
+        }
         .onAppear {
             viewModel.sessionDuration = duration
             viewModel.sessionActiveDuration = activeDuration

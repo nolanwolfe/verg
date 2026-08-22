@@ -118,6 +118,8 @@ enum AppStrings {
 
     // MARK: - Session Gating
     enum SessionGating {
-        static let freeSessionsLimit = 3
+        /// Writing is unlimited; free users get one saved page before the
+        /// paywall gates further saves.
+        static let freePhotoLimit = 1
     }
 }

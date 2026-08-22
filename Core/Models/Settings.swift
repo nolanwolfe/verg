@@ -22,7 +22,7 @@ struct AppSettings: Codable, Equatable {
     var weeklySummaryNotificationsEnabled: Bool
 
     init(
-        timerDuration: TimeInterval = 900, // 15 minutes default
+        timerDuration: TimeInterval = 600, // 10 minutes default
         soundEnabled: Bool = true,
         notificationsEnabled: Bool = false,
         notificationTime: Date = AppSettings.defaultNotificationTime,
@@ -67,7 +67,7 @@ struct AppSettings: Codable, Equatable {
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        timerDuration = try container.decodeIfPresent(TimeInterval.self, forKey: .timerDuration) ?? 900
+        timerDuration = try container.decodeIfPresent(TimeInterval.self, forKey: .timerDuration) ?? 600
         soundEnabled = try container.decodeIfPresent(Bool.self, forKey: .soundEnabled) ?? true
         notificationsEnabled = try container.decodeIfPresent(Bool.self, forKey: .notificationsEnabled) ?? false
         notificationTime = try container.decodeIfPresent(Date.self, forKey: .notificationTime) ?? AppSettings.defaultNotificationTime

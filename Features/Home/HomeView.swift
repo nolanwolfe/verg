@@ -8,14 +8,11 @@ struct HomeView: View {
     @EnvironmentObject private var purchaseService: PurchaseService
 
     @State private var showTimer = false
-    @State private var showPaywall = false
     @State private var showDurationPicker = false
 
     // Silent brightness control
     @State private var brightness: Double = UIScreen.main.brightness
     @State private var dragStartBrightness: Double = UIScreen.main.brightness
-
-    private let gatingService = SessionGatingService.shared
 
     var body: some View {
         ZStack {
@@ -75,20 +72,6 @@ struct HomeView: View {
                 viewModel.refresh()
             })
         }
-        .fullScreenCover(isPresented: $showPaywall, onDismiss: {
-            // Refresh after paywall closes to check subscription status
-            viewModel.refresh()
-        }) {
-            PaywallView(onSubscribed: {
-                // User subscribed - dismiss paywall and start session
-                showPaywall = false
-                // Start timer after brief delay to let paywall dismiss
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    showTimer = true
-                }
-            })
-            .environmentObject(purchaseService)
-        }
         .onAppear {
             DispatchQueue.main.async {
                 viewModel.refresh()
@@ -100,16 +83,10 @@ struct HomeView: View {
     }
 
     // MARK: - Session Start Logic
+    // Writing is always free and unlimited — the paywall only gates saving
+    // a page beyond the free allotment (see CameraViewModel.usePhoto()).
     private func attemptStartSession() {
-        // Log gating status for debugging
-        gatingService.logGatingStatus()
-
-        if gatingService.canStartSession {
-            showTimer = true
-        } else {
-            // User has exceeded free session limit - show paywall
-            showPaywall = true
-        }
+        showTimer = true
     }
 
     // MARK: - Streak Section

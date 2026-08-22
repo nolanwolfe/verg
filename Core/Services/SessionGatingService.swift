@@ -14,7 +14,10 @@ final class SessionGatingService {
     private let purchaseService: PurchaseService
 
     // MARK: - Constants
-    nonisolated static let freeSessionsLimit = 3
+    /// Writing — lighting the candle, the timer, the bell — is always free
+    /// and unlimited. Free users get one saved page; the paywall gates
+    /// every save after that, not starting a session.
+    nonisolated static let freePhotoLimit = 1
 
     // MARK: - Initialization
     init(
@@ -27,7 +30,7 @@ final class SessionGatingService {
 
     // MARK: - Public API
 
-    /// Number of completed sessions
+    /// Number of pages (photos) saved so far
     var completedSessionCount: Int {
         storageService.sessions.count
     }
@@ -37,45 +40,45 @@ final class SessionGatingService {
         purchaseService.isSubscribed || purchaseService.isFriendsAndFamily
     }
 
-    /// Whether the user can start a new session
-    /// - Returns: true if user is premium OR has not exceeded free session limit
-    var canStartSession: Bool {
-        return canStartSession(
-            isPremium: isPremium,
-            completedSessionCount: completedSessionCount
-        )
+    /// Writing itself is always free and unlimited — nothing gates starting
+    /// the candle/timer.
+    var canStartSession: Bool { true }
+
+    /// Whether the user can save another photographed page for free.
+    var canSavePhoto: Bool {
+        Self.canSavePhoto(isPremium: isPremium, completedPhotoCount: completedSessionCount)
     }
 
-    /// Whether the user should see the paywall when trying to start a session
-    var shouldShowPaywall: Bool {
-        !canStartSession
+    /// Whether the paywall should show when the user tries to save a page
+    var shouldShowPaywallForPhoto: Bool {
+        !canSavePhoto
     }
 
-    /// Remaining free sessions (0 if premium or exceeded limit)
-    var remainingFreeSessions: Int {
+    /// Remaining free page saves (0 if premium or exceeded limit)
+    var remainingFreePhotos: Int {
         if isPremium {
             return Int.max // Unlimited for premium
         }
-        return max(0, Self.freeSessionsLimit - completedSessionCount)
+        return max(0, Self.freePhotoLimit - completedSessionCount)
     }
 
     // MARK: - Pure Gating Logic (for testing)
 
-    /// Pure function to determine if a session can be started
+    /// Pure function to determine if another page can be saved for free
     /// - Parameters:
     ///   - isPremium: Whether the user has premium subscription
-    ///   - completedSessionCount: Number of completed sessions
-    /// - Returns: true if session can be started
-    nonisolated static func canStartSession(isPremium: Bool, completedSessionCount: Int) -> Bool {
+    ///   - completedPhotoCount: Number of pages already saved
+    /// - Returns: true if the save can proceed without the paywall
+    nonisolated static func canSavePhoto(isPremium: Bool, completedPhotoCount: Int) -> Bool {
         if isPremium {
             return true
         }
-        return completedSessionCount < freeSessionsLimit
+        return completedPhotoCount < freePhotoLimit
     }
 
     /// Instance method wrapper for testability
-    nonisolated func canStartSession(isPremium: Bool, completedSessionCount: Int) -> Bool {
-        Self.canStartSession(isPremium: isPremium, completedSessionCount: completedSessionCount)
+    nonisolated func canSavePhoto(isPremium: Bool, completedPhotoCount: Int) -> Bool {
+        Self.canSavePhoto(isPremium: isPremium, completedPhotoCount: completedPhotoCount)
     }
 
     // MARK: - Logging
@@ -83,7 +86,7 @@ final class SessionGatingService {
     /// Logs current gating status (useful for debugging)
     func logGatingStatus() {
         #if DEBUG
-        print("[SessionGating] Premium: \(isPremium), Completed Sessions: \(completedSessionCount), Can Start: \(canStartSession)")
+        print("[SessionGating] Premium: \(isPremium), Saved Pages: \(completedSessionCount), Can Save Next: \(canSavePhoto)")
         #endif
     }
 }
