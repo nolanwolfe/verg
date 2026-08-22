@@ -1,11 +1,27 @@
 import SwiftUI
 
-/// Full-screen celebration shown when a page milestone is crossed
+/// Full-screen celebration shown when a milestone is crossed — page-count
+/// milestones and weekly-goal milestones both render through this same view.
 struct MilestoneCelebrationView: View {
-    let milestone: Milestone
+    let icon: String
+    let title: String
+    var subtitle: String = "Your journal is growing."
     let onContinue: () -> Void
 
     @State private var appeared = false
+
+    init(milestone: Milestone, onContinue: @escaping () -> Void) {
+        self.icon = milestone.icon
+        self.title = milestone.title
+        self.onContinue = onContinue
+    }
+
+    init(goalMilestone: WeeklyGoalMilestone, onContinue: @escaping () -> Void) {
+        self.icon = goalMilestone.icon
+        self.title = goalMilestone.title
+        self.subtitle = "You're building a habit."
+        self.onContinue = onContinue
+    }
 
     var body: some View {
         ZStack {
@@ -16,7 +32,7 @@ struct MilestoneCelebrationView: View {
                 StreakFlameIcon(size: 48)
                     .shadow(color: Color(hex: "FF9500").opacity(0.6), radius: 24)
 
-                Image(systemName: milestone.icon)
+                Image(systemName: icon)
                     .font(.system(size: 44))
                     .foregroundStyle(
                         LinearGradient(
@@ -27,11 +43,11 @@ struct MilestoneCelebrationView: View {
                     )
 
                 VStack(spacing: Theme.Spacing.xs) {
-                    Text(milestone.title)
+                    Text(title)
                         .font(Theme.Typography.title)
                         .foregroundColor(Theme.Colors.primaryText)
 
-                    Text("Your journal is growing.")
+                    Text(subtitle)
                         .font(Theme.Typography.subheadline)
                         .foregroundColor(Theme.Colors.secondaryText)
                 }

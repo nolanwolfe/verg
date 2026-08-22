@@ -21,8 +21,13 @@ struct AppSettings: Codable, Equatable {
     // about reducing phone use shouldn't generate pings unless asked to.
     var weeklySummaryNotificationsEnabled: Bool
 
+    /// Days/week the user committed to during onboarding (3, 5, or 7) — nil
+    /// if they skipped that step or predate its existence. Drives the
+    /// weekly-goal milestone track; purely informational otherwise.
+    var weeklyCommitmentDaysPerWeek: Int?
+
     init(
-        timerDuration: TimeInterval = 600, // 10 minutes default
+        timerDuration: TimeInterval = AppSettings.defaultTimerDuration,
         soundEnabled: Bool = true,
         notificationsEnabled: Bool = false,
         notificationTime: Date = AppSettings.defaultNotificationTime,
@@ -32,7 +37,8 @@ struct AppSettings: Codable, Equatable {
         uploadPhotoNoticeShownCount: Int = 0,
         ambientSoundEnabled: Bool = false,
         ambientSoundID: String = "rain",
-        weeklySummaryNotificationsEnabled: Bool = false
+        weeklySummaryNotificationsEnabled: Bool = false,
+        weeklyCommitmentDaysPerWeek: Int? = nil
     ) {
         self.timerDuration = timerDuration
         self.soundEnabled = soundEnabled
@@ -45,6 +51,7 @@ struct AppSettings: Codable, Equatable {
         self.ambientSoundEnabled = ambientSoundEnabled
         self.ambientSoundID = ambientSoundID
         self.weeklySummaryNotificationsEnabled = weeklySummaryNotificationsEnabled
+        self.weeklyCommitmentDaysPerWeek = weeklyCommitmentDaysPerWeek
     }
 
     // MARK: - Codable (tolerant decoding)
@@ -63,11 +70,12 @@ struct AppSettings: Codable, Equatable {
         case ambientSoundEnabled
         case ambientSoundID
         case weeklySummaryNotificationsEnabled
+        case weeklyCommitmentDaysPerWeek
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        timerDuration = try container.decodeIfPresent(TimeInterval.self, forKey: .timerDuration) ?? 600
+        timerDuration = try container.decodeIfPresent(TimeInterval.self, forKey: .timerDuration) ?? AppSettings.defaultTimerDuration
         soundEnabled = try container.decodeIfPresent(Bool.self, forKey: .soundEnabled) ?? true
         notificationsEnabled = try container.decodeIfPresent(Bool.self, forKey: .notificationsEnabled) ?? false
         notificationTime = try container.decodeIfPresent(Date.self, forKey: .notificationTime) ?? AppSettings.defaultNotificationTime
@@ -78,7 +86,13 @@ struct AppSettings: Codable, Equatable {
         ambientSoundEnabled = try container.decodeIfPresent(Bool.self, forKey: .ambientSoundEnabled) ?? false
         ambientSoundID = try container.decodeIfPresent(String.self, forKey: .ambientSoundID) ?? "rain"
         weeklySummaryNotificationsEnabled = try container.decodeIfPresent(Bool.self, forKey: .weeklySummaryNotificationsEnabled) ?? false
+        weeklyCommitmentDaysPerWeek = try container.decodeIfPresent(Int.self, forKey: .weeklyCommitmentDaysPerWeek)
     }
+
+    /// The app's own pitch: a session is 10 minutes. Also what the
+    /// onboarding projection screen assumes per session — see
+    /// OnboardingProjection.
+    static let defaultTimerDuration: TimeInterval = 600
 
     /// Default notification time (8:00 PM)
     static var defaultNotificationTime: Date {

@@ -15,6 +15,7 @@ final class TimerViewModel: ObservableObject {
     @Published var showCamera: Bool = false
     @Published var showUploadPhotoNotice: Bool = false
     @Published var celebratedMilestone: Milestone?
+    @Published var celebratedGoalMilestone: WeeklyGoalMilestone?
     @Published var timeReclaimedMoment: TimeReclaimedMoment?
 
     // MARK: - Dependencies
@@ -147,6 +148,16 @@ final class TimerViewModel: ObservableObject {
         // Play haptic
         audioService.playHaptic(UINotificationFeedbackGenerator.FeedbackType.success)
 
+        // Day 3 of an active streak, right after the bell — one of exactly
+        // two places this ever fires (the other is onboarding). Never on
+        // cold launch, never twice a session (RatingPromptService enforces
+        // that itself).
+        if storageService.stats.currentStreak == 3 {
+            MainActor.assumeIsolated {
+                RatingPromptService.requestReviewIfAppropriate()
+            }
+        }
+
         // Always show "Save your page" notice after session completes
         // This prompts user to upload a photo of their writing
         // Delay matches burnout sequence duration: stutter (0.5s) + extinguish (0.22s) + margin
@@ -182,9 +193,12 @@ final class TimerViewModel: ObservableObject {
     }
 
     /// The just-saved session, held between `onPhotoSaved` and the eventual
-    /// `onComplete` call so a milestone celebration and the Time Reclaimed
+    /// `onComplete` call so the celebration sequence and the Time Reclaimed
     /// reveal can sit in between without losing track of what to report.
     private var pendingSession: Session?
+    /// A crossed weekly-goal milestone, queued behind the page-milestone
+    /// celebration (if any) so at most one celebration shows at a time.
+    private var pendingGoalMilestone: WeeklyGoalMilestone?
 
     func onPhotoSaved(_ session: Session) {
         showCamera = false
@@ -196,7 +210,17 @@ final class TimerViewModel: ObservableObject {
         print("[SessionGating] Photo saved. Total sessions: \(sessionCount)")
         #endif
 
-        // Crossed a page milestone? Celebrate before the Time Reclaimed reveal.
+        // Compute a goal-milestone crossing now (if the user set a weekly
+        // commitment during onboarding), but queue it — page milestones
+        // take celebration priority when both land on the same save.
+        if let goalDaysPerWeek = storageService.settings.weeklyCommitmentDaysPerWeek {
+            pendingGoalMilestone = AchievementService.shared.checkForNewWeeklyGoalMilestones(
+                sessions: storageService.sessions,
+                goalDaysPerWeek: goalDaysPerWeek
+            )
+        }
+
+        // Crossed a page milestone? Celebrate before anything else.
         if let milestone = AchievementService.shared.checkForNewMilestones(
             totalSessions: storageService.stats.totalSessions
         ) {
@@ -204,14 +228,33 @@ final class TimerViewModel: ObservableObject {
             return
         }
 
-        presentTimeReclaimedMoment(for: session)
+        presentNextCelebrationOrTimeReclaimed(for: session)
     }
 
-    /// Called when the milestone celebration is dismissed
+    /// Called when the page-milestone celebration is dismissed
     func dismissCelebration() {
         celebratedMilestone = nil
         guard let session = pendingSession else {
             onComplete?(nil)
+            return
+        }
+        presentNextCelebrationOrTimeReclaimed(for: session)
+    }
+
+    /// Called when the weekly-goal milestone celebration is dismissed
+    func dismissGoalCelebration() {
+        celebratedGoalMilestone = nil
+        guard let session = pendingSession else {
+            onComplete?(nil)
+            return
+        }
+        presentTimeReclaimedMoment(for: session)
+    }
+
+    private func presentNextCelebrationOrTimeReclaimed(for session: Session) {
+        if let goalMilestone = pendingGoalMilestone {
+            pendingGoalMilestone = nil
+            celebratedGoalMilestone = goalMilestone
             return
         }
         presentTimeReclaimedMoment(for: session)

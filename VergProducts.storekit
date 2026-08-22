@@ -80,13 +80,6 @@
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "6478523901",
-          "introductoryOffer" : {
-            "displayPrice" : "0",
-            "internalID" : "1234567891",
-            "numberOfPeriods" : 1,
-            "paymentMode" : "free",
-            "subscriptionPeriod" : "P1M"
-          },
           "localizations" : [
             {
               "description" : "Monthly access to Verg Pro features",

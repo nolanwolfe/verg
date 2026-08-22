@@ -33,13 +33,11 @@ final class PurchaseService: ObservableObject {
     @MainActor @Published private(set) var isLoading: Bool = false
     @MainActor @Published private(set) var monthlyPrice: String = "$4.99"
     @MainActor @Published private(set) var yearlyPrice: String = "$60.00"
-    @MainActor @Published private(set) var monthlyIntroOffer: String? = "30 days free"
+    // Trial is yearly-only — monthly's default has no placeholder trial text
+    // so it never flashes an offer that isn't real before StoreKit data loads.
+    @MainActor @Published private(set) var monthlyIntroOffer: String?
     @MainActor @Published private(set) var yearlyIntroOffer: String? = "30 days free"
     @MainActor @Published var errorMessage: String?
-
-    // MARK: - Product IDs
-    private let monthlyID = "Verg_Monthly"
-    private let yearlyID = "Verg_Yearly"
 
     // RevenueCat API key - empty means use StoreKit testing
     private let revenueCatAPIKey = "appl_wQqrrrHwpiBHrHJDqnuBKYOfysb"
@@ -119,7 +117,7 @@ final class PurchaseService: ObservableObject {
             self.currentOffering = offerings["premium"] ?? offerings.current
             if let current = self.currentOffering {
                 // Map monthly and yearly packages by identifier or product id
-                if let monthlyPkg = current.availablePackages.first(where: { $0.identifier.lowercased().contains("month") || $0.storeProduct.productIdentifier == monthlyID }) {
+                if let monthlyPkg = current.availablePackages.first(where: { $0.identifier.lowercased().contains("month") || $0.storeProduct.productIdentifier == ProductIdentifiers.monthly }) {
                     if let formatted = monthlyPkg.storeProduct.priceFormatter?.string(from: monthlyPkg.storeProduct.price as NSDecimalNumber) {
                         monthlyPrice = formatted
                     } else {
@@ -129,7 +127,7 @@ final class PurchaseService: ObservableObject {
                         monthlyIntroOffer = intro.localizedSubscriptionPeriod
                     }
                 }
-                if let yearlyPkg = current.availablePackages.first(where: { $0.identifier.lowercased().contains("year") || $0.storeProduct.productIdentifier == yearlyID }) {
+                if let yearlyPkg = current.availablePackages.first(where: { $0.identifier.lowercased().contains("year") || $0.storeProduct.productIdentifier == ProductIdentifiers.yearly }) {
                     if let formatted = yearlyPkg.storeProduct.priceFormatter?.string(from: yearlyPkg.storeProduct.price as NSDecimalNumber) {
                         yearlyPrice = formatted
                     } else {
@@ -162,13 +160,13 @@ final class PurchaseService: ObservableObject {
 
         // Always fetch StoreKit products so the native paywall has products available
         do {
-            products = try await Product.products(for: [monthlyID, yearlyID])
+            products = try await Product.products(for: [ProductIdentifiers.monthly, ProductIdentifiers.yearly])
 
             for product in products {
-                if product.id == monthlyID {
+                if product.id == ProductIdentifiers.monthly {
                     monthlyPrice = product.displayPrice
                     monthlyIntroOffer = product.introOfferDescription
-                } else if product.id == yearlyID {
+                } else if product.id == ProductIdentifiers.yearly {
                     yearlyPrice = product.displayPrice
                     yearlyIntroOffer = product.introOfferDescription
                 }
@@ -207,7 +205,7 @@ final class PurchaseService: ObservableObject {
             var hasSubscription = false
             for await result in Transaction.currentEntitlements {
                 if case .verified(let transaction) = result {
-                    if transaction.productID == monthlyID || transaction.productID == yearlyID {
+                    if transaction.productID == ProductIdentifiers.monthly || transaction.productID == ProductIdentifiers.yearly {
                         if transaction.revocationDate == nil {
                             hasSubscription = true
                             break
@@ -223,11 +221,11 @@ final class PurchaseService: ObservableObject {
 
     @MainActor
     func purchaseMonthly() async -> Bool {
-        guard let product = products.first(where: { $0.id == monthlyID }) else {
+        guard let product = products.first(where: { $0.id == ProductIdentifiers.monthly }) else {
             if products.isEmpty {
                 await fetchProducts()
             }
-            guard let product = products.first(where: { $0.id == monthlyID }) else {
+            guard let product = products.first(where: { $0.id == ProductIdentifiers.monthly }) else {
                 errorMessage = "Product not found"
                 return false
             }
@@ -238,11 +236,11 @@ final class PurchaseService: ObservableObject {
 
     @MainActor
     func purchaseYearly() async -> Bool {
-        guard let product = products.first(where: { $0.id == yearlyID }) else {
+        guard let product = products.first(where: { $0.id == ProductIdentifiers.yearly }) else {
             if products.isEmpty {
                 await fetchProducts()
             }
-            guard let product = products.first(where: { $0.id == yearlyID }) else {
+            guard let product = products.first(where: { $0.id == ProductIdentifiers.yearly }) else {
                 errorMessage = "Product not found"
                 return false
             }
@@ -335,7 +333,7 @@ final class PurchaseService: ObservableObject {
                 // Check for active subscriptions
                 for await result in Transaction.currentEntitlements {
                     if case .verified(let transaction) = result {
-                        if transaction.productID == monthlyID || transaction.productID == yearlyID {
+                        if transaction.productID == ProductIdentifiers.monthly || transaction.productID == ProductIdentifiers.yearly {
                             if transaction.revocationDate == nil {
                                 isSubscribed = true
                                 #if DEBUG
@@ -363,11 +361,11 @@ final class PurchaseService: ObservableObject {
     // MARK: - Helper Properties
 
     var monthlyProduct: Product? {
-        products.first { $0.id == monthlyID }
+        products.first { $0.id == ProductIdentifiers.monthly }
     }
 
     var yearlyProduct: Product? {
-        products.first { $0.id == yearlyID }
+        products.first { $0.id == ProductIdentifiers.yearly }
     }
 }
 

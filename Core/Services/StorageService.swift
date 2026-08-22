@@ -494,6 +494,11 @@ final class StorageService: ObservableObject {
         saveSettings()
     }
 
+    func setWeeklyCommitmentDaysPerWeek(_ days: Int?) {
+        settings.weeklyCommitmentDaysPerWeek = days
+        saveSettings()
+    }
+
     // MARK: - Coach Mark Notice Management
     func setHasSeenSetTimerNotice(_ seen: Bool) {
         settings.hasSeenSetTimerNotice = seen

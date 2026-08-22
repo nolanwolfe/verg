@@ -80,6 +80,15 @@ struct TimerView: View {
                 .zIndex(2)
             }
 
+            // Weekly-goal milestone celebration — queued behind the page
+            // milestone above, shown next if both crossed on the same save
+            if let goalMilestone = viewModel.celebratedGoalMilestone {
+                MilestoneCelebrationView(goalMilestone: goalMilestone) {
+                    DispatchQueue.main.async { viewModel.dismissGoalCelebration() }
+                }
+                .zIndex(2)
+            }
+
             // Time Reclaimed reveal — the last thing shown before returning home
             if let moment = viewModel.timeReclaimedMoment {
                 TimeReclaimedCardView(moment: moment) {

@@ -10,10 +10,12 @@ final class AchievementService: ObservableObject {
 
     // MARK: - Published Properties
     @Published private(set) var unlockedThresholds: Set<Int> = []
+    @Published private(set) var unlockedGoalWeekThresholds: Set<Int> = []
 
     // MARK: - Private Properties
     private let userDefaults = UserDefaults.standard
     private let achievementsKey = "verg.achievements"
+    private let goalAchievementsKey = "verg.goalAchievements"
 
     // MARK: - Initialization
     private init(storageService: StorageService = .shared) {
@@ -27,6 +29,18 @@ final class AchievementService: ObservableObject {
                 totalSessions: storageService.stats.totalSessions
             )
             save()
+        }
+
+        if let data = userDefaults.data(forKey: goalAchievementsKey),
+           let decoded = try? JSONDecoder().decode([Int].self, from: data) {
+            unlockedGoalWeekThresholds = Set(decoded)
+        } else if let goalDaysPerWeek = storageService.settings.weeklyCommitmentDaysPerWeek {
+            let weeksMet = WeeklyGoalTracker.weeksGoalMet(
+                sessions: storageService.sessions,
+                goalDaysPerWeek: goalDaysPerWeek
+            )
+            unlockedGoalWeekThresholds = WeeklyGoalMilestone.earnedThresholds(weeksMet: weeksMet)
+            saveGoalAchievements()
         }
     }
 
@@ -46,9 +60,31 @@ final class AchievementService: ObservableObject {
         unlockedThresholds.contains(milestone.threshold)
     }
 
+    // MARK: - Weekly Goal Milestone Checks
+    /// Records all newly crossed weekly-goal milestones and returns the
+    /// highest one to celebrate, or nil if nothing new was crossed.
+    @discardableResult
+    func checkForNewWeeklyGoalMilestones(sessions: [Session], goalDaysPerWeek: Int) -> WeeklyGoalMilestone? {
+        let weeksMet = WeeklyGoalTracker.weeksGoalMet(sessions: sessions, goalDaysPerWeek: goalDaysPerWeek)
+        let newly = WeeklyGoalMilestone.newlyCrossed(weeksMet: weeksMet, unlocked: unlockedGoalWeekThresholds)
+        guard !newly.isEmpty else { return nil }
+        unlockedGoalWeekThresholds.formUnion(newly.map(\.weeksThreshold))
+        saveGoalAchievements()
+        return newly.max(by: { $0.weeksThreshold < $1.weeksThreshold })
+    }
+
+    func isUnlocked(_ milestone: WeeklyGoalMilestone) -> Bool {
+        unlockedGoalWeekThresholds.contains(milestone.weeksThreshold)
+    }
+
     // MARK: - Persistence
     private func save() {
         guard let encoded = try? JSONEncoder().encode(Array(unlockedThresholds).sorted()) else { return }
         userDefaults.set(encoded, forKey: achievementsKey)
+    }
+
+    private func saveGoalAchievements() {
+        guard let encoded = try? JSONEncoder().encode(Array(unlockedGoalWeekThresholds).sorted()) else { return }
+        userDefaults.set(encoded, forKey: goalAchievementsKey)
     }
 }
