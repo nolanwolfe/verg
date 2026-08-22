@@ -46,12 +46,14 @@
       reschedules
 - [ ] Pro gating: Ambience row locked for free users → paywall; unlocked for
       subscriber / access-code accounts
-- [ ] Time Reclaimed: after a session, toast reads "You wrote for N minutes
-      instead of scrolling" (or the running daily total on a 2nd+ same-day
-      session) — dismisses on its own after ~4s, tap also dismisses, never
-      reappears until the next session. Background the app mid-session and
-      confirm the backgrounded minutes are NOT counted (compare toast/Stats
-      total against a stopwatch of foreground time only). Stats tab shows a
+- [ ] Time Reclaimed: after a session (once any milestone celebration
+      clears), a full-screen reveal reads "You wrote for N minutes instead
+      of scrolling" (or the running daily total on a 2nd+ same-day
+      session) — big number, spring-in, haptic, "Continue" returns home.
+      Skipping the photo or cancelling the session shows neither milestone
+      nor this reveal. Background the app mid-session and confirm the
+      backgrounded minutes are NOT counted (compare the reveal/Stats total
+      against a stopwatch of foreground time only). Stats tab shows a
       correct This Week total + delta vs. last week + streak, and an
       all-time total in the carousel. Weekly Recap toggle in Settings is off
       by default and, when enabled, requests notification permission
@@ -59,4 +61,4 @@
 ## Version
 
 - Marketing version: 2.2
-- Build: 7
+- Build: 8
