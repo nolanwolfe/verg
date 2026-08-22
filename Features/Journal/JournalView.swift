@@ -24,6 +24,7 @@ struct JournalView: View {
                 PageGridView(
                     sessions: viewModel.currentSessions,
                     loadThumbnail: { await viewModel.loadThumbnailAsync(for: $0) },
+                    peekThumbnail: { viewModel.cachedThumbnail(for: $0) },
                     onSelect: { viewModel.selectSession($0, in: viewModel.currentSessions) },
                     emptyStateMessage: viewModel.books.isEmpty
                         ? "Complete a writing session to capture your first page"
@@ -37,6 +38,7 @@ struct JournalView: View {
                 initialIndex: viewModel.selectedSessionIndex,
                 loadImage: { await viewModel.loadImageAsync(for: $0) },
                 loadThumbnail: { await viewModel.loadThumbnailAsync(for: $0) },
+                peekThumbnail: { viewModel.cachedThumbnail(for: $0) },
                 onDismiss: {
                     viewModel.showFullScreenImage = false
                     viewModel.selectedSession = nil

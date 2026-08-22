@@ -1,6 +1,8 @@
 import Foundation
 import UIKit
 import Combine
+import ImageIO
+import UniformTypeIdentifiers
 
 /// Service for persisting sessions, stats, and settings
 final class StorageService: ObservableObject {
@@ -27,12 +29,16 @@ final class StorageService: ObservableObject {
     private let booksKey = "verg.books"
     private let statsKey = "verg.stats"
     private let settingsKey = "verg.settings"
+    private let imageMigrationKey = "verg.imageMigration.v1"
 
     // MARK: - Initialization
     private init() {
         imageCache.countLimit = 8
+        imageCache.totalCostLimit = 64 * 1024 * 1024
         thumbnailCache.countLimit = 400
+        thumbnailCache.totalCostLimit = 48 * 1024 * 1024
         loadAllData()
+        migrateLegacyImagesIfNeeded()
     }
 
     // MARK: - Directory Management
@@ -138,7 +144,9 @@ final class StorageService: ObservableObject {
         }
 
         do {
-            try imageData.write(to: imageURL)
+            // Encrypted at rest while the device is locked — capture only
+            // happens with the app in the foreground, so .complete is safe
+            try imageData.write(to: imageURL, options: [.atomic, .completeFileProtection])
         } catch {
             #if DEBUG
             print("Error saving image: \(error)")
@@ -252,7 +260,7 @@ final class StorageService: ObservableObject {
         let imageURL = imagesDirectory.appendingPathComponent(session.imagePath)
         guard let data = try? Data(contentsOf: imageURL),
               let image = UIImage(data: data) else { return nil }
-        imageCache.setObject(image, forKey: key)
+        imageCache.setObject(image, forKey: key, cost: image.memoryCost)
         return image
     }
 
@@ -262,8 +270,15 @@ final class StorageService: ObservableObject {
         if let cached = thumbnailCache.object(forKey: key) { return cached }
         let imageURL = imagesDirectory.appendingPathComponent(session.imagePath)
         guard let thumbnail = downsample(imageAt: imageURL, to: CGSize(width: size, height: size)) else { return nil }
-        thumbnailCache.setObject(thumbnail, forKey: key)
+        thumbnailCache.setObject(thumbnail, forKey: key, cost: thumbnail.memoryCost)
         return thumbnail
+    }
+
+    /// Synchronous cache-only thumbnail lookup — never touches disk, safe on
+    /// the main thread. Lets grid cells and the fullscreen viewer show an
+    /// already-decoded thumbnail instantly instead of flashing a placeholder.
+    func cachedThumbnail(for session: Session, size: CGFloat = 200) -> UIImage? {
+        thumbnailCache.object(forKey: "\(session.imagePath)_thumb_\(Int(size))" as NSString)
     }
 
     /// Cap stored photos at maxDimension px on the long edge and bake orientation
@@ -306,6 +321,94 @@ final class StorageService: ObservableObject {
             imageIOQueue.async { [weak self] in
                 continuation.resume(returning: self?.getThumbnail(for: session, size: size))
             }
+        }
+    }
+
+    // MARK: - Legacy Image Migration
+    /// Pages saved before 2.2 kept the full camera resolution (~12 MP), which
+    /// makes every decode expensive and is the main source of journal lag on
+    /// long-standing installs. One-time pass: re-encode anything over
+    /// 2048 px down to the current storage cap and apply file protection.
+    /// The done-flag is only set when every file succeeded, so an interrupted
+    /// run resumes on the next launch (already-migrated files are skipped
+    /// by the dimension check).
+    private func migrateLegacyImagesIfNeeded() {
+        guard !userDefaults.bool(forKey: imageMigrationKey) else { return }
+        let snapshot = sessions
+        guard !snapshot.isEmpty else {
+            userDefaults.set(true, forKey: imageMigrationKey)
+            return
+        }
+        let directory = imagesDirectory
+        DispatchQueue.global(qos: .utility).async { [weak self] in
+            guard let self else { return }
+            var allSucceeded = true
+            for session in snapshot {
+                let url = directory.appendingPathComponent(session.imagePath)
+                guard self.fileManager.fileExists(atPath: url.path) else { continue }
+                if self.shrinkStoredImageIfOversized(at: url) {
+                    self.imageCache.removeObject(forKey: session.imagePath as NSString)
+                } else {
+                    allSucceeded = false
+                }
+            }
+            if allSucceeded {
+                DispatchQueue.main.async {
+                    self.userDefaults.set(true, forKey: self.imageMigrationKey)
+                }
+            }
+        }
+    }
+
+    /// Returns true if the file is now within the size cap (shrunk or already
+    /// small). Reads only the header to check dimensions, so untouched files
+    /// cost almost nothing.
+    private func shrinkStoredImageIfOversized(at url: URL, maxDimension: CGFloat = 2048) -> Bool {
+        try? fileManager.setAttributes(
+            [.protectionKey: FileProtectionType.complete],
+            ofItemAtPath: url.path
+        )
+        let sourceOptions = [kCGImageSourceShouldCache: false] as CFDictionary
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, sourceOptions),
+              let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
+              let width = properties[kCGImagePropertyPixelWidth] as? CGFloat,
+              let height = properties[kCGImagePropertyPixelHeight] as? CGFloat else {
+            return false
+        }
+        guard max(width, height) > maxDimension else { return true }
+
+        let thumbnailOptions: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceShouldCacheImmediately: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxDimension
+        ]
+        guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, thumbnailOptions as CFDictionary) else {
+            return false
+        }
+
+        let tempURL = url.deletingPathExtension().appendingPathExtension("migrating.jpg")
+        guard let destination = CGImageDestinationCreateWithURL(
+            tempURL as CFURL, UTType.jpeg.identifier as CFString, 1, nil
+        ) else { return false }
+        CGImageDestinationAddImage(
+            destination, cgImage,
+            [kCGImageDestinationLossyCompressionQuality: 0.8] as CFDictionary
+        )
+        guard CGImageDestinationFinalize(destination) else {
+            try? fileManager.removeItem(at: tempURL)
+            return false
+        }
+        do {
+            try? fileManager.setAttributes(
+                [.protectionKey: FileProtectionType.complete],
+                ofItemAtPath: tempURL.path
+            )
+            _ = try fileManager.replaceItemAt(url, withItemAt: tempURL)
+            return true
+        } catch {
+            try? fileManager.removeItem(at: tempURL)
+            return false
         }
     }
 
@@ -449,14 +552,30 @@ final class StorageService: ObservableObject {
     /// Clear all data (for testing/reset)
     func clearAllData() {
         sessions = []
+        books = []
         stats = UserStats()
         settings = AppSettings()
 
         userDefaults.removeObject(forKey: sessionsKey)
+        userDefaults.removeObject(forKey: booksKey)
         userDefaults.removeObject(forKey: statsKey)
         userDefaults.removeObject(forKey: settingsKey)
 
+        imageCache.removeAllObjects()
+        thumbnailCache.removeAllObjects()
+
         // Delete all images
         try? fileManager.removeItem(at: imagesDirectory)
+    }
+}
+
+// MARK: - UIImage Memory Cost
+private extension UIImage {
+    /// Approximate decoded size in bytes, for NSCache cost accounting
+    var memoryCost: Int {
+        guard let cgImage else {
+            return Int(size.width * scale * size.height * scale * 4)
+        }
+        return cgImage.bytesPerRow * cgImage.height
     }
 }

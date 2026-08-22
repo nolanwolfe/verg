@@ -5,6 +5,7 @@ import UIKit
 struct PageGridView: View {
     let sessions: [Session]
     let loadThumbnail: (Session) async -> UIImage?
+    var peekThumbnail: (Session) -> UIImage? = { _ in nil }
     let onSelect: (Session) -> Void
     var emptyStateMessage: String = "Complete a writing session to capture your first page"
 
@@ -24,6 +25,7 @@ struct PageGridView: View {
                         PageThumbnail(
                             session: session,
                             loadThumbnail: loadThumbnail,
+                            peekThumbnail: peekThumbnail,
                             onTap: { onSelect(session) }
                         )
                     }
@@ -61,6 +63,7 @@ struct PageGridView: View {
 struct PageThumbnail: View {
     let session: Session
     let loadThumbnail: (Session) async -> UIImage?
+    var peekThumbnail: (Session) -> UIImage? = { _ in nil }
     let onTap: () -> Void
 
     @State private var image: UIImage?
@@ -88,6 +91,12 @@ struct PageThumbnail: View {
             .cornerRadius(Theme.CornerRadius.small)
         }
         .task(id: session.id) {
+            // Cached thumbnails render on the first frame; only cache misses
+            // take the async path
+            if image == nil, let cached = peekThumbnail(session) {
+                image = cached
+                return
+            }
             image = await loadThumbnail(session)
         }
     }
@@ -99,6 +108,7 @@ struct FullScreenImageView: View {
     @State private var currentIndex: Int
     let loadImage: (Session) async -> UIImage?
     let loadThumbnail: (Session) async -> UIImage?
+    let peekThumbnail: (Session) -> UIImage?
     let onDismiss: () -> Void
     let onDelete: (Session) -> Void
     let allowsDelete: Bool
@@ -110,6 +120,7 @@ struct FullScreenImageView: View {
         initialIndex: Int,
         loadImage: @escaping (Session) async -> UIImage?,
         loadThumbnail: @escaping (Session) async -> UIImage?,
+        peekThumbnail: @escaping (Session) -> UIImage? = { _ in nil },
         onDismiss: @escaping () -> Void,
         onDelete: @escaping (Session) -> Void = { _ in },
         allowsDelete: Bool = true
@@ -118,6 +129,7 @@ struct FullScreenImageView: View {
         self._currentIndex = State(initialValue: min(initialIndex, max(0, sessions.count - 1)))
         self.loadImage = loadImage
         self.loadThumbnail = loadThumbnail
+        self.peekThumbnail = peekThumbnail
         self.onDismiss = onDismiss
         self.onDelete = onDelete
         self.allowsDelete = allowsDelete
@@ -132,15 +144,26 @@ struct FullScreenImageView: View {
         ZStack {
             Color.black.ignoresSafeArea()
 
-            // Swipeable pages — full-res only near the current index
+            // Swipeable pages. A paged TabView is NOT lazy — every page view
+            // in the ForEach is built when the viewer opens. With 100+ pages
+            // that meant 100+ image-loading tasks firing at once, so only
+            // pages within the swipe window get real content; the rest are
+            // empty placeholders that can never be seen mid-swipe anyway.
             TabView(selection: $currentIndex) {
                 ForEach(Array(sessions.enumerated()), id: \.element.id) { index, session in
-                    FullScreenPageView(
-                        session: session,
-                        isNearCurrent: abs(index - currentIndex) <= 1,
-                        loadImage: loadImage,
-                        loadThumbnail: loadThumbnail
-                    )
+                    Group {
+                        if abs(index - currentIndex) <= 2 {
+                            FullScreenPageView(
+                                session: session,
+                                isNearCurrent: abs(index - currentIndex) <= 1,
+                                loadImage: loadImage,
+                                loadThumbnail: loadThumbnail,
+                                peekThumbnail: peekThumbnail
+                            )
+                        } else {
+                            Color.black
+                        }
+                    }
                     .ignoresSafeArea()
                     .tag(index)
                 }
@@ -247,6 +270,7 @@ private struct FullScreenPageView: View {
     let isNearCurrent: Bool
     let loadImage: (Session) async -> UIImage?
     let loadThumbnail: (Session) async -> UIImage?
+    var peekThumbnail: (Session) -> UIImage? = { _ in nil }
 
     @State private var image: UIImage?
     @State private var hasFullRes = false
@@ -271,6 +295,11 @@ private struct FullScreenPageView: View {
         }
         .task(id: LoadKey(id: session.id, near: isNearCurrent)) {
             if isNearCurrent {
+                // Show the already-decoded grid thumbnail immediately while
+                // the full-res decode happens off-main
+                if image == nil {
+                    image = peekThumbnail(session)
+                }
                 if !hasFullRes, let full = await loadImage(session) {
                     image = full
                     hasFullRes = true

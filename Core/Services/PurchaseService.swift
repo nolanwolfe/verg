@@ -69,9 +69,13 @@ final class PurchaseService: ObservableObject {
 
         if !revenueCatAPIKey.isEmpty {
             // Configure RevenueCat for production
-            Purchases.logLevel = .debug
+            // Verbose logging exposes customer/receipt details in the device
+            // console — keep it out of release builds
             #if DEBUG
+            Purchases.logLevel = .debug
             print("[RC] Configuring RevenueCat with API key: \(revenueCatAPIKey.prefix(6))…")
+            #else
+            Purchases.logLevel = .error
             #endif
             Purchases.configure(withAPIKey: revenueCatAPIKey)
             Task {

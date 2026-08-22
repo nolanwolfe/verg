@@ -109,6 +109,11 @@ final class StatsViewModel: ObservableObject {
         await storageService.loadThumbnailAsync(for: session)
     }
 
+    /// Cache-only synchronous lookup, safe on the main thread
+    func cachedThumbnail(for session: Session) -> UIImage? {
+        storageService.cachedThumbnail(for: session)
+    }
+
     func getImageURL(for session: Session) -> URL {
         return storageService.getImageURL(for: session)
     }

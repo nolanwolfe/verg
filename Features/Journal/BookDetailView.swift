@@ -39,6 +39,7 @@ struct BookDetailView: View {
                     PageGridView(
                         sessions: pages,
                         loadThumbnail: { await viewModel.loadThumbnailAsync(for: $0) },
+                        peekThumbnail: { viewModel.cachedThumbnail(for: $0) },
                         onSelect: { session in
                             selectedIndex = pages.firstIndex(where: { $0.id == session.id }) ?? 0
                             showFullScreen = true
@@ -77,6 +78,7 @@ struct BookDetailView: View {
                 initialIndex: selectedIndex,
                 loadImage: { await viewModel.loadImageAsync(for: $0) },
                 loadThumbnail: { await viewModel.loadThumbnailAsync(for: $0) },
+                peekThumbnail: { viewModel.cachedThumbnail(for: $0) },
                 onDismiss: { showFullScreen = false },
                 allowsDelete: false
             )
