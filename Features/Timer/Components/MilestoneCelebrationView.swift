@@ -29,7 +29,7 @@ struct MilestoneCelebrationView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: Theme.Spacing.lg) {
-                StreakFlameIcon(size: 48)
+                CandleFlameIcon(size: 48)
                     .shadow(color: Color(hex: "FF9500").opacity(0.6), radius: 24)
 
                 Image(systemName: icon)

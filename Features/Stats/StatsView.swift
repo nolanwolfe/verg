@@ -94,9 +94,9 @@ struct StatsView: View {
     private var statCarousel: some View {
         TabView(selection: $currentCard) {
             BigStatCard(
-                title: "Current Streak",
-                value: "\(viewModel.currentStreak)",
-                unit: viewModel.currentStreak == 1 ? "day" : "days"
+                title: "Days Lit",
+                value: "\(viewModel.daysLit)",
+                unit: viewModel.daysLit == 1 ? "day" : "days"
             ) {
                 warmIcon("flame.fill")
             }
@@ -112,9 +112,9 @@ struct StatsView: View {
             .tag(1)
 
             BigStatCard(
-                title: "Longest Streak",
-                value: "\(viewModel.longestStreak)",
-                unit: viewModel.longestStreak == 1 ? "day" : "days"
+                title: "Longest Run",
+                value: "\(viewModel.longestDaysLit)",
+                unit: viewModel.longestDaysLit == 1 ? "day" : "days"
             ) {
                 warmIcon("trophy.fill")
             }
@@ -214,10 +214,10 @@ struct StatsView: View {
 
                 Spacer()
 
-                if summary.streak > 0 {
+                if summary.daysLit > 0 {
                     HStack(spacing: 3) {
-                        StreakFlameIcon(size: 13)
-                        Text("\(summary.streak) \(summary.streak == 1 ? "day" : "days")")
+                        CandleFlameIcon(size: 13)
+                        Text("\(summary.daysLit) \(summary.daysLit == 1 ? "day" : "days")")
                             .font(Theme.Typography.caption)
                             .foregroundColor(Theme.Colors.secondaryText)
                     }

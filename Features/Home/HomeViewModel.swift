@@ -5,28 +5,28 @@ import Combine
 final class HomeViewModel: ObservableObject {
 
     // MARK: - Published Properties
-    @Published private(set) var currentStreak: Int = 0
+    @Published private(set) var daysLit: Int = 0
     @Published private(set) var hasWrittenToday: Bool = false
     @Published private(set) var sessionsToday: Int = 0
 
     // MARK: - Dependencies
-    private let streakService: StreakService
+    private let candleService: CandleService
     private let storageService: StorageService
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Computed Properties
-    var streakText: String {
-        if currentStreak == 0 {
-            return "Start your streak today!"
-        } else if currentStreak == 1 {
-            return "1 day streak"
+    var daysLitText: String {
+        if daysLit == 0 {
+            return "Light your candle today!"
+        } else if daysLit == 1 {
+            return "1 day lit"
         } else {
-            return "\(currentStreak) day streak"
+            return "\(daysLit) days lit"
         }
     }
 
-    var streakDisplayText: String {
-        streakText
+    var daysLitDisplayText: String {
+        daysLitText
     }
 
     var sessionsTodayText: String {
@@ -49,29 +49,29 @@ final class HomeViewModel: ObservableObject {
 
     // MARK: - Initialization
     init(
-        streakService: StreakService = .shared,
+        candleService: CandleService = .shared,
         storageService: StorageService = .shared
     ) {
-        self.streakService = streakService
+        self.candleService = candleService
         self.storageService = storageService
         setupBindings()
     }
 
     // MARK: - Setup
     private func setupBindings() {
-        // Observe streak changes
-        streakService.$currentStreak
+        // Observe days-lit changes
+        candleService.$daysLit
             .receive(on: DispatchQueue.main)
-            .assign(to: &$currentStreak)
+            .assign(to: &$daysLit)
 
-        streakService.$hasWrittenToday
+        candleService.$hasWrittenToday
             .receive(on: DispatchQueue.main)
             .assign(to: &$hasWrittenToday)
     }
 
     // MARK: - Actions
     func refresh() {
-        streakService.refreshStreak()
+        candleService.refreshDaysLit()
         updateSessionsToday()
     }
 

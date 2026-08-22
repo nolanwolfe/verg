@@ -8,7 +8,7 @@ struct TimeReclaimedSummary: Equatable {
     var weekSeconds: TimeInterval = 0
     var lastWeekSeconds: TimeInterval = 0
     var allTimeSeconds: TimeInterval = 0
-    var streak: Int = 0
+    var daysLit: Int = 0
 
     var weekDeltaSeconds: TimeInterval { weekSeconds - lastWeekSeconds }
 
@@ -31,7 +31,7 @@ struct TimeReclaimedMoment: Equatable {
     let minutes: Int
     let leadingText: String
     let trailingText: String
-    let streak: Int
+    let daysLit: Int
 
     /// One coherent sentence — used for VoiceOver and anywhere a single
     /// string is more appropriate than the split layout.
@@ -49,13 +49,13 @@ enum TimeReclaimed {
     /// boundaries respect the user's locale and current timezone).
     static func summary(
         sessions: [Session],
-        streak: Int,
+        daysLit: Int,
         now: Date = Date(),
         calendar: Calendar = .current
     ) -> TimeReclaimedSummary {
         let startOfToday = calendar.startOfDay(for: now)
         guard let thisWeek = calendar.dateInterval(of: .weekOfYear, for: now) else {
-            return TimeReclaimedSummary(streak: streak)
+            return TimeReclaimedSummary(daysLit: daysLit)
         }
         let startOfWeek = thisWeek.start
         let startOfLastWeek = calendar.date(byAdding: .weekOfYear, value: -1, to: startOfWeek) ?? startOfWeek
@@ -83,7 +83,7 @@ enum TimeReclaimed {
             weekSeconds: week,
             lastWeekSeconds: lastWeek,
             allTimeSeconds: allTime,
-            streak: streak
+            daysLit: daysLit
         )
     }
 
@@ -107,20 +107,20 @@ enum TimeReclaimed {
 
     /// Same copy rules as `confirmationMessage`, split into pieces for the
     /// full-screen session-end reveal.
-    static func moment(todaySeconds: TimeInterval, isFirstSessionToday: Bool, streak: Int) -> TimeReclaimedMoment {
+    static func moment(todaySeconds: TimeInterval, isFirstSessionToday: Bool, daysLit: Int) -> TimeReclaimedMoment {
         let minutes = Int((todaySeconds / 60).rounded())
         guard minutes > 0 else {
             return TimeReclaimedMoment(
                 minutes: 0,
                 leadingText: "You wrote for",
                 trailingText: "less than a minute today.",
-                streak: streak
+                daysLit: daysLit
             )
         }
         if isFirstSessionToday {
-            return TimeReclaimedMoment(minutes: minutes, leadingText: "You wrote for", trailingText: "instead of scrolling.", streak: streak)
+            return TimeReclaimedMoment(minutes: minutes, leadingText: "You wrote for", trailingText: "instead of scrolling.", daysLit: daysLit)
         } else {
-            return TimeReclaimedMoment(minutes: minutes, leadingText: "You've written", trailingText: "today.", streak: streak)
+            return TimeReclaimedMoment(minutes: minutes, leadingText: "You've written", trailingText: "today.", daysLit: daysLit)
         }
     }
 }

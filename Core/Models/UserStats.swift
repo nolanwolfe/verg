@@ -1,22 +1,49 @@
 import Foundation
 
-/// Tracks user statistics and streak information
+/// Tracks how many days in a row the candle has stayed lit
 struct UserStats: Codable, Equatable {
-    var currentStreak: Int
-    var longestStreak: Int
+    var daysLit: Int
+    var longestDaysLit: Int
     var totalSessions: Int
     var lastSessionDate: Date?
+    /// Dates (start-of-day) bridged by a premium relight rather than an
+    /// actual session — see CandleRelight. Never counted as written days.
+    var relitDates: [Date]
 
     init(
-        currentStreak: Int = 0,
-        longestStreak: Int = 0,
+        daysLit: Int = 0,
+        longestDaysLit: Int = 0,
         totalSessions: Int = 0,
-        lastSessionDate: Date? = nil
+        lastSessionDate: Date? = nil,
+        relitDates: [Date] = []
     ) {
-        self.currentStreak = currentStreak
-        self.longestStreak = longestStreak
+        self.daysLit = daysLit
+        self.longestDaysLit = longestDaysLit
         self.totalSessions = totalSessions
         self.lastSessionDate = lastSessionDate
+        self.relitDates = relitDates
+    }
+
+    // MARK: - Codable (tolerant decoding)
+    // Field names changed (currentStreak/longestStreak -> daysLit/longestDaysLit)
+    // when "streak" language was retired in favor of "days lit" / candle
+    // framing — decode the old keys too so existing users don't lose their
+    // count. relitDates is new — missing key decodes to [].
+    enum CodingKeys: String, CodingKey {
+        case daysLit = "currentStreak"
+        case longestDaysLit = "longestStreak"
+        case totalSessions
+        case lastSessionDate
+        case relitDates
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        daysLit = try container.decodeIfPresent(Int.self, forKey: .daysLit) ?? 0
+        longestDaysLit = try container.decodeIfPresent(Int.self, forKey: .longestDaysLit) ?? 0
+        totalSessions = try container.decodeIfPresent(Int.self, forKey: .totalSessions) ?? 0
+        lastSessionDate = try container.decodeIfPresent(Date.self, forKey: .lastSessionDate)
+        relitDates = try container.decodeIfPresent([Date].self, forKey: .relitDates) ?? []
     }
 
     /// Check if user has completed a session today
@@ -25,7 +52,7 @@ struct UserStats: Codable, Equatable {
         return Calendar.current.isDateInToday(lastSession)
     }
 
-    /// Check if user wrote yesterday (for streak continuation)
+    /// Check if user wrote yesterday (for continuing the candle)
     var wroteYesterday: Bool {
         guard let lastSession = lastSessionDate else { return false }
         return Calendar.current.isDateInYesterday(lastSession)
@@ -36,47 +63,33 @@ struct UserStats: Codable, Equatable {
         // Always increment total sessions
         totalSessions += 1
 
-        // Only update streak logic once per day
+        // Only update the candle once per day
         if !hasWrittenToday {
             if wroteYesterday || lastSessionDate == nil {
-                // Continue streak or start new one
-                currentStreak += 1
+                // Continue the candle or light a new one
+                daysLit += 1
             } else {
-                // Streak broken, start over
-                currentStreak = 1
+                // Candle went out, relight from day one
+                daysLit = 1
             }
 
-            // Update longest streak if needed
-            if currentStreak > longestStreak {
-                longestStreak = currentStreak
+            // Update longest run if needed
+            if daysLit > longestDaysLit {
+                longestDaysLit = daysLit
             }
         }
 
         lastSessionDate = Date()
     }
 
-    /// Validate streak on app launch (reset if broken)
-    mutating func validateStreak() {
-        guard let lastSession = lastSessionDate else {
-            currentStreak = 0
-            return
-        }
-
-        // If last session was not today or yesterday, streak is broken
-        if !Calendar.current.isDateInToday(lastSession) &&
-           !Calendar.current.isDateInYesterday(lastSession) {
-            currentStreak = 0
-        }
-    }
-
-    /// Formatted streak text
-    var streakText: String {
-        if currentStreak == 0 {
-            return "Start your streak!"
-        } else if currentStreak == 1 {
-            return "1 day streak"
+    /// Formatted "days lit" text
+    var daysLitText: String {
+        if daysLit == 0 {
+            return "Light your candle"
+        } else if daysLit == 1 {
+            return "1 day lit"
         } else {
-            return "\(currentStreak) day streak"
+            return "\(daysLit) days lit"
         }
     }
 }

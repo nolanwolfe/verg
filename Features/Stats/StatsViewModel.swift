@@ -9,8 +9,8 @@ final class StatsViewModel: ObservableObject {
     @Published private(set) var sessions: [Session] = []
     @Published private(set) var currentSessions: [Session] = []
     @Published private(set) var books: [Book] = []
-    @Published private(set) var currentStreak: Int = 0
-    @Published private(set) var longestStreak: Int = 0
+    @Published private(set) var daysLit: Int = 0
+    @Published private(set) var longestDaysLit: Int = 0
     @Published private(set) var totalSessions: Int = 0
     @Published private(set) var datesWithSessions: Set<Date> = []
     @Published private(set) var sessionCountsByDate: [Date: Int] = [:]
@@ -24,16 +24,16 @@ final class StatsViewModel: ObservableObject {
 
     // MARK: - Dependencies
     private let storageService: StorageService
-    private let streakService: StreakService
+    private let candleService: CandleService
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Initialization
     init(
         storageService: StorageService = .shared,
-        streakService: StreakService = .shared
+        candleService: CandleService = .shared
     ) {
         self.storageService = storageService
-        self.streakService = streakService
+        self.candleService = candleService
         setupBindings()
         // Defer loadData to avoid publishing changes during view updates
         DispatchQueue.main.async { [weak self] in
@@ -64,8 +64,8 @@ final class StatsViewModel: ObservableObject {
         // Listen to stats changes
         storageService.$stats
             .receive(on: DispatchQueue.main)
-            .map { $0.currentStreak }
-            .assign(to: &$currentStreak)
+            .map { $0.daysLit }
+            .assign(to: &$daysLit)
 
         storageService.$stats
             .receive(on: DispatchQueue.main)
@@ -74,8 +74,8 @@ final class StatsViewModel: ObservableObject {
 
         storageService.$stats
             .receive(on: DispatchQueue.main)
-            .map { $0.longestStreak }
-            .assign(to: &$longestStreak)
+            .map { $0.longestDaysLit }
+            .assign(to: &$longestDaysLit)
     }
 
     // MARK: - Data Loading
@@ -84,8 +84,8 @@ final class StatsViewModel: ObservableObject {
         currentSessions = storageService.currentSessions
         books = storageService.books
         let stats = storageService.getStats()
-        currentStreak = stats.currentStreak
-        longestStreak = stats.longestStreak
+        daysLit = stats.daysLit
+        longestDaysLit = stats.longestDaysLit
         totalSessions = stats.totalSessions
         datesWithSessions = storageService.getDatesWithSessions()
         sessionCountsByDate = storageService.getSessionCountsByDate()
@@ -187,17 +187,17 @@ final class StatsViewModel: ObservableObject {
     }
 
     func sessionsCount(for month: Date) -> Int {
-        streakService.sessions(for: month)
+        candleService.sessions(for: month)
     }
 
     // MARK: - Stats Helpers
-    var streakText: String {
-        if currentStreak == 0 {
-            return "No streak"
-        } else if currentStreak == 1 {
+    var daysLitText: String {
+        if daysLit == 0 {
+            return "No days lit"
+        } else if daysLit == 1 {
             return "1 day"
         } else {
-            return "\(currentStreak) days"
+            return "\(daysLit) days"
         }
     }
 

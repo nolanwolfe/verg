@@ -30,11 +30,11 @@ struct HomeView: View {
             }
             .padding(.top, 44)
 
-            // Streak + button — anchored well below candle
+            // Days lit + button — anchored well below candle
             VStack(spacing: 0) {
                 Spacer()
 
-                streakSection
+                daysLitSection
                     .padding(.bottom, Theme.Spacing.xl)
 
                 actionButton
@@ -89,17 +89,17 @@ struct HomeView: View {
         showTimer = true
     }
 
-    // MARK: - Streak Section
-    private var streakSection: some View {
+    // MARK: - Days Lit Section
+    private var daysLitSection: some View {
         VStack(spacing: Theme.Spacing.xs) {
             HStack(spacing: Theme.Spacing.xs) {
-                if viewModel.currentStreak > 0 {
-                    StreakFlameIcon()
+                if viewModel.daysLit > 0 {
+                    CandleFlameIcon()
                 }
-                Text(viewModel.streakDisplayText)
-                    .font(Theme.Typography.streakDisplay)
+                Text(viewModel.daysLitDisplayText)
+                    .font(Theme.Typography.daysLitDisplay)
                     .foregroundColor(
-                        viewModel.currentStreak > 0
+                        viewModel.daysLit > 0
                             ? Theme.Colors.primaryText
                             : Theme.Colors.secondaryText
                     )

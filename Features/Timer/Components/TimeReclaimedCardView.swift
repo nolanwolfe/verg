@@ -60,10 +60,10 @@ struct TimeReclaimedCardView: View {
                         .multilineTextAlignment(.center)
                 }
 
-                if moment.streak > 1 {
+                if moment.daysLit > 1 {
                     HStack(spacing: Theme.Spacing.xxs) {
-                        StreakFlameIcon(size: 16)
-                        Text("\(moment.streak) day streak")
+                        CandleFlameIcon(size: 16)
+                        Text("\(moment.daysLit) days lit")
                             .font(Theme.Typography.subheadline)
                             .foregroundColor(Theme.Colors.secondaryText)
                     }
@@ -97,7 +97,7 @@ struct TimeReclaimedCardView: View {
 // MARK: - Preview
 #Preview {
     TimeReclaimedCardView(
-        moment: TimeReclaimed.moment(todaySeconds: 12 * 60, isFirstSessionToday: true, streak: 4),
+        moment: TimeReclaimed.moment(todaySeconds: 12 * 60, isFirstSessionToday: true, daysLit: 4),
         onContinue: {}
     )
 }

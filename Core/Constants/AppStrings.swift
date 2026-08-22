@@ -45,7 +45,7 @@ enum AppStrings {
 
         enum UploadPhoto {
             static let title = "Save your page"
-            static let body = "Take a photo of what you wrote to keep your streak and archive."
+            static let body = "Take a photo of what you wrote to keep your candle lit and archive."
             static let primaryButton = "Upload photo"
             static let tertiaryButton = "+5 more minutes"
             static let secondaryButton = "Skip"
@@ -55,9 +55,9 @@ enum AppStrings {
     // MARK: - Home
     enum Home {
         static let beginWriting = "Begin Writing"
-        static let startStreak = "Start your streak today!"
-        static let dayStreak = "day streak"
-        static let daysStreak = "day streak"
+        static let startDaysLit = "Light your candle today!"
+        static let dayLit = "day lit"
+        static let daysLit = "days lit"
         static let sessionToday = "1 session today"
         static let sessionsToday = "sessions today"
         static let startFirstSession = "Start your first session today!"

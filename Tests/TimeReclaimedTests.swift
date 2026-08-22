@@ -24,11 +24,11 @@ final class TimeReclaimedAggregationTests: XCTestCase {
             session(daysAgo: 10, activeMinutes: 20, from: now)  // weeks ago
         ]
 
-        let summary = TimeReclaimed.summary(sessions: sessions, streak: 3, now: now)
+        let summary = TimeReclaimed.summary(sessions: sessions, daysLit: 3, now: now)
 
         XCTAssertEqual(summary.todaySeconds, 600, accuracy: 1)
         XCTAssertEqual(summary.allTimeSeconds, 35 * 60, accuracy: 1)
-        XCTAssertEqual(summary.streak, 3)
+        XCTAssertEqual(summary.daysLit, 3)
         // Week total includes at least today's session; exact week bucket
         // depends on which weekday `now` falls on, so just assert it's a
         // superset of today and doesn't include the 10-day-old session.
@@ -37,7 +37,7 @@ final class TimeReclaimedAggregationTests: XCTestCase {
     }
 
     func testSummary_EmptySessions_IsAllZero() {
-        let summary = TimeReclaimed.summary(sessions: [], streak: 0)
+        let summary = TimeReclaimed.summary(sessions: [], daysLit: 0)
         XCTAssertEqual(summary, .zero)
     }
 
@@ -53,7 +53,7 @@ final class TimeReclaimedAggregationTests: XCTestCase {
 
         let summary = TimeReclaimed.summary(
             sessions: [thisWeekSession, lastWeekSession],
-            streak: 0,
+            daysLit: 0,
             now: now,
             calendar: utc
         )
@@ -83,8 +83,8 @@ final class TimeReclaimedAggregationTests: XCTestCase {
             imagePath: "x.jpg"
         )
 
-        let utcSummary = TimeReclaimed.summary(sessions: [borderlineSession], streak: 0, now: now, calendar: utc)
-        let tokyoSummary = TimeReclaimed.summary(sessions: [borderlineSession], streak: 0, now: now, calendar: tokyo)
+        let utcSummary = TimeReclaimed.summary(sessions: [borderlineSession], daysLit: 0, now: now, calendar: utc)
+        let tokyoSummary = TimeReclaimed.summary(sessions: [borderlineSession], daysLit: 0, now: now, calendar: tokyo)
 
         XCTAssertEqual(utcSummary.todaySeconds, 300, "Counts as today under UTC")
         XCTAssertEqual(tokyoSummary.todaySeconds, 0, "Already yesterday under Tokyo's calendar day")
@@ -128,23 +128,23 @@ final class TimeReclaimedAggregationTests: XCTestCase {
     // MARK: - Session-end card moment
 
     func testMoment_FirstSessionToday_SplitsIntoNumberAndFraming() {
-        let moment = TimeReclaimed.moment(todaySeconds: 12 * 60, isFirstSessionToday: true, streak: 4)
+        let moment = TimeReclaimed.moment(todaySeconds: 12 * 60, isFirstSessionToday: true, daysLit: 4)
         XCTAssertEqual(moment.minutes, 12)
         XCTAssertEqual(moment.leadingText, "You wrote for")
         XCTAssertEqual(moment.trailingText, "instead of scrolling.")
-        XCTAssertEqual(moment.streak, 4)
+        XCTAssertEqual(moment.daysLit, 4)
         XCTAssertEqual(moment.accessibleSentence, "You wrote for 12 minutes instead of scrolling.")
     }
 
     func testMoment_SecondSessionToday_ReportsRunningTotal() {
-        let moment = TimeReclaimed.moment(todaySeconds: 25 * 60, isFirstSessionToday: false, streak: 1)
+        let moment = TimeReclaimed.moment(todaySeconds: 25 * 60, isFirstSessionToday: false, daysLit: 1)
         XCTAssertEqual(moment.minutes, 25)
         XCTAssertEqual(moment.leadingText, "You've written")
         XCTAssertEqual(moment.trailingText, "today.")
     }
 
     func testMoment_SubMinute_ZeroMinutesWithNeutralCopy() {
-        let moment = TimeReclaimed.moment(todaySeconds: 20, isFirstSessionToday: true, streak: 0)
+        let moment = TimeReclaimed.moment(todaySeconds: 20, isFirstSessionToday: true, daysLit: 0)
         XCTAssertEqual(moment.minutes, 0)
         XCTAssertEqual(moment.accessibleSentence, "You wrote for less than a minute today.")
     }

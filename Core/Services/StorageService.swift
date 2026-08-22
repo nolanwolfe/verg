@@ -67,9 +67,9 @@ final class StorageService: ObservableObject {
             saveSettings()
         }
 
-        // Validate streak on load
-        stats.validateStreak()
-        saveStats()
+        // Candle gap validation (including premium relights) now runs in
+        // CandleService.refreshDaysLit(), which needs PurchaseService's
+        // entitlement state — not available at this layer.
     }
 
     private func loadSessions() {
@@ -565,7 +565,7 @@ final class StorageService: ObservableObject {
     /// reflect the device's current timezone rather than whatever timezone
     /// was active when a session was saved.
     func timeReclaimedSummary() -> TimeReclaimedSummary {
-        TimeReclaimed.summary(sessions: sessions, streak: stats.currentStreak)
+        TimeReclaimed.summary(sessions: sessions, daysLit: stats.daysLit)
     }
 
     /// Clear all data (for testing/reset)

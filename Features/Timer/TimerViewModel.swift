@@ -148,11 +148,11 @@ final class TimerViewModel: ObservableObject {
         // Play haptic
         audioService.playHaptic(UINotificationFeedbackGenerator.FeedbackType.success)
 
-        // Day 3 of an active streak, right after the bell — one of exactly
+        // Day 3 of a lit candle, right after the bell — one of exactly
         // two places this ever fires (the other is onboarding). Never on
         // cold launch, never twice a session (RatingPromptService enforces
         // that itself).
-        if storageService.stats.currentStreak == 3 {
+        if storageService.stats.daysLit == 3 {
             MainActor.assumeIsolated {
                 RatingPromptService.requestReviewIfAppropriate()
             }
@@ -272,7 +272,7 @@ final class TimerViewModel: ObservableObject {
         timeReclaimedMoment = TimeReclaimed.moment(
             todaySeconds: todaySeconds,
             isFirstSessionToday: isFirstSessionToday,
-            streak: storageService.stats.currentStreak
+            daysLit: storageService.stats.daysLit
         )
     }
 

@@ -238,11 +238,11 @@ struct FlameShape: Shape {
     }
 }
 
-// MARK: - Streak Flame Icon
+// MARK: - Candle Flame Icon
 
 /// Small static flame in the app's candle-flame visual language.
-/// Replaces the generic fire emoji in streak displays.
-struct StreakFlameIcon: View {
+/// Replaces the generic fire emoji in days-lit displays.
+struct CandleFlameIcon: View {
     var size: CGFloat = 16
 
     var body: some View {
@@ -280,7 +280,7 @@ struct StreakFlameIcon: View {
             CandleView(progress: 1.0, isBurning: true)
             CandleView(progress: 0.5, isBurning: true)
             CandleView(progress: 0.1, isBurning: true)
-            StreakFlameIcon()
+            CandleFlameIcon()
         }
     }
 }

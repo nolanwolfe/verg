@@ -109,6 +109,13 @@ struct ContentView: View {
     private func checkSubscriptionStatus() {
         Task {
             _ = await purchaseService.checkSubscriptionStatus()
+            // Re-evaluate the candle gap now that real entitlement data has
+            // loaded — CandleService's own init ran with best-effort/cached
+            // status, which may have been wrong for a subscriber on a cold
+            // launch before this async check completes.
+            await MainActor.run {
+                CandleService.shared.refreshDaysLit()
+            }
         }
     }
 

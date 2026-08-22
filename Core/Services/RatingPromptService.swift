@@ -5,7 +5,7 @@ import UIKit
 /// Triggers the system rating prompt — never a custom "rate us" button, per
 /// Apple's guidelines and the app's own "no engagement bait" rule. Called
 /// from exactly two places: the onboarding rating screen, and after the
-/// bell on day 3 of an active streak. Never on cold launch.
+/// bell on day 3 of a lit candle. Never on cold launch.
 @MainActor
 enum RatingPromptService {
     /// In-memory only — resets on every launch, which is what makes "never
