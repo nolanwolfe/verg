@@ -7,8 +7,17 @@ import UIKit
 /// meant to be a screen people actually want to open.
 struct StatsView: View {
     @StateObject private var viewModel = StatsViewModel()
+    @EnvironmentObject private var purchaseService: PurchaseService
     @State private var currentCard = 0
     @State private var showMilestones = false
+    @State private var showPaywall = false
+
+    private let gatingService = SessionGatingService.shared
+
+    /// Free per the business model: the ritual, days lit, and the
+    /// calendar. Everything else in Stats (page count, longest run, Time
+    /// Reclaimed, weekly goal, milestones) is Ascent.
+    private var isStatsLocked: Bool { !gatingService.isPremium }
 
     var body: some View {
         ZStack {
@@ -24,7 +33,16 @@ struct StatsView: View {
                     VStack(spacing: Theme.Spacing.md) {
                         statCarousel
 
-                        timeReclaimedWeekCard
+                        if isStatsLocked {
+                            LockedFeatureCard(
+                                icon: "chart.bar.fill",
+                                title: "Time Reclaimed & more",
+                                message: "See your writing time, weekly pace, and milestones with The Ascent.",
+                                onTap: { showPaywall = true }
+                            )
+                        } else {
+                            timeReclaimedWeekCard
+                        }
 
                         CalendarView(
                             currentMonth: $viewModel.currentMonth,
@@ -37,6 +55,10 @@ struct StatsView: View {
                     .padding(.vertical, Theme.Spacing.sm)
                 }
             }
+        }
+        .fullScreenCover(isPresented: $showPaywall) {
+            PaywallView()
+                .environmentObject(purchaseService)
         }
         .onAppear {
             UIPageControl.appearance().currentPageIndicatorTintColor = UIColor(Theme.Colors.accent)
@@ -102,45 +124,78 @@ struct StatsView: View {
             }
             .tag(0)
 
-            BigStatCard(
-                title: "Total Pages",
-                value: "\(viewModel.totalSessions)",
-                unit: viewModel.totalSessions == 1 ? "page" : "pages"
-            ) {
-                warmIcon("doc.text.fill")
+            lockableCard(tag: 1) {
+                BigStatCard(
+                    title: "Total Pages",
+                    value: "\(viewModel.totalSessions)",
+                    unit: viewModel.totalSessions == 1 ? "page" : "pages"
+                ) {
+                    warmIcon("doc.text.fill")
+                }
             }
-            .tag(1)
 
-            BigStatCard(
-                title: "Longest Run",
-                value: "\(viewModel.longestDaysLit)",
-                unit: viewModel.longestDaysLit == 1 ? "day" : "days"
-            ) {
-                warmIcon("trophy.fill")
+            lockableCard(tag: 2) {
+                BigStatCard(
+                    title: "Longest Run",
+                    value: "\(viewModel.longestDaysLit)",
+                    unit: viewModel.longestDaysLit == 1 ? "day" : "days"
+                ) {
+                    warmIcon("trophy.fill")
+                }
             }
-            .tag(2)
 
-            BigStatCard(
-                title: "Time Reclaimed",
-                value: formattedDuration(minutes: viewModel.timeReclaimed.allTimeMinutes),
-                unit: "written"
-            ) {
-                warmIcon("hourglass")
+            lockableCard(tag: 3) {
+                BigStatCard(
+                    title: "Time Reclaimed",
+                    value: formattedDuration(minutes: viewModel.timeReclaimed.allTimeMinutes),
+                    unit: "written"
+                ) {
+                    warmIcon("hourglass")
+                }
             }
-            .tag(3)
 
             if viewModel.weeklyCommitmentDaysPerWeek != nil {
-                weeklyGoalCard
-                    .tag(4)
+                lockableCard(tag: 4) { weeklyGoalCard }
             }
 
-            milestoneCard
-                .tag(5)
+            lockableCard(tag: 5) { milestoneCard }
         }
         .tabViewStyle(.page(indexDisplayMode: .always))
         .frame(height: 170)
         .sheet(isPresented: $showMilestones) {
             MilestonesView(totalSessions: viewModel.totalSessions)
+        }
+    }
+
+    /// Wraps a carousel card with the Ascent lock overlay when stats are
+    /// locked — the card's shape/size still reserves its place in the
+    /// swipe sequence, it just can't be read or interacted with.
+    @ViewBuilder
+    private func lockableCard<Content: View>(tag: Int, @ViewBuilder content: () -> Content) -> some View {
+        if isStatsLocked {
+            content()
+                .redacted(reason: .placeholder)
+                .overlay(
+                    Button { showPaywall = true } label: {
+                        VStack(spacing: Theme.Spacing.xxs) {
+                            Image(systemName: "lock.fill")
+                                .font(.system(size: 20))
+                                .foregroundColor(Theme.Colors.primaryText)
+                            Text("Unlock with The Ascent")
+                                .font(Theme.Typography.caption)
+                                .foregroundColor(Theme.Colors.primaryText)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Theme.Colors.background.opacity(0.75))
+                        .cornerRadius(Theme.CornerRadius.medium)
+                    }
+                    .buttonStyle(.plain)
+                )
+                .padding(.bottom, 28)
+                .tag(tag)
+        } else {
+            content()
+                .tag(tag)
         }
     }
 
@@ -341,6 +396,54 @@ struct BigStatCard<Icon: View>: View {
         .background(Theme.Colors.cardBackground)
         .cornerRadius(Theme.CornerRadius.medium)
         .padding(.bottom, 28) // room for page dots
+    }
+}
+
+// MARK: - Locked Feature Card
+/// Shared "here's what this is, upgrade to unlock" card — never a blank
+/// screen or silent no-op for a gated feature. Reused wherever a whole
+/// section (not just a stray tap) is behind Ascent.
+struct LockedFeatureCard: View {
+    let icon: String
+    let title: String
+    let message: String
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: Theme.Spacing.md) {
+                Image(systemName: icon)
+                    .font(.system(size: 22))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color(hex: "FFCC00"), Color(hex: "FF9500")],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .frame(width: 36)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(Theme.Typography.headline)
+                        .foregroundColor(Theme.Colors.primaryText)
+                    Text(message)
+                        .font(Theme.Typography.caption)
+                        .foregroundColor(Theme.Colors.secondaryText)
+                        .multilineTextAlignment(.leading)
+                }
+
+                Spacer()
+
+                Image(systemName: "lock.fill")
+                    .font(.system(size: 14))
+                    .foregroundColor(Theme.Colors.secondaryText.opacity(0.6))
+            }
+            .padding(Theme.Spacing.md)
+            .background(Theme.Colors.cardBackground)
+            .cornerRadius(Theme.CornerRadius.medium)
+        }
+        .buttonStyle(.plain)
     }
 }
 

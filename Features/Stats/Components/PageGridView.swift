@@ -7,6 +7,11 @@ struct PageGridView: View {
     let loadThumbnail: (Session) async -> UIImage?
     var peekThumbnail: (Session) -> UIImage? = { _ in nil }
     let onSelect: (Session) -> Void
+    /// Pages outside the free archive window are never hidden or deleted —
+    /// they still render (dimmed, with a lock badge) so the user can see
+    /// their page still exists; tapping prompts Ascent instead of opening it.
+    var isLocked: (Session) -> Bool = { _ in false }
+    var onLockedTap: (Session) -> Void = { _ in }
     var emptyStateMessage: String = "Complete a writing session to capture your first page"
 
     private let columns = [
@@ -22,11 +27,13 @@ struct PageGridView: View {
             ScrollView(showsIndicators: false) {
                 LazyVGrid(columns: columns, spacing: Theme.Spacing.xxs) {
                     ForEach(sessions) { session in
+                        let locked = isLocked(session)
                         PageThumbnail(
                             session: session,
                             loadThumbnail: loadThumbnail,
                             peekThumbnail: peekThumbnail,
-                            onTap: { onSelect(session) }
+                            isLocked: locked,
+                            onTap: locked ? { onLockedTap(session) } : { onSelect(session) }
                         )
                     }
                 }
@@ -64,6 +71,7 @@ struct PageThumbnail: View {
     let session: Session
     let loadThumbnail: (Session) async -> UIImage?
     var peekThumbnail: (Session) -> UIImage? = { _ in nil }
+    var isLocked: Bool = false
     let onTap: () -> Void
 
     @State private var image: UIImage?
@@ -78,6 +86,7 @@ struct PageThumbnail: View {
                         .frame(minWidth: 0, maxWidth: .infinity)
                         .aspectRatio(1, contentMode: .fit)
                         .clipped()
+                        .opacity(isLocked ? 0.35 : 1)
                 } else {
                     Rectangle()
                         .fill(Theme.Colors.cardBackground)
@@ -86,6 +95,13 @@ struct PageThumbnail: View {
                             Image(systemName: "photo")
                                 .foregroundColor(Theme.Colors.secondaryText.opacity(0.4))
                         )
+                }
+
+                if isLocked {
+                    Color.black.opacity(0.25)
+                    Image(systemName: "lock.fill")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundColor(.white)
                 }
             }
             .cornerRadius(Theme.CornerRadius.small)

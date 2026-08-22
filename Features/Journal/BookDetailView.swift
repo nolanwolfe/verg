@@ -9,6 +9,9 @@ struct BookDetailView: View {
     @State private var showFullScreen = false
     @State private var selectedIndex = 0
     @State private var showDeleteConfirmation = false
+    @State private var showPaywall = false
+
+    private let gatingService = SessionGatingService.shared
 
     private var pages: [Session] {
         viewModel.sessions(for: book)
@@ -44,6 +47,8 @@ struct BookDetailView: View {
                             selectedIndex = pages.firstIndex(where: { $0.id == session.id }) ?? 0
                             showFullScreen = true
                         },
+                        isLocked: { !gatingService.canViewPage(dated: $0.date) },
+                        onLockedTap: { _ in showPaywall = true },
                         emptyStateMessage: "This book has no pages."
                     )
                 }
@@ -82,6 +87,10 @@ struct BookDetailView: View {
                 onDismiss: { showFullScreen = false },
                 allowsDelete: false
             )
+        }
+        .fullScreenCover(isPresented: $showPaywall) {
+            PaywallView()
+                .environmentObject(PurchaseService.shared)
         }
         .confirmationDialog(
             "Delete this book?",

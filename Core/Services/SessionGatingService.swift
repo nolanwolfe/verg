@@ -1,8 +1,9 @@
 import Foundation
 
-/// Service for managing session gating logic
-/// Determines whether a user can start a new session based on their subscription status
-/// and completed session count
+/// Determines what's free vs. what needs Ascent. Writing and saving pages
+/// are always free and unlimited — the only thing gated is *viewing*
+/// pages older than the free archive window. Nothing is ever deleted or
+/// hidden from export; this only affects what's viewable in the journal.
 @MainActor
 final class SessionGatingService {
 
@@ -14,10 +15,10 @@ final class SessionGatingService {
     private let purchaseService: PurchaseService
 
     // MARK: - Constants
-    /// Writing — lighting the candle, the timer, the bell — is always free
-    /// and unlimited. Free users get one saved page; the paywall gates
-    /// every save after that, not starting a session.
-    nonisolated static let freePhotoLimit = 1
+    /// Free users can view pages from the last 7 days. Older pages still
+    /// exist, still count toward days lit / milestones, and still export
+    /// if the user subscribes later — this only gates viewing.
+    nonisolated static let freeArchiveWindowDays = 7
 
     // MARK: - Initialization
     init(
@@ -30,55 +31,32 @@ final class SessionGatingService {
 
     // MARK: - Public API
 
-    /// Number of pages (photos) saved so far
-    var completedSessionCount: Int {
-        storageService.sessions.count
-    }
-
-    /// Whether the user is a premium subscriber or has friends & family access
+    /// Whether the user is a premium (Ascent) subscriber or has friends & family access
     var isPremium: Bool {
         purchaseService.isSubscribed || purchaseService.isFriendsAndFamily
     }
 
-    /// Writing itself is always free and unlimited — nothing gates starting
-    /// the candle/timer.
+    /// Writing itself is always free and unlimited — nothing gates
+    /// starting the candle/timer, and nothing gates saving the page either.
     var canStartSession: Bool { true }
 
-    /// Whether the user can save another photographed page for free.
-    var canSavePhoto: Bool {
-        Self.canSavePhoto(isPremium: isPremium, completedPhotoCount: completedSessionCount)
+    /// Whether a page dated `date` is viewable without Ascent.
+    func canViewPage(dated date: Date) -> Bool {
+        Self.canViewPage(isPremium: isPremium, date: date)
     }
 
-    /// Whether the paywall should show when the user tries to save a page
-    var shouldShowPaywallForPhoto: Bool {
-        !canSavePhoto
-    }
-
-    /// Remaining free page saves (0 if premium or exceeded limit)
-    var remainingFreePhotos: Int {
-        if isPremium {
-            return Int.max // Unlimited for premium
-        }
-        return max(0, Self.freePhotoLimit - completedSessionCount)
-    }
-
-    // MARK: - Pure Gating Logic (for testing)
-
-    /// Pure function to determine if another page can be saved for free
-    /// - Parameters:
-    ///   - isPremium: Whether the user has premium subscription
-    ///   - completedPhotoCount: Number of pages already saved
-    /// - Returns: true if the save can proceed without the paywall
-    nonisolated static func canSavePhoto(isPremium: Bool, completedPhotoCount: Int) -> Bool {
-        if isPremium {
+    /// Pure function — whether a page is inside the free archive window.
+    nonisolated static func canViewPage(
+        isPremium: Bool,
+        date: Date,
+        now: Date = Date(),
+        calendar: Calendar = .current
+    ) -> Bool {
+        if isPremium { return true }
+        guard let cutoff = calendar.date(byAdding: .day, value: -freeArchiveWindowDays, to: now) else {
             return true
         }
-        return completedPhotoCount < freePhotoLimit
-    }
-
-    /// Instance method wrapper for testability
-    nonisolated func canSavePhoto(isPremium: Bool, completedPhotoCount: Int) -> Bool {
-        Self.canSavePhoto(isPremium: isPremium, completedPhotoCount: completedPhotoCount)
+        return calendar.startOfDay(for: date) >= calendar.startOfDay(for: cutoff)
     }
 
     // MARK: - Logging
@@ -86,7 +64,7 @@ final class SessionGatingService {
     /// Logs current gating status (useful for debugging)
     func logGatingStatus() {
         #if DEBUG
-        print("[SessionGating] Premium: \(isPremium), Saved Pages: \(completedSessionCount), Can Save Next: \(canSavePhoto)")
+        print("[SessionGating] Premium: \(isPremium)")
         #endif
     }
 }

@@ -9,10 +9,13 @@ struct HomeView: View {
 
     @State private var showTimer = false
     @State private var showDurationPicker = false
+    @State private var showPaywall = false
 
     // Silent brightness control
     @State private var brightness: Double = UIScreen.main.brightness
     @State private var dragStartBrightness: Double = UIScreen.main.brightness
+
+    private let gatingService = SessionGatingService.shared
 
     var body: some View {
         ZStack {
@@ -60,11 +63,20 @@ struct HomeView: View {
             DurationPickerSheet(
                 currentDuration: storageService.settings.timerDuration,
                 onSelect: { duration in
+                    guard duration == AppSettings.defaultTimerDuration || gatingService.isPremium else {
+                        showDurationPicker = false
+                        showPaywall = true
+                        return
+                    }
                     storageService.setTimerDuration(duration)
                     showDurationPicker = false
                 },
                 onDone: { showDurationPicker = false }
             )
+        }
+        .fullScreenCover(isPresented: $showPaywall) {
+            PaywallView()
+                .environmentObject(purchaseService)
         }
         .fullScreenCover(isPresented: $showTimer) {
             TimerView(onComplete: { _ in

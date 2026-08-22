@@ -3,10 +3,14 @@ import SwiftUI
 /// Journal tab — the current journal's pages plus finished books
 struct JournalView: View {
     @StateObject private var viewModel = StatsViewModel()
+    @EnvironmentObject private var purchaseService: PurchaseService
 
     @State private var showFinishAlert = false
     @State private var newBookTitle = ""
     @State private var selectedBook: Book?
+    @State private var showPaywall = false
+
+    private let gatingService = SessionGatingService.shared
 
     var body: some View {
         ZStack {
@@ -26,6 +30,8 @@ struct JournalView: View {
                     loadThumbnail: { await viewModel.loadThumbnailAsync(for: $0) },
                     peekThumbnail: { viewModel.cachedThumbnail(for: $0) },
                     onSelect: { viewModel.selectSession($0, in: viewModel.currentSessions) },
+                    isLocked: { !gatingService.canViewPage(dated: $0.date) },
+                    onLockedTap: { _ in showPaywall = true },
                     emptyStateMessage: viewModel.books.isEmpty
                         ? "Complete a writing session to capture your first page"
                         : "Fresh journal — complete a session to add your first page"
@@ -50,6 +56,10 @@ struct JournalView: View {
         }
         .sheet(item: $selectedBook) { book in
             BookDetailView(book: book, viewModel: viewModel)
+        }
+        .fullScreenCover(isPresented: $showPaywall) {
+            PaywallView()
+                .environmentObject(purchaseService)
         }
         .alert("Finish this journal?", isPresented: $showFinishAlert) {
             TextField("Journal \(viewModel.books.count + 1)", text: $newBookTitle)

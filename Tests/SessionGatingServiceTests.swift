@@ -6,40 +6,36 @@ final class SessionGatingServiceTests: XCTestCase {
 
     // MARK: - Tests for Pure Gating Logic
 
-    func testCanSavePhoto_WhenPremium_ReturnsTrue() {
-        // Premium users can always save pages, regardless of count
-        XCTAssertTrue(SessionGatingService.canSavePhoto(isPremium: true, completedPhotoCount: 0))
-        XCTAssertTrue(SessionGatingService.canSavePhoto(isPremium: true, completedPhotoCount: 1))
-        XCTAssertTrue(SessionGatingService.canSavePhoto(isPremium: true, completedPhotoCount: 2))
-        XCTAssertTrue(SessionGatingService.canSavePhoto(isPremium: true, completedPhotoCount: 100))
+    private var utc: Calendar {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "UTC")!
+        return cal
     }
 
-    func testCanSavePhoto_WhenNotPremium_AllowsFirstPhoto() {
-        XCTAssertTrue(SessionGatingService.canSavePhoto(isPremium: false, completedPhotoCount: 0))
+    private func date(_ year: Int, _ month: Int, _ day: Int) -> Date {
+        utc.date(from: DateComponents(year: year, month: month, day: day, hour: 12))!
     }
 
-    func testCanSavePhoto_WhenNotPremium_BlocksAfterFirstPhoto() {
-        XCTAssertFalse(SessionGatingService.canSavePhoto(isPremium: false, completedPhotoCount: 1))
-        XCTAssertFalse(SessionGatingService.canSavePhoto(isPremium: false, completedPhotoCount: 2))
-        XCTAssertFalse(SessionGatingService.canSavePhoto(isPremium: false, completedPhotoCount: 10))
+    func testCanViewPage_WhenPremium_AlwaysTrue() {
+        let now = date(2026, 1, 20)
+        XCTAssertTrue(SessionGatingService.canViewPage(isPremium: true, date: date(2026, 1, 20), now: now, calendar: utc))
+        XCTAssertTrue(SessionGatingService.canViewPage(isPremium: true, date: date(2025, 1, 1), now: now, calendar: utc))
     }
 
-    func testFreePhotoLimit_IsOne() {
-        XCTAssertEqual(SessionGatingService.freePhotoLimit, 1)
+    func testCanViewPage_WhenFree_WithinSevenDays_True() {
+        let now = date(2026, 1, 20)
+        XCTAssertTrue(SessionGatingService.canViewPage(isPremium: false, date: date(2026, 1, 20), now: now, calendar: utc))
+        XCTAssertTrue(SessionGatingService.canViewPage(isPremium: false, date: date(2026, 1, 13), now: now, calendar: utc))
     }
 
-    // MARK: - Edge Cases
-
-    func testCanSavePhoto_WithNegativeCount_ReturnsTrue() {
-        // Edge case: negative photo count should still allow saving
-        XCTAssertTrue(SessionGatingService.canSavePhoto(isPremium: false, completedPhotoCount: -1))
+    func testCanViewPage_WhenFree_OlderThanSevenDays_False() {
+        let now = date(2026, 1, 20)
+        XCTAssertFalse(SessionGatingService.canViewPage(isPremium: false, date: date(2026, 1, 12), now: now, calendar: utc))
+        XCTAssertFalse(SessionGatingService.canViewPage(isPremium: false, date: date(2025, 6, 1), now: now, calendar: utc))
     }
 
-    func testCanSavePhoto_ExactlyAtLimit() {
-        // At exactly 1 saved photo (the limit), free users should be blocked
-        XCTAssertFalse(SessionGatingService.canSavePhoto(isPremium: false, completedPhotoCount: 1))
-        // But premium users should not be blocked
-        XCTAssertTrue(SessionGatingService.canSavePhoto(isPremium: true, completedPhotoCount: 1))
+    func testFreeArchiveWindow_IsSevenDays() {
+        XCTAssertEqual(SessionGatingService.freeArchiveWindowDays, 7)
     }
 }
 

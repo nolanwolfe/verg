@@ -14,7 +14,6 @@ final class CameraViewModel: NSObject, ObservableObject {
     @Published var showError: Bool = false
     @Published var isSaving: Bool = false
     @Published var showPhotoPicker: Bool = false
-    @Published var showPaywall: Bool = false
 
     // MARK: - Camera Properties
     let session = AVCaptureSession()
@@ -160,15 +159,9 @@ final class CameraViewModel: NSObject, ObservableObject {
     func usePhoto() {
         guard let image = capturedImage else { return }
 
-        // Writing itself is unlimited; the paywall only gates saving pages
-        // beyond the free allotment. Re-checked here (not just at session
-        // start) so it also catches the retry after a successful purchase.
-        let canSave = MainActor.assumeIsolated { SessionGatingService.shared.canSavePhoto }
-        guard canSave else {
-            showPaywall = true
-            return
-        }
-
+        // Saving a page is always free and unlimited — Ascent only gates
+        // *viewing* pages older than the free archive window, not writing
+        // or saving them.
         isSaving = true
 
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in

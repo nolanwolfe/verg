@@ -150,6 +150,12 @@ final class SettingsViewModel: ObservableObject {
 
     // MARK: - Actions
     func setDuration(_ duration: TimeInterval) {
+        let isPremium = MainActor.assumeIsolated { SessionGatingService.shared.isPremium }
+        guard duration == AppSettings.defaultTimerDuration || isPremium else {
+            showDurationPicker = false
+            showPaywall = true
+            return
+        }
         timerDuration = duration
         showDurationPicker = false
     }
