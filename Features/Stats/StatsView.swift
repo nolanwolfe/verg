@@ -20,6 +20,8 @@ struct StatsView: View {
                     VStack(spacing: Theme.Spacing.md) {
                         statCarousel
 
+                        timeReclaimedWeekCard
+
                         CalendarView(
                             currentMonth: $viewModel.currentMonth,
                             sessionCountsByDate: viewModel.sessionCountsByDate,
@@ -86,14 +88,87 @@ struct StatsView: View {
             }
             .tag(2)
 
+            BigStatCard(
+                title: "Time Reclaimed",
+                value: formattedDuration(minutes: viewModel.timeReclaimed.allTimeMinutes),
+                unit: "written"
+            ) {
+                Image(systemName: "hourglass")
+                    .foregroundColor(Theme.Colors.accent)
+                    .font(.system(size: 20))
+            }
+            .tag(3)
+
             milestoneCard
-                .tag(3)
+                .tag(4)
         }
         .tabViewStyle(.page(indexDisplayMode: .always))
         .frame(height: 170)
         .sheet(isPresented: $showMilestones) {
             MilestonesView(totalSessions: viewModel.totalSessions)
         }
+    }
+
+    // MARK: - Time Reclaimed Week Card
+    private var timeReclaimedWeekCard: some View {
+        let summary = viewModel.timeReclaimed
+        return VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+            HStack(spacing: Theme.Spacing.xs) {
+                Image(systemName: "hourglass")
+                    .foregroundColor(Theme.Colors.accent)
+                    .font(.system(size: 16))
+
+                Text("This Week")
+                    .font(Theme.Typography.subheadline)
+                    .foregroundColor(Theme.Colors.secondaryText)
+
+                Spacer()
+
+                if summary.streak > 0 {
+                    HStack(spacing: 3) {
+                        StreakFlameIcon(size: 13)
+                        Text("\(summary.streak) \(summary.streak == 1 ? "day" : "days")")
+                            .font(Theme.Typography.caption)
+                            .foregroundColor(Theme.Colors.secondaryText)
+                    }
+                }
+            }
+
+            Text(formattedDuration(minutes: summary.weekMinutes))
+                .font(.system(size: 32, weight: .bold, design: .rounded))
+                .foregroundColor(Theme.Colors.primaryText)
+
+            Text(weekDeltaText(summary))
+                .font(Theme.Typography.caption)
+                .foregroundColor(Theme.Colors.secondaryText)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(Theme.Spacing.lg)
+        .background(Theme.Colors.cardBackground)
+        .cornerRadius(Theme.CornerRadius.medium)
+    }
+
+    /// Factual, neutral phrasing — never editorializes on a down week.
+    private func weekDeltaText(_ summary: TimeReclaimedSummary) -> String {
+        let delta = summary.weekDeltaMinutes
+        if summary.lastWeekSeconds == 0 && summary.weekSeconds == 0 {
+            return "No pages yet this week"
+        } else if delta == 0 {
+            return "Same as last week"
+        } else if delta > 0 {
+            return "+\(delta) min vs. last week"
+        } else {
+            return "\(delta) min vs. last week"
+        }
+    }
+
+    private func formattedDuration(minutes: Int) -> String {
+        let hours = minutes / 60
+        let mins = minutes % 60
+        if hours > 0 {
+            return mins > 0 ? "\(hours)h \(mins)m" : "\(hours)h"
+        }
+        return "\(mins) min"
     }
 
     // MARK: - Milestone Card

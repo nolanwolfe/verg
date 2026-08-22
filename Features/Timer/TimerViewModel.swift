@@ -8,6 +8,7 @@ final class TimerViewModel: ObservableObject {
     // MARK: - Published Properties
     @Published private(set) var timeRemaining: TimeInterval = 0
     @Published private(set) var totalDuration: TimeInterval = 0
+    @Published private(set) var activeDuration: TimeInterval = 0
     @Published private(set) var progress: Double = 1.0
     @Published private(set) var isRunning: Bool = false
     @Published private(set) var isComplete: Bool = false
@@ -23,7 +24,11 @@ final class TimerViewModel: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Callbacks
-    var onComplete: (() -> Void)?
+    /// Called when the session screen should close. Passes the Session that
+    /// was saved (photo captured), or nil if it was skipped/cancelled before
+    /// a page was saved — HomeView uses this to decide whether to show the
+    /// "Time Reclaimed" confirmation.
+    var onComplete: ((Session?) -> Void)?
 
     // MARK: - Computed Properties
     var formattedTime: String {
@@ -55,6 +60,10 @@ final class TimerViewModel: ObservableObject {
         timerService.$totalDuration
             .receive(on: DispatchQueue.main)
             .assign(to: &$totalDuration)
+
+        timerService.$activeDuration
+            .receive(on: DispatchQueue.main)
+            .assign(to: &$activeDuration)
 
         timerService.$isRunning
             .receive(on: DispatchQueue.main)
@@ -107,7 +116,7 @@ final class TimerViewModel: ObservableObject {
         noticeWorkItem?.cancel()
         audioService.stopAmbience()
         timerService.stopTimer()
-        onComplete?()
+        onComplete?(nil)
     }
 
     /// Start looping ambience if the option is on and the user is Pro.
@@ -168,11 +177,17 @@ final class TimerViewModel: ObservableObject {
     func onSkipPhotoTapped() {
         showUploadPhotoNotice = false
         // Session completes without saving a photo
-        onComplete?()
+        onComplete?(nil)
     }
 
-    func onPhotoSaved() {
+    /// The just-saved session, held between `onPhotoSaved` and the eventual
+    /// `onComplete` call so a milestone celebration can sit in between
+    /// without losing track of what to report.
+    private var pendingSession: Session?
+
+    func onPhotoSaved(_ session: Session) {
         showCamera = false
+        pendingSession = session
 
         // Session saved - log for debugging
         let sessionCount = storageService.sessions.count
@@ -189,13 +204,13 @@ final class TimerViewModel: ObservableObject {
         }
 
         // Complete the session - paywall will show when user tries to START their 4th session
-        onComplete?()
+        onComplete?(session)
     }
 
     /// Called when the milestone celebration is dismissed
     func dismissCelebration() {
         celebratedMilestone = nil
-        onComplete?()
+        onComplete?(pendingSession)
     }
 
 }

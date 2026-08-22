@@ -132,7 +132,7 @@ final class StorageService: ObservableObject {
     // MARK: - Session Management
     /// Save a new session with the captured image
     @discardableResult
-    func saveSession(image: UIImage, duration: TimeInterval) -> Session? {
+    func saveSession(image: UIImage, duration: TimeInterval, activeDuration: TimeInterval? = nil) -> Session? {
         // Generate unique filename
         let filename = "\(UUID().uuidString).jpg"
         let imageURL = imagesDirectory.appendingPathComponent(filename)
@@ -158,6 +158,7 @@ final class StorageService: ObservableObject {
         let session = Session(
             date: Date(),
             duration: duration,
+            activeDuration: activeDuration,
             imagePath: filename,
             createdAt: Date()
         )
@@ -488,6 +489,11 @@ final class StorageService: ObservableObject {
         saveSettings()
     }
 
+    func setWeeklySummaryNotificationsEnabled(_ enabled: Bool) {
+        settings.weeklySummaryNotificationsEnabled = enabled
+        saveSettings()
+    }
+
     // MARK: - Coach Mark Notice Management
     func setHasSeenSetTimerNotice(_ seen: Bool) {
         settings.hasSeenSetTimerNotice = seen
@@ -547,6 +553,14 @@ final class StorageService: ObservableObject {
             counts[startOfDay, default: 0] += 1
         }
         return counts
+    }
+
+    /// "Time Reclaimed" aggregates — recomputed fresh from `sessions` on
+    /// every call using `Calendar.current`, so day/week boundaries always
+    /// reflect the device's current timezone rather than whatever timezone
+    /// was active when a session was saved.
+    func timeReclaimedSummary() -> TimeReclaimedSummary {
+        TimeReclaimed.summary(sessions: sessions, streak: stats.currentStreak)
     }
 
     /// Clear all data (for testing/reset)

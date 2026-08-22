@@ -13,7 +13,8 @@ struct CameraView: View {
     @State private var focusRingOpacity: Double = 0
 
     var duration: TimeInterval = 10
-    var onPhotoSaved: (() -> Void)?
+    var activeDuration: TimeInterval = 10
+    var onPhotoSaved: ((Session) -> Void)?
     var onCancel: (() -> Void)?
 
     var body: some View {
@@ -54,8 +55,9 @@ struct CameraView: View {
         }
         .onAppear {
             viewModel.sessionDuration = duration
-            viewModel.onPhotoSaved = {
-                onPhotoSaved?()
+            viewModel.sessionActiveDuration = activeDuration
+            viewModel.onPhotoSaved = { session in
+                onPhotoSaved?(session)
             }
             viewModel.onCancel = {
                 onCancel?()

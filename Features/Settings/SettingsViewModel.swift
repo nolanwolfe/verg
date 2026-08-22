@@ -15,6 +15,7 @@ final class SettingsViewModel: ObservableObject {
     @Published var notificationTime: Date = AppSettings.defaultNotificationTime
     @Published var ambientSoundEnabled: Bool = false
     @Published var ambientSoundID: String = "rain"
+    @Published var weeklySummaryNotificationsEnabled: Bool = false
 
     @Published var showDurationPicker: Bool = false
     @Published var showAmbiencePicker: Bool = false
@@ -89,6 +90,7 @@ final class SettingsViewModel: ObservableObject {
         notificationTime = settings.notificationTime
         ambientSoundEnabled = settings.ambientSoundEnabled
         ambientSoundID = settings.ambientSoundID
+        weeklySummaryNotificationsEnabled = settings.weeklySummaryNotificationsEnabled
     }
 
     private func setupBindings() {
@@ -137,6 +139,13 @@ final class SettingsViewModel: ObservableObject {
                 self?.storageService.setAmbientSoundID(id)
             }
             .store(in: &cancellables)
+
+        $weeklySummaryNotificationsEnabled
+            .dropFirst()
+            .sink { [weak self] enabled in
+                self?.handleWeeklySummaryToggle(enabled)
+            }
+            .store(in: &cancellables)
     }
 
     // MARK: - Actions
@@ -177,11 +186,15 @@ final class SettingsViewModel: ObservableObject {
         }
     }
 
+    private static let dailyReminderID = "verg.daily.reminder"
+    private static let weeklySummaryID = "verg.weekly.summary"
+
     private func scheduleNotification() {
         let center = UNUserNotificationCenter.current()
 
-        // Remove existing notifications
-        center.removeAllPendingNotificationRequests()
+        // Remove only this notification's prior schedule — the weekly
+        // summary is a separate identifier and shouldn't be touched here.
+        center.removePendingNotificationRequests(withIdentifiers: [Self.dailyReminderID])
 
         // Create content
         let content = UNMutableNotificationContent()
@@ -197,7 +210,7 @@ final class SettingsViewModel: ObservableObject {
 
         // Create request
         let request = UNNotificationRequest(
-            identifier: "verg.daily.reminder",
+            identifier: Self.dailyReminderID,
             content: content,
             trigger: trigger
         )
@@ -206,7 +219,57 @@ final class SettingsViewModel: ObservableObject {
     }
 
     private func cancelNotifications() {
-        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+        UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [Self.dailyReminderID])
+    }
+
+    // MARK: - Weekly Summary Notification
+    /// Optional, off by default. Static copy only — without a background
+    /// refresh mechanism we can't guarantee the actual weekly total is
+    /// fresh at fire time, and showing a stale number would be worse than
+    /// a plain nudge to open the app.
+    private func handleWeeklySummaryToggle(_ enabled: Bool) {
+        if enabled {
+            requestWeeklySummaryPermission()
+        } else {
+            UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [Self.weeklySummaryID])
+        }
+        storageService.setWeeklySummaryNotificationsEnabled(enabled)
+    }
+
+    private func requestWeeklySummaryPermission() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { [weak self] granted, _ in
+            DispatchQueue.main.async {
+                if granted {
+                    self?.scheduleWeeklySummaryNotification()
+                } else {
+                    self?.weeklySummaryNotificationsEnabled = false
+                }
+            }
+        }
+    }
+
+    private func scheduleWeeklySummaryNotification() {
+        let center = UNUserNotificationCenter.current()
+        center.removePendingNotificationRequests(withIdentifiers: [Self.weeklySummaryID])
+
+        let content = UNMutableNotificationContent()
+        content.title = "Your Week in Verg"
+        content.body = "See how much time you reclaimed this week."
+        content.sound = .default
+
+        // Sunday evening — a natural weekly-recap moment
+        var dateComponents = DateComponents()
+        dateComponents.weekday = 1
+        dateComponents.hour = 18
+        dateComponents.minute = 0
+        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
+
+        let request = UNNotificationRequest(
+            identifier: Self.weeklySummaryID,
+            content: content,
+            trigger: trigger
+        )
+        center.add(request)
     }
 
     // MARK: - Access Code Redemption

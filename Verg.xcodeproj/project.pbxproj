@@ -38,6 +38,8 @@
 		A10000010000000000000022 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000022 /* CalendarView.swift */; };
 		A10000010000000000000023 /* PageGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000023 /* PageGridView.swift */; };
 		A10000010000000000000047 /* ZoomableImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000047 /* ZoomableImageView.swift */; };
+		A10000010000000000000048 /* TimeReclaimed.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000048 /* TimeReclaimed.swift */; };
+		A10000010000000000000049 /* TimeReclaimedToastView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000049 /* TimeReclaimedToastView.swift */; };
 		A10000010000000000000024 /* StatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000024 /* StatsView.swift */; };
 		A10000010000000000000025 /* StatsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000025 /* StatsViewModel.swift */; };
 		A10000010000000000000026 /* CandleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000026 /* CandleView.swift */; };
@@ -93,6 +95,8 @@
 		A20000010000000000000022 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		A20000010000000000000023 /* PageGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageGridView.swift; sourceTree = "<group>"; };
 		A20000010000000000000047 /* ZoomableImageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomableImageView.swift; sourceTree = "<group>"; };
+		A20000010000000000000048 /* TimeReclaimed.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeReclaimed.swift; sourceTree = "<group>"; };
+		A20000010000000000000049 /* TimeReclaimedToastView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeReclaimedToastView.swift; sourceTree = "<group>"; };
 		A20000010000000000000024 /* StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
 		A20000010000000000000025 /* StatsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsViewModel.swift; sourceTree = "<group>"; };
 		A20000010000000000000026 /* CandleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandleView.swift; sourceTree = "<group>"; };
@@ -247,6 +251,7 @@
 				A20000010000000000000006 /* Session.swift */,
 				A20000010000000000000007 /* Settings.swift */,
 				A20000010000000000000008 /* UserStats.swift */,
+				A20000010000000000000048 /* TimeReclaimed.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -286,6 +291,7 @@
 			children = (
 				A20000010000000000000016 /* HomeView.swift */,
 				A20000010000000000000017 /* HomeViewModel.swift */,
+				A20000010000000000000049 /* TimeReclaimedToastView.swift */,
 			);
 			path = Home;
 			sourceTree = "<group>";
@@ -509,6 +515,8 @@
 				A10000010000000000000022 /* CalendarView.swift in Sources */,
 				A10000010000000000000023 /* PageGridView.swift in Sources */,
 				A10000010000000000000047 /* ZoomableImageView.swift in Sources */,
+				A10000010000000000000048 /* TimeReclaimed.swift in Sources */,
+				A10000010000000000000049 /* TimeReclaimedToastView.swift in Sources */,
 				A10000010000000000000024 /* StatsView.swift in Sources */,
 				A10000010000000000000025 /* StatsViewModel.swift in Sources */,
 				A10000010000000000000026 /* CandleView.swift in Sources */,
@@ -664,7 +672,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 9GHNQ3ZYX9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -701,7 +709,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 6;
+				CURRENT_PROJECT_VERSION = 7;
 				DEVELOPMENT_TEAM = 9GHNQ3ZYX9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;

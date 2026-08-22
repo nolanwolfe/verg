@@ -6,7 +6,7 @@ struct TimerView: View {
     @StateObject private var viewModel = TimerViewModel()
     @Environment(\.dismiss) private var dismiss
 
-    var onComplete: (() -> Void)?
+    var onComplete: ((Session?) -> Void)?
 
     @State private var showControls: Bool = true
     @State private var hideTask: Task<Void, Never>?
@@ -105,16 +105,17 @@ struct TimerView: View {
         .fullScreenCover(isPresented: $viewModel.showCamera) {
             CameraView(
                 duration: viewModel.totalDuration,
-                onPhotoSaved: { viewModel.onPhotoSaved() },
+                activeDuration: viewModel.activeDuration,
+                onPhotoSaved: { session in viewModel.onPhotoSaved(session) },
                 onCancel: {
                     viewModel.showCamera = false
                     dismiss()
-                    onComplete?()
+                    onComplete?(nil)
                 }
             )
         }
         .onAppear {
-            viewModel.onComplete = { dismiss(); onComplete?() }
+            viewModel.onComplete = { session in dismiss(); onComplete?(session) }
             scheduleHide()
             startGlowPulse()
             savedSystemBrightness = UIScreen.main.brightness

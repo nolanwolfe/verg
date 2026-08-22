@@ -158,6 +158,16 @@ struct SettingsView: View {
                     action: { viewModel.showTimePicker = true }
                 )
             }
+
+            Divider()
+                .background(Theme.Colors.secondaryText.opacity(0.2))
+
+            SettingsToggleRow(
+                icon: "hourglass",
+                iconColor: Theme.Colors.accent,
+                title: "Weekly Recap",
+                isOn: $viewModel.weeklySummaryNotificationsEnabled
+            )
         }
     }
 

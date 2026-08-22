@@ -26,9 +26,10 @@ final class CameraViewModel: NSObject, ObservableObject {
 
     // MARK: - Session Info
     var sessionDuration: TimeInterval = 10
+    var sessionActiveDuration: TimeInterval = 10
 
     // MARK: - Callbacks
-    var onPhotoSaved: (() -> Void)?
+    var onPhotoSaved: ((Session) -> Void)?
     var onCancel: (() -> Void)?
 
     // MARK: - Initialization
@@ -163,13 +164,14 @@ final class CameraViewModel: NSObject, ObservableObject {
             guard let self = self else { return }
             let session = self.storageService.saveSession(
                 image: image,
-                duration: self.sessionDuration
+                duration: self.sessionDuration,
+                activeDuration: self.sessionActiveDuration
             )
             DispatchQueue.main.async {
                 self.isSaving = false
-                if session != nil {
+                if let session {
                     self.audioService.playHaptic(.success)
-                    self.onPhotoSaved?()
+                    self.onPhotoSaved?(session)
                 } else {
                     self.errorMessage = "Failed to save photo. Please try again."
                     self.showError = true

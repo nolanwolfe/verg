@@ -17,6 +17,10 @@ struct AppSettings: Codable, Equatable {
     var ambientSoundEnabled: Bool
     var ambientSoundID: String
 
+    // Weekly "Time Reclaimed" recap notification — off by default; an app
+    // about reducing phone use shouldn't generate pings unless asked to.
+    var weeklySummaryNotificationsEnabled: Bool
+
     init(
         timerDuration: TimeInterval = 900, // 15 minutes default
         soundEnabled: Bool = true,
@@ -27,7 +31,8 @@ struct AppSettings: Codable, Equatable {
         hasSeenSetTimerNotice: Bool = false,
         uploadPhotoNoticeShownCount: Int = 0,
         ambientSoundEnabled: Bool = false,
-        ambientSoundID: String = "rain"
+        ambientSoundID: String = "rain",
+        weeklySummaryNotificationsEnabled: Bool = false
     ) {
         self.timerDuration = timerDuration
         self.soundEnabled = soundEnabled
@@ -39,6 +44,7 @@ struct AppSettings: Codable, Equatable {
         self.uploadPhotoNoticeShownCount = uploadPhotoNoticeShownCount
         self.ambientSoundEnabled = ambientSoundEnabled
         self.ambientSoundID = ambientSoundID
+        self.weeklySummaryNotificationsEnabled = weeklySummaryNotificationsEnabled
     }
 
     // MARK: - Codable (tolerant decoding)
@@ -56,6 +62,7 @@ struct AppSettings: Codable, Equatable {
         case uploadPhotoNoticeShownCount
         case ambientSoundEnabled
         case ambientSoundID
+        case weeklySummaryNotificationsEnabled
     }
 
     init(from decoder: Decoder) throws {
@@ -70,6 +77,7 @@ struct AppSettings: Codable, Equatable {
         uploadPhotoNoticeShownCount = try container.decodeIfPresent(Int.self, forKey: .uploadPhotoNoticeShownCount) ?? 0
         ambientSoundEnabled = try container.decodeIfPresent(Bool.self, forKey: .ambientSoundEnabled) ?? false
         ambientSoundID = try container.decodeIfPresent(String.self, forKey: .ambientSoundID) ?? "rain"
+        weeklySummaryNotificationsEnabled = try container.decodeIfPresent(Bool.self, forKey: .weeklySummaryNotificationsEnabled) ?? false
     }
 
     /// Default notification time (8:00 PM)

@@ -11,11 +11,16 @@ final class TimerService: ObservableObject {
     @Published private(set) var totalDuration: TimeInterval = 0
     @Published private(set) var isRunning: Bool = false
     @Published private(set) var isComplete: Bool = false
+    /// Foreground-only elapsed time for "Time Reclaimed" — the candle keeps
+    /// burning by wall clock while backgrounded (see appDidEnterBackground),
+    /// but this accumulator only counts segments while the app was frontmost.
+    @Published private(set) var activeDuration: TimeInterval = 0
 
     // MARK: - Private Properties
     private var timer: Timer?
     private var startTime: Date?
     private var endTime: Date?
+    private var activeSegmentStart: Date?
     private let notificationID = "verg.timer.complete"
 
     // MARK: - Computed Properties
@@ -60,6 +65,8 @@ final class TimerService: ObservableObject {
         isComplete = false
         startTime = Date()
         endTime = Date().addingTimeInterval(duration)
+        activeDuration = 0
+        activeSegmentStart = Date()
 
         // Keep screen awake
         UIApplication.shared.isIdleTimerDisabled = true
@@ -83,6 +90,7 @@ final class TimerService: ObservableObject {
         timer?.invalidate()
         timer = nil
         isRunning = false
+        closeActiveSegment()
         UIApplication.shared.isIdleTimerDisabled = false
         cancelCompletionNotification()
     }
@@ -92,6 +100,7 @@ final class TimerService: ObservableObject {
         timer?.invalidate()
         timer = nil
         isRunning = false
+        closeActiveSegment()
         cancelCompletionNotification()
     }
 
@@ -101,6 +110,7 @@ final class TimerService: ObservableObject {
 
         isRunning = true
         endTime = Date().addingTimeInterval(timeRemaining)
+        activeSegmentStart = Date()
 
         timer = Timer.scheduledTimer(withTimeInterval: 0.1, repeats: true) { [weak self] _ in
             self?.tick()
@@ -133,6 +143,7 @@ final class TimerService: ObservableObject {
             isComplete = false
             isRunning = true
             endTime = Date().addingTimeInterval(seconds)
+            activeSegmentStart = Date()
 
             UIApplication.shared.isIdleTimerDisabled = true
 
@@ -166,6 +177,14 @@ final class TimerService: ObservableObject {
         isComplete = true
     }
 
+    /// Folds any open foreground segment into `activeDuration` and clears it.
+    /// Safe to call when nothing is open (e.g. already backgrounded).
+    private func closeActiveSegment() {
+        guard let start = activeSegmentStart else { return }
+        activeDuration += Date().timeIntervalSince(start)
+        activeSegmentStart = nil
+    }
+
     // MARK: - App Lifecycle Notifications
     private func setupNotifications() {
         NotificationCenter.default.addObserver(
@@ -188,7 +207,9 @@ final class TimerService: ObservableObject {
     }
 
     @objc private func appDidEnterBackground() {
-        // Timer continues with the scheduled end time
+        // The countdown itself continues with the scheduled end time — only
+        // "Time Reclaimed" foreground tracking pauses here.
+        closeActiveSegment()
     }
 
     @objc private func appWillEnterForeground() {
@@ -202,6 +223,11 @@ final class TimerService: ObservableObject {
             complete()
         } else {
             timeRemaining = remaining
+            // Still running — resume foreground tracking. If the session
+            // completed while backgrounded, `complete()` above already
+            // finalized activeDuration without reopening a segment, so
+            // that final stretch correctly isn't counted.
+            activeSegmentStart = Date()
         }
     }
 

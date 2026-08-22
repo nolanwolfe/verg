@@ -59,7 +59,7 @@ struct ContentView: View {
             }
         }
         .fullScreenCover(isPresented: $showTimerFromNotice) {
-            TimerView(onComplete: {
+            TimerView(onComplete: { _ in
                 showTimerFromNotice = false
             })
         }

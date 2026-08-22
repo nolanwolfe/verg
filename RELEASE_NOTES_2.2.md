@@ -18,6 +18,8 @@
   down to dismiss.
 - **Faster journal** — smoother scrolling and instant page browsing, even with
   hundreds of pages.
+- **Time Reclaimed** — see how many minutes you spent writing instead of
+  scrolling, today and all-time, on the Stats tab.
 
 ## QA checklist before submission (needs a physical device)
 
@@ -44,8 +46,17 @@
       reschedules
 - [ ] Pro gating: Ambience row locked for free users → paywall; unlocked for
       subscriber / access-code accounts
+- [ ] Time Reclaimed: after a session, toast reads "You wrote for N minutes
+      instead of scrolling" (or the running daily total on a 2nd+ same-day
+      session) — dismisses on its own after ~4s, tap also dismisses, never
+      reappears until the next session. Background the app mid-session and
+      confirm the backgrounded minutes are NOT counted (compare toast/Stats
+      total against a stopwatch of foreground time only). Stats tab shows a
+      correct This Week total + delta vs. last week + streak, and an
+      all-time total in the carousel. Weekly Recap toggle in Settings is off
+      by default and, when enabled, requests notification permission
 
 ## Version
 
 - Marketing version: 2.2
-- Build: 6
+- Build: 7

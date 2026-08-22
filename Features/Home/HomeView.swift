@@ -10,6 +10,7 @@ struct HomeView: View {
     @State private var showTimer = false
     @State private var showPaywall = false
     @State private var showDurationPicker = false
+    @State private var timeReclaimedMessage: String?
 
     // Silent brightness control
     @State private var brightness: Double = UIScreen.main.brightness
@@ -69,10 +70,14 @@ struct HomeView: View {
                 onDone: { showDurationPicker = false }
             )
         }
+        .timeReclaimedToast($timeReclaimedMessage)
         .fullScreenCover(isPresented: $showTimer) {
-            TimerView(onComplete: {
+            TimerView(onComplete: { session in
                 showTimer = false
                 viewModel.refresh()
+                if let session {
+                    presentTimeReclaimedToast(for: session)
+                }
             })
         }
         .fullScreenCover(isPresented: $showPaywall, onDismiss: {
@@ -97,6 +102,21 @@ struct HomeView: View {
                 await purchaseService.checkSubscriptionStatus()
             }
         }
+    }
+
+    // MARK: - Time Reclaimed
+    /// Builds the daily confirmation copy. Uses the daily running total
+    /// (not just this session's length) once a second session lands the
+    /// same day, per the "no per-session repeats" rule.
+    private func presentTimeReclaimedToast(for session: Session) {
+        let calendar = Calendar.current
+        let todaysSessions = storageService.sessions.filter { calendar.isDateInToday($0.date) }
+        let isFirstSessionToday = todaysSessions.count <= 1
+        let todaySeconds = todaysSessions.reduce(0) { $0 + $1.activeDuration }
+        timeReclaimedMessage = TimeReclaimed.confirmationMessage(
+            todaySeconds: todaySeconds,
+            isFirstSessionToday: isFirstSessionToday
+        )
     }
 
     // MARK: - Session Start Logic
