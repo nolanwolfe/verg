@@ -69,6 +69,16 @@ struct ZoomableImageView: UIViewRepresentable {
         weak var imageView: UIImageView?
         weak var scrollView: UIScrollView?
 
+        /// The scrollView bounds size we last laid out the 1x "fit" geometry
+        /// for. SwiftUI calls `updateUIView` — and therefore `layout()` — on
+        /// every re-render, including mid-swipe; re-deriving fit geometry
+        /// from the current (already-zoomed) bounds on every one of those
+        /// calls desyncs `scrollView.zoomScale` from the actual bounds, and
+        /// the next gesture reapplies the stale scale on top of the reset
+        /// geometry, compounding into a runaway zoom. Only reset when the
+        /// viewport itself changed size (first layout, rotation).
+        private var lastLaidOutBoundsSize: CGSize = .zero
+
         init(_ parent: ZoomableImageView) {
             self.parent = parent
         }
@@ -83,12 +93,18 @@ struct ZoomableImageView: UIViewRepresentable {
             guard let scrollView, let imageView, let image = imageView.image else { return }
             let boundsSize = scrollView.bounds.size
             guard boundsSize.width > 0, boundsSize.height > 0, image.size.width > 0 else { return }
+
+            guard boundsSize != lastLaidOutBoundsSize else {
+                centerImage()
+                return
+            }
+            lastLaidOutBoundsSize = boundsSize
+
             let scale = min(boundsSize.width / image.size.width, boundsSize.height / image.size.height)
             let fitSize = CGSize(width: image.size.width * scale, height: image.size.height * scale)
-            if imageView.bounds.size != fitSize {
-                imageView.bounds = CGRect(origin: .zero, size: fitSize)
-                scrollView.contentSize = fitSize
-            }
+            scrollView.zoomScale = 1
+            imageView.bounds = CGRect(origin: .zero, size: fitSize)
+            scrollView.contentSize = fitSize
             centerImage()
         }
 
