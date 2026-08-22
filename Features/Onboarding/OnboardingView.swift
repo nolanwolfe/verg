@@ -39,6 +39,8 @@ struct OnboardingView: View {
     @ViewBuilder
     private var stepContent: some View {
         switch viewModel.currentStep {
+        case .epigraph:
+            OnboardingEpigraphView()
         case .whatThisIs:
             OnboardingWhatThisIsView()
         case .ritual:

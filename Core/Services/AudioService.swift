@@ -66,10 +66,17 @@ final class AudioService: ObservableObject {
     }
 
     // MARK: - Setup
+    // .ambient (not .playback): respects the silent switch — if someone has
+    // deliberately silenced their phone, an app about quiet doesn't get to
+    // override that. Trade-off: .ambient doesn't survive true backgrounding
+    // (only .playback does, and only with the Audio background mode, which
+    // this app doesn't declare). In practice the session stays foreground
+    // the whole time — the ritual is "face down," not "backgrounded" —
+    // .mixWithOthers still means it never interrupts other audio.
     private func setupAudioSession() {
         do {
             try AVAudioSession.sharedInstance().setCategory(
-                .playback,
+                .ambient,
                 mode: .default,
                 options: [.mixWithOthers]
             )

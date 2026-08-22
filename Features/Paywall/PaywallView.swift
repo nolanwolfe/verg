@@ -41,11 +41,11 @@ struct NativePaywallView: View {
                                 .font(.system(size: 48))
                                 .foregroundStyle(.purple)
 
-                            Text("Unlock Verg Pro")
+                            Text("The Ascent")
                                 .font(.largeTitle)
                                 .fontWeight(.bold)
 
-                            Text("Start your free trial today")
+                            Text("Your full archive. Your stats. Your pace.")
                                 .font(.title3)
                                 .foregroundStyle(.secondary)
                         }
@@ -100,7 +100,7 @@ struct NativePaywallView: View {
                                         ProgressView()
                                             .tint(.white)
                                     } else {
-                                        Text("Start Free Trial")
+                                        Text(viewModel.selectedPlanHasFreeTrial ? "Start Free Trial" : "Continue")
                                             .fontWeight(.semibold)
                                     }
                                 }
@@ -112,7 +112,7 @@ struct NativePaywallView: View {
                             }
                             .disabled(viewModel.isLoading)
 
-                            Text(viewModel.hasFreeTrial
+                            Text(viewModel.selectedPlanHasFreeTrial
                                 ? "Free trial auto-renews at \(viewModel.selectedPlan == .yearly ? viewModel.yearlyPrice + "/year" : viewModel.monthlyPrice + "/month") unless cancelled."
                                 : "Subscription auto-renews unless cancelled.")
                                 .font(.caption)

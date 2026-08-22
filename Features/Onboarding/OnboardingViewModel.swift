@@ -7,6 +7,7 @@ import SwiftUI
 final class OnboardingViewModel: ObservableObject {
 
     enum Step: Int, CaseIterable {
+        case epigraph
         case whatThisIs
         case ritual
         case commitment
@@ -15,7 +16,7 @@ final class OnboardingViewModel: ObservableObject {
     }
 
     // MARK: - Published Properties
-    @Published var currentStep: Step = .whatThisIs
+    @Published var currentStep: Step = .epigraph
     @Published var selectedDaysPerWeek: Int = 5
     @Published var showPaywall: Bool = false
 

@@ -178,7 +178,7 @@ struct SettingsView: View {
                 SettingsButtonRow(
                     icon: "sparkles",
                     iconColor: Theme.Colors.accent,
-                    title: "Upgrade to Premium",
+                    title: "Upgrade to The Ascent",
                     action: { viewModel.showPaywall = true }
                 )
 

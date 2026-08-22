@@ -1,74 +1,65 @@
-# Verg Gamification
+# Verg Progression
 
-How progression works in Verg today, and the roadmap for building it out
-Duolingo-style. Written alongside the 2.2 milestone release.
+How progression works in Verg. Originally written toward a Duolingo-style
+roadmap (XP, levels, quests, leagues) — that roadmap is retired as of the
+Dante/Virgil business-model pass. It actively contradicted the product's
+own governing rule: the app should get *less* interesting to look at over
+time, not more. No badges, no points, no currency, no push notifications.
 
-## Current model (2.2)
+## Three progression tracks, one ledger
 
-**`Milestone`** (`Core/Models/Milestone.swift`) — the first achievement kind.
-Pure Foundation, fully testable standalone:
+All three persist through `AchievementService` (`Core/Services/AchievementService.swift`)
+with typed, namespaced UserDefaults keys — one service, three independent
+unlock sets, none of them touch each other's state.
 
-- Page-count thresholds: 10, 25, 50, 100, 250, 500, 1000
-- `nextMilestone(after:)`, `progress(totalSessions:)` — drive the Stats
-  carousel's progress card
-- `earnedThresholds(totalSessions:)` / `newlyCrossed(totalSessions:unlocked:)` —
-  pure unlock logic, no side effects
+**1. Page-count milestones** (`Core/Models/Milestone.swift`) — 10, 25, 50,
+100, 250, 500, 1000 pages. The original track. Full-screen celebration
+(`MilestoneCelebrationView`) after a page saves. Surfaced on the Stats
+carousel and `MilestonesView` — that view is a badge grid, which is
+honestly a poor fit for the new "no badges" philosophy; it predates this
+rule and hasn't been rebuilt yet.
 
-**`AchievementService`** (`Core/Services/AchievementService.swift`) — the single
-unlock ledger:
+**2. Weekly-goal milestones** (`Core/Models/WeeklyGoalMilestone.swift`) —
+1, 4, 12, 26, 52 completed weeks meeting the days-per-week pace chosen
+during onboarding. Same full-screen celebration treatment as page
+milestones (reuses `MilestoneCelebrationView` via a second initializer).
+Only relevant if the user set a commitment; nothing shows otherwise.
 
-- Persists unlocked thresholds as JSON `[Int]` under UserDefaults key
-  `"verg.achievements"`
-- **Backfill rule:** on first run after updating, milestones the user already
-  passed are seeded silently — no retroactive celebrations. This matters for
-  existing users with 100+ pages.
-- `checkForNewMilestones(totalSessions:)` records everything newly crossed and
-  returns the highest milestone to celebrate (or nil)
+**3. Seven Terraces** (`Core/Models/Terrace.swift`) — 7, 14, 30, 60, 100,
+200, 365 days lit. The one built *with* the no-badges rule in mind: no
+full-screen takeover, just a small auto-dismissing line of text after the
+bell (see `TimerView`'s terrace banner). This is the intended template
+for future progression surfaces, not tracks 1 and 2.
 
-**Celebration hook:** `TimerViewModel.onPhotoSaved()` — after a page is saved,
-new milestones trigger `MilestoneCelebrationView` (full-screen overlay in
-`TimerView`) before the session completes. The skip-photo path records no
-session, so no check is needed there.
+**Backfill rule** (all three): on first run after a track is introduced,
+already-earned thresholds are seeded silently — no retroactive
+celebrations for existing progress.
 
-**Surfacing:** Stats tab carousel page 4 shows progress toward the next
-milestone ("117 / 250 pages") and opens `MilestonesView`, a badge grid of all
-milestones (unlocked glow, locked dimmed).
+## Business model note (supersedes the old "keep it free" note)
 
-## Design principles
+Per the 2026-08-22 freemium pass: page-count milestones, weekly-goal
+milestones, and general Stats are Ascent (paid) — only "days lit" and the
+calendar are free, alongside the ritual itself. Terraces are checked
+regardless of subscription tier (the quiet banner isn't gated), but the
+Stats surfaces that show milestone *progress* are behind the paywall like
+the rest of Stats.
 
-1. **One ledger.** Every future unlockable persists through
-   `AchievementService` with typed, namespaced keys (`verg.achievements`,
-   later e.g. `verg.xp`, `verg.quests`). No scattered UserDefaults flags.
-2. **Pure logic, thin service.** Unlock rules live as pure static functions on
-   the model (testable via plain `swift` scripts); the service only owns
-   persistence and publishing.
-3. **Backfill, never re-celebrate.** Any new achievement kind must seed
-   already-earned state silently on first run.
-4. **Celebrate at the moment of progress** — right after a page is saved, not
-   on app launch.
+## Retired roadmap (do not build)
 
-## Roadmap
+The following were previously planned and are now explicitly out of scope
+per the product's own rules — raise it with the user again before
+reviving any of it:
 
-**v2.3 — XP + levels**
-- XP per completed session, weighted by duration (e.g. 10 XP per 5 minutes,
-  capped per day to discourage grinding)
-- Level curve mapped to candle imagery (Spark → Flame → Blaze → …)
-- XP total on the Stats carousel; level badge next to the streak flame
+- XP, levels, level badges
+- Daily quests
+- Leaderboards / leagues / any social or account-backed system
+- Any purchasable/consumable version of a "streak freeze" (relights are
+  subscription-included only, never sold separately — see `CandleRelight.swift`)
 
-**v2.3/2.4 — Daily quests**
-- Rotating small goals: "write before 9am", "2 sessions today", "add a photo"
-- Quest state is date-scoped; completing all daily quests grants bonus XP
-- Surfaced as a small card on Home under the streak
+## Open follow-up
 
-**v2.4 — Streak freezes**
-- Earnable (via quests/XP) or Pro-included; consumes automatically on a missed
-  day. `UserStats.validateStreak()` is the integration point.
-
-**Later — Leagues / friends (requires backend)**
-- Weekly XP leaderboards among cohorts, Duolingo-style promotion/demotion
-- Needs accounts + server; out of scope for local-only Verg. Revisit once the
-  app has an account system for sync.
-
-**Monetization note:** keep achievements/milestones free (they drive retention
-and habit), gate comfort/delight features (ambience, freezes beyond the first)
-behind Pro.
+`MilestonesView`'s badge grid (track 1) and the full-screen celebration
+used by tracks 1 and 2 predate the "no badges, quiet" rule that shaped
+track 3. Worth revisiting whether all three should converge on the
+Terrace treatment, or whether page-count/weekly-goal are different enough
+in kind to keep their current presentation. Flagged, not decided.

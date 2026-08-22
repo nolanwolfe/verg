@@ -1,5 +1,45 @@
 import SwiftUI
 
+// MARK: - Step 0: Epigraph
+/// The only screen in the app that uses a serif face — everything else
+/// stays SF Pro. No links, no footnote, no explanation of who Dante is.
+/// This epigraph never reappears anywhere else in the app.
+struct OnboardingEpigraphView: View {
+    var body: some View {
+        VStack(spacing: Theme.Spacing.xl) {
+            Spacer()
+
+            VStack(spacing: Theme.Spacing.md) {
+                Text("Thou art alone the one from whom I took\nthe beautiful style that has done me honour.")
+                    .font(.system(size: 22, weight: .regular, design: .serif))
+                    .italic()
+                    .lineSpacing(10)
+                    .foregroundColor(Theme.Colors.primaryText)
+                    .multilineTextAlignment(.center)
+
+                Text("Dante, to Virgil, in the dark wood.")
+                    .font(.system(size: 15, weight: .regular, design: .serif))
+                    .italic()
+                    .foregroundColor(Theme.Colors.secondaryText)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.horizontal, Theme.Spacing.xl)
+
+            Spacer()
+                .frame(height: Theme.Spacing.xxl)
+
+            Text("Verg is named for him — the guide who walks with you, and then leaves once you reach the summit of the mountain.")
+                .font(.system(size: 17, weight: .regular, design: .serif))
+                .foregroundColor(Theme.Colors.primaryText)
+                .multilineTextAlignment(.center)
+                .lineSpacing(6)
+                .padding(.horizontal, Theme.Spacing.xl)
+
+            Spacer()
+        }
+    }
+}
+
 // MARK: - Step 1: What This Is
 /// The real candle component, not a generic icon — this is the one visual
 /// promise the whole app is built around.

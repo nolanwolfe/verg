@@ -43,12 +43,14 @@ final class PaywallViewModel: ObservableObject {
         let text: String
     }
 
+    // Sells the archive and the stats — not a generic feature list.
     let features: [Feature] = [
-        Feature(icon: "checkmark.circle.fill", text: "Daily focused writing sessions"),
-        Feature(icon: "checkmark.circle.fill", text: "Keep your candle lit, days lit"),
-        Feature(icon: "checkmark.circle.fill", text: "Build a gallery of your pages"),
-        Feature(icon: "checkmark.circle.fill", text: "Daily reminders to write"),
-        Feature(icon: "music.note", text: "Ambient sounds while you write")
+        Feature(icon: "books.vertical.fill", text: "Your full archive, beyond the last 7 days"),
+        Feature(icon: "chart.bar.fill", text: "Stats: pages, longest run, time reclaimed"),
+        Feature(icon: "flame.fill", text: "One relight a week — a missed day won't put out your candle"),
+        Feature(icon: "text.quote", text: "Writing prompts"),
+        Feature(icon: "music.note", text: "Ambient sound while you write"),
+        Feature(icon: "clock.fill", text: "Custom session length")
     ]
 
     // MARK: - Dependencies
@@ -90,9 +92,19 @@ final class PaywallViewModel: ObservableObject {
         return "\(purchaseService.yearlyPrice)/year"
     }
 
-    /// Whether any plan has a free trial
+    /// Whether any plan has a free trial (used for the auto-renew disclosure)
     var hasFreeTrial: Bool {
         monthlyIntroOffer != nil || yearlyIntroOffer != nil
+    }
+
+    /// Whether the CURRENTLY SELECTED plan has a trial — trial is
+    /// yearly-only, so this must not just check "any plan," or selecting
+    /// Monthly (no trial) would still show "Start Free Trial."
+    var selectedPlanHasFreeTrial: Bool {
+        switch selectedPlan {
+        case .monthly: return monthlyIntroOffer != nil
+        case .yearly: return yearlyIntroOffer != nil
+        }
     }
 
     // MARK: - Initialization
