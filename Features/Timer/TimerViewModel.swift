@@ -17,6 +17,9 @@ final class TimerViewModel: ObservableObject {
     @Published var celebratedMilestone: Milestone?
     @Published var celebratedGoalMilestone: WeeklyGoalMilestone?
     @Published var timeReclaimedMoment: TimeReclaimedMoment?
+    /// A crossed terrace's one line of text — quiet, non-blocking, shown
+    /// as a small banner rather than a full-screen celebration.
+    @Published var terraceMessage: String?
 
     // MARK: - Dependencies
     private let timerService: TimerService
@@ -209,6 +212,13 @@ final class TimerViewModel: ObservableObject {
         #if DEBUG
         print("[SessionGating] Photo saved. Total sessions: \(sessionCount)")
         #endif
+
+        // Seven terraces — quiet, no full-screen takeover. Just a marked
+        // day (calendar, handled elsewhere) and one line of text here.
+        // Independent of the celebration sequence below; never blocks it.
+        if let terrace = AchievementService.shared.checkForNewTerraces(daysLit: storageService.stats.daysLit) {
+            terraceMessage = terrace.title
+        }
 
         // Compute a goal-milestone crossing now (if the user set a weekly
         // commitment during onboarding), but queue it — page milestones

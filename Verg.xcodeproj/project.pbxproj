@@ -70,6 +70,7 @@
 		A10000010000000000000051 /* RatingPromptService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000051 /* RatingPromptService.swift */; };
 		A10000010000000000000052 /* OnboardingStepViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000052 /* OnboardingStepViews.swift */; };
 		A10000010000000000000053 /* CandleRelight.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000053 /* CandleRelight.swift */; };
+		A10000010000000000000054 /* Terrace.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000054 /* Terrace.swift */; };
 		B149AD1EF9111F56CF2898BD /* MilestoneLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3F6D131429DF832DEC156D /* MilestoneLogicTests.swift */; };
 		DBF85CC00BAB63176ADB9C70 /* ProductIdentifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D95EF34BEA0EECAB4880F8D /* ProductIdentifiers.swift */; };
 		F481BCFEB8A889E1905AEDA2 /* TimeReclaimedCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 898AD9244BCD3A4014BB05AC /* TimeReclaimedCardView.swift */; };
@@ -153,6 +154,7 @@
 		A20000010000000000000051 /* RatingPromptService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatingPromptService.swift; sourceTree = "<group>"; };
 		A20000010000000000000052 /* OnboardingStepViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStepViews.swift; sourceTree = "<group>"; };
 		A20000010000000000000053 /* CandleRelight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandleRelight.swift; sourceTree = "<group>"; };
+		A20000010000000000000054 /* Terrace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Terrace.swift; sourceTree = "<group>"; };
 		BA85F0D61ED1E6AE8A4E80C4 /* VergTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VergTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0E9AAF30597470AE40B5615 /* SessionGatingService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionGatingService.swift; path = Core/Services/SessionGatingService.swift; sourceTree = "<group>"; };
 		F363E01CA80309C00CBFA394 /* SessionGatingServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionGatingServiceTests.swift; path = SessionGatingServiceTests.swift; sourceTree = "<group>"; };
@@ -318,6 +320,7 @@
 				A20000010000000000000049 /* OnboardingProjection.swift */,
 				A20000010000000000000050 /* WeeklyGoalMilestone.swift */,
 				A20000010000000000000053 /* CandleRelight.swift */,
+				A20000010000000000000054 /* Terrace.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -641,6 +644,7 @@
 				A10000010000000000000051 /* RatingPromptService.swift in Sources */,
 				A10000010000000000000052 /* OnboardingStepViews.swift in Sources */,
 				A10000010000000000000053 /* CandleRelight.swift in Sources */,
+				A10000010000000000000054 /* Terrace.swift in Sources */,
 				A10000010000000000000024 /* StatsView.swift in Sources */,
 				A10000010000000000000025 /* StatsViewModel.swift in Sources */,
 				A10000010000000000000026 /* CandleView.swift in Sources */,
@@ -824,7 +828,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 9GHNQ3ZYX9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -861,7 +865,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 13;
+				CURRENT_PROJECT_VERSION = 14;
 				DEVELOPMENT_TEAM = 9GHNQ3ZYX9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;

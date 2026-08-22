@@ -14,6 +14,7 @@ final class StatsViewModel: ObservableObject {
     @Published private(set) var totalSessions: Int = 0
     @Published private(set) var datesWithSessions: Set<Date> = []
     @Published private(set) var sessionCountsByDate: [Date: Int] = [:]
+    @Published private(set) var relitDates: Set<Date> = []
     @Published private(set) var timeReclaimed: TimeReclaimedSummary = .zero
     @Published private(set) var weeklyCommitmentDaysPerWeek: Int?
     @Published private(set) var weeksGoalMet: Int = 0
@@ -89,6 +90,7 @@ final class StatsViewModel: ObservableObject {
         totalSessions = stats.totalSessions
         datesWithSessions = storageService.getDatesWithSessions()
         sessionCountsByDate = storageService.getSessionCountsByDate()
+        relitDates = Set(storageService.stats.relitDates)
         timeReclaimed = storageService.timeReclaimedSummary()
 
         weeklyCommitmentDaysPerWeek = storageService.settings.weeklyCommitmentDaysPerWeek

@@ -4,6 +4,10 @@ import SwiftUI
 struct CalendarView: View {
     @Binding var currentMonth: Date
     let sessionCountsByDate: [Date: Int]
+    /// Days bridged by a premium relight rather than written — rendered
+    /// visually distinct from both written and missed days, never as if
+    /// the user actually wrote.
+    var relitDates: Set<Date> = []
     let onPreviousMonth: () -> Void
     let onNextMonth: () -> Void
 
@@ -87,7 +91,8 @@ struct CalendarView: View {
                         date: date,
                         sessionCount: sessionCount(on: date),
                         isToday: Calendar.current.isDateInToday(date),
-                        isCurrentMonth: true
+                        isCurrentMonth: true,
+                        isRelit: relitDates.contains(Calendar.current.startOfDay(for: date))
                     )
                 } else {
                     // Empty cell for padding
@@ -175,6 +180,7 @@ struct DayCell: View {
     let sessionCount: Int
     let isToday: Bool
     let isCurrentMonth: Bool
+    var isRelit: Bool = false
 
     private var hasSession: Bool {
         sessionCount > 0
@@ -202,10 +208,22 @@ struct DayCell: View {
                 }
             }
 
-            // Session indicator dot
-            Circle()
-                .fill(hasSession ? Theme.Colors.accent : Color.clear)
-                .frame(width: 6, height: 6)
+            // Day indicator: solid dot = written, ringed amber dot = relit
+            // (bridged, not written), nothing = missed. Never render a relit
+            // day as if it were written.
+            if hasSession {
+                Circle()
+                    .fill(Theme.Colors.accent)
+                    .frame(width: 6, height: 6)
+            } else if isRelit {
+                Circle()
+                    .strokeBorder(Color(hex: "FF9500"), lineWidth: 1.5)
+                    .frame(width: 6, height: 6)
+            } else {
+                Circle()
+                    .fill(Color.clear)
+                    .frame(width: 6, height: 6)
+            }
         }
         .frame(height: 50)
     }

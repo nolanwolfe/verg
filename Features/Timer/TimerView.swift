@@ -96,6 +96,28 @@ struct TimerView: View {
                 }
                 .zIndex(3)
             }
+
+            // A crossed terrace — quiet, non-blocking, never a takeover
+            if let terraceMessage = viewModel.terraceMessage {
+                VStack {
+                    Text(terraceMessage)
+                        .font(Theme.Typography.subheadline.italic())
+                        .foregroundColor(.white.opacity(0.85))
+                        .padding(.horizontal, Theme.Spacing.md)
+                        .padding(.vertical, Theme.Spacing.xs)
+                        .background(Capsule().fill(Color.black.opacity(0.4)))
+                        .padding(.top, Theme.Spacing.xxl)
+                    Spacer()
+                }
+                .transition(.opacity)
+                .zIndex(4)
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 3.5) {
+                        withAnimation(Theme.Animation.slow) { viewModel.terraceMessage = nil }
+                    }
+                }
+                .allowsHitTesting(false)
+            }
         }
         // Tap toggles controls — must be on ZStack, not inner views
         .onChange(of: viewModel.isComplete) { _, complete in

@@ -47,6 +47,7 @@ struct StatsView: View {
                         CalendarView(
                             currentMonth: $viewModel.currentMonth,
                             sessionCountsByDate: viewModel.sessionCountsByDate,
+                            relitDates: viewModel.relitDates,
                             onPreviousMonth: { viewModel.previousMonth() },
                             onNextMonth: { viewModel.nextMonth() }
                         )
