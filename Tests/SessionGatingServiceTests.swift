@@ -48,29 +48,17 @@ final class SessionGatingServiceTests: XCTestCase {
 /// Unit tests for centralized copy strings
 final class AppStringsTests: XCTestCase {
 
-    func testOnboardingPages_HasThreePages() {
-        XCTAssertEqual(AppStrings.Onboarding.pages.count, 3)
+    func testOnboardingRitualSteps_HasFourSteps() {
+        XCTAssertEqual(AppStrings.Onboarding.ritualSteps.count, 4)
     }
 
-    func testOnboardingPage1_HasCorrectCopy() {
-        let page = AppStrings.Onboarding.pages[0]
-        XCTAssertEqual(page.title, "One simple ritual")
-        XCTAssertEqual(page.subtitle, "Track your pages. Watch your progress and thoughts grow.")
-        XCTAssertEqual(page.buttonText, "Leave the phone alone.")
+    func testOnboardingCommitmentOptions_IsThreeFiveSeven() {
+        XCTAssertEqual(AppStrings.Onboarding.commitmentOptions, [3, 5, 7])
     }
 
-    func testOnboardingPage2_HasCorrectCopy() {
-        let page = AppStrings.Onboarding.pages[1]
-        XCTAssertEqual(page.title, "This app isn't for typing — it's for writing")
-        XCTAssertEqual(page.subtitle, "Do you have a pen and paper?")
-        XCTAssertEqual(page.buttonText, "I'm ready to write on paper")
-    }
-
-    func testOnboardingPage3_HasCorrectCopy() {
-        let page = AppStrings.Onboarding.pages[2]
-        XCTAssertEqual(page.title, "Your phone steals your thoughts")
-        XCTAssertEqual(page.subtitle, "Endless attention. Zero reflection.")
-        XCTAssertEqual(page.buttonText, "This is the door out.")
+    func testOnboardingWhatThisIsLine_IsOneLine() {
+        XCTAssertFalse(AppStrings.Onboarding.whatThisIsLine.contains("\n"))
+        XCTAssertFalse(AppStrings.Onboarding.whatThisIsLine.isEmpty)
     }
 
     func testStartTimerNotice_HasCorrectCopy() {

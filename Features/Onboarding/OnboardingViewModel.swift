@@ -2,15 +2,22 @@ import Foundation
 import Combine
 import SwiftUI
 
-/// ViewModel for the Onboarding flow
+/// ViewModel for the Onboarding flow — 5 steps (what this is, the ritual,
+/// commitment, projection, rating prompt), then the paywall.
 final class OnboardingViewModel: ObservableObject {
 
-    // MARK: - Published Properties
-    @Published var currentPage: Int = 0
-    @Published var showPaywall: Bool = false
+    enum Step: Int, CaseIterable {
+        case whatThisIs
+        case ritual
+        case commitment
+        case projection
+        case ratingPrompt
+    }
 
-    // MARK: - Constants
-    let totalPages = 3
+    // MARK: - Published Properties
+    @Published var currentStep: Step = .whatThisIs
+    @Published var selectedDaysPerWeek: Int = 5
+    @Published var showPaywall: Bool = false
 
     // MARK: - Dependencies
     private let storageService: StorageService
@@ -18,45 +25,69 @@ final class OnboardingViewModel: ObservableObject {
     // MARK: - Callbacks
     var onComplete: (() -> Void)?
 
+    // MARK: - Computed Properties
+    var isLastStep: Bool {
+        currentStep == Step.allCases.last
+    }
+
+    var projection: OnboardingProjection.Result {
+        OnboardingProjection.compute(daysPerWeek: selectedDaysPerWeek)
+    }
+
     // MARK: - Initialization
     init(storageService: StorageService = .shared) {
         self.storageService = storageService
     }
 
-    // MARK: - Computed Properties
-    var isLastPage: Bool {
-        currentPage == totalPages - 1
-    }
-
-    var continueButtonText: String {
-        isLastPage ? "Get Started" : "Continue"
-    }
-
     // MARK: - Actions
 
-    /// Advance to next page or complete onboarding
+    func selectDaysPerWeek(_ days: Int) {
+        selectedDaysPerWeek = days
+    }
+
+    /// Advance to the next step, or — on the last step — persist the
+    /// commitment, fire the rating prompt, and hand off to the paywall.
     func continueAction() {
-        if isLastPage {
-            completeOnboarding()
-        } else {
-            withAnimation(Theme.Animation.standard) {
-                currentPage += 1
-            }
+        guard let currentIndex = Step.allCases.firstIndex(of: currentStep) else { return }
+
+        if isLastStep {
+            finishRitualSteps()
+            return
+        }
+
+        let nextIndex = Step.allCases.index(after: currentIndex)
+        withAnimation(Theme.Animation.standard) {
+            currentStep = Step.allCases[nextIndex]
         }
     }
 
-    /// Skip directly to completion
+    /// Bypasses everything, including the paywall — writing is always free,
+    /// and this app doesn't force monetization on someone who opted out of
+    /// the pitch. Nothing from the flow (including any commitment already
+    /// picked) is persisted.
     func skip() {
+        completeOnboarding()
+    }
+
+    /// Called once the paywall closes, whether subscribed or dismissed —
+    /// either way, onboarding is done.
+    func paywallFinished() {
+        showPaywall = false
         completeOnboarding()
     }
 
     // MARK: - Private Methods
 
-    private func completeOnboarding() {
-        // Mark onboarding as seen
-        storageService.setHasSeenOnboarding(true)
-
-        // Navigate to paywall
+    private func finishRitualSteps() {
+        storageService.setWeeklyCommitmentDaysPerWeek(selectedDaysPerWeek)
+        MainActor.assumeIsolated {
+            RatingPromptService.requestReviewIfAppropriate()
+        }
         showPaywall = true
+    }
+
+    private func completeOnboarding() {
+        storageService.setHasSeenOnboarding(true)
+        onComplete?()
     }
 }

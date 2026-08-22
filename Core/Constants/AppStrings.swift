@@ -6,35 +6,32 @@ enum AppStrings {
 
     // MARK: - Onboarding
     enum Onboarding {
-        struct Page {
-            let imageName: String
-            let title: String
-            let subtitle: String
-            let buttonText: String
-        }
+        // Step 1 — what this is
+        static let whatThisIsLine = "Light a candle. Write until it burns out."
 
-        static let pages: [Page] = [
-            Page(
-                imageName: "flame",
-                title: "One simple ritual",
-                subtitle: "Track your pages. Watch your progress and thoughts grow.",
-                buttonText: "Leave the phone alone."
-            ),
-            Page(
-                imageName: "pencil.and.scribble",
-                title: "This app isn't for typing — it's for writing",
-                subtitle: "Do you have a pen and paper?",
-                buttonText: "I'm ready to write on paper"
-            ),
-            Page(
-                imageName: "iphone.radiowaves.left.and.right",
-                title: "Your phone steals your thoughts",
-                subtitle: "Endless attention. Zero reflection.",
-                buttonText: "This is the door out."
-            )
+        // Step 2 — the ritual
+        static let ritualTitle = "The ritual"
+        static let ritualSteps: [(icon: String, text: String)] = [
+            ("flame.fill", "Light the candle"),
+            ("iphone.slash", "Put your phone face down"),
+            ("pencil", "Write on paper until the bell"),
+            ("camera.fill", "Photograph the page")
         ]
 
+        // Step 3 — commitment
+        static let commitmentTitle = "How many days a week?"
+        static let commitmentSubtitle = "Pick a pace you can actually keep."
+        static let commitmentOptions: [Int] = [3, 5, 7]
+
+        // Step 4 — projection
+        static let projectionIntro = "At that pace, in a year:"
+
+        // Step 5 — rating prompt
+        static let ratingPromptTitle = "One more thing"
+        static let ratingPromptBody = "If Verg's for you, a rating helps other people find it."
+
         static let skipButton = "Skip"
+        static let continueButton = "Continue"
     }
 
     // MARK: - Coach Mark Notices
