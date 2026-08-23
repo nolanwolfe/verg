@@ -43,13 +43,18 @@ final class PaywallViewModel: ObservableObject {
         let text: String
     }
 
-    // Sells the archive and the stats — not a generic feature list.
-    let features: [Feature] = [
+    // Sells the archive and the stats — not a generic feature list. These
+    // two get their own hero-sized cards; everything else is a smaller
+    // supporting row underneath.
+    let heroFeatures: [Feature] = [
         Feature(icon: "books.vertical.fill", text: "Your full archive, beyond the last 7 days"),
-        Feature(icon: "chart.bar.fill", text: "Stats: pages, longest run, time reclaimed"),
-        Feature(icon: "flame.fill", text: "One relight a week — a missed day won't put out your candle"),
+        Feature(icon: "chart.bar.fill", text: "Every stat: pages, longest run, time reclaimed")
+    ]
+
+    let supportingFeatures: [Feature] = [
+        Feature(icon: "flame.fill", text: "One relight a week"),
         Feature(icon: "text.quote", text: "Writing prompts"),
-        Feature(icon: "music.note", text: "Ambient sound while you write"),
+        Feature(icon: "music.note", text: "Ambient sound"),
         Feature(icon: "clock.fill", text: "Custom session length")
     ]
 
