@@ -9,7 +9,7 @@ struct PageGridView: View {
     let onSelect: (Session) -> Void
     /// Pages outside the free archive window are never hidden or deleted —
     /// they still render (dimmed, with a lock badge) so the user can see
-    /// their page still exists; tapping prompts Ascent instead of opening it.
+    /// their page still exists; tapping prompts The Golden Age instead of opening it.
     var isLocked: (Session) -> Bool = { _ in false }
     var onLockedTap: (Session) -> Void = { _ in }
     var emptyStateMessage: String = "Complete a writing session to capture your first page"

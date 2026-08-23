@@ -159,7 +159,7 @@ final class CameraViewModel: NSObject, ObservableObject {
     func usePhoto() {
         guard let image = capturedImage else { return }
 
-        // Saving a page is always free and unlimited — Ascent only gates
+        // Saving a page is always free and unlimited — The Golden Age only gates
         // *viewing* pages older than the free archive window, not writing
         // or saving them.
         isSaving = true

@@ -2,8 +2,15 @@ import Foundation
 import Combine
 import SwiftUI
 
-/// ViewModel for the Onboarding flow — 5 steps (what this is, the ritual,
-/// commitment, projection, rating prompt), then the paywall.
+/// ViewModel for the Onboarding flow — epigraph, what this is, the ritual,
+/// commitment, projection, closing note, and then straight into the app.
+///
+/// The closing note mentions the rating but does not request it, and the
+/// paywall doesn't appear here at all. Both are earned rather than
+/// front-loaded: the system rating prompt fires after the third saved page,
+/// the paywall after the seventh. Someone who has written nothing yet has
+/// no basis to rate the app and no reason to buy an archive they haven't
+/// filled.
 final class OnboardingViewModel: ObservableObject {
 
     enum Step: Int, CaseIterable {
@@ -18,7 +25,6 @@ final class OnboardingViewModel: ObservableObject {
     // MARK: - Published Properties
     @Published var currentStep: Step = .epigraph
     @Published var selectedDaysPerWeek: Int = 5
-    @Published var showPaywall: Bool = false
 
     // MARK: - Dependencies
     private let storageService: StorageService
@@ -47,7 +53,7 @@ final class OnboardingViewModel: ObservableObject {
     }
 
     /// Advance to the next step, or — on the last step — persist the
-    /// commitment, fire the rating prompt, and hand off to the paywall.
+    /// commitment and finish.
     func continueAction() {
         guard let currentIndex = Step.allCases.firstIndex(of: currentStep) else { return }
 
@@ -62,18 +68,9 @@ final class OnboardingViewModel: ObservableObject {
         }
     }
 
-    /// Bypasses everything, including the paywall — writing is always free,
-    /// and this app doesn't force monetization on someone who opted out of
-    /// the pitch. Nothing from the flow (including any commitment already
-    /// picked) is persisted.
+    /// Bypasses the rest of the flow. Nothing from it (including any
+    /// commitment already picked) is persisted.
     func skip() {
-        completeOnboarding()
-    }
-
-    /// Called once the paywall closes, whether subscribed or dismissed —
-    /// either way, onboarding is done.
-    func paywallFinished() {
-        showPaywall = false
         completeOnboarding()
     }
 
@@ -81,10 +78,7 @@ final class OnboardingViewModel: ObservableObject {
 
     private func finishRitualSteps() {
         storageService.setWeeklyCommitmentDaysPerWeek(selectedDaysPerWeek)
-        MainActor.assumeIsolated {
-            RatingPromptService.requestReviewIfAppropriate()
-        }
-        showPaywall = true
+        completeOnboarding()
     }
 
     private func completeOnboarding() {

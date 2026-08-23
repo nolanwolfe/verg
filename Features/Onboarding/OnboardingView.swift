@@ -1,10 +1,10 @@
 import SwiftUI
 
-/// Onboarding flow — 5 steps into the paywall. Skippable at any point;
-/// skipping bypasses the paywall too and goes straight into the app.
+/// Onboarding flow — six steps, then straight into the app. Skippable at
+/// any point. No paywall, and no rating *request*; both come later, once
+/// the user has actually written something (see OnboardingViewModel).
 struct OnboardingView: View {
     @StateObject private var viewModel = OnboardingViewModel()
-    @EnvironmentObject private var purchaseService: PurchaseService
 
     var onComplete: (() -> Void)?
 
@@ -23,12 +23,6 @@ struct OnboardingView: View {
 
                 bottomSection
             }
-        }
-        .fullScreenCover(isPresented: $viewModel.showPaywall, onDismiss: {
-            viewModel.paywallFinished()
-        }) {
-            PaywallView()
-                .environmentObject(purchaseService)
         }
         .onAppear {
             viewModel.onComplete = { onComplete?() }

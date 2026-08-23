@@ -6,6 +6,7 @@ import SwiftUI
 struct LibraryView: View {
     @StateObject private var viewModel = StatsViewModel()
     @EnvironmentObject private var purchaseService: PurchaseService
+    @EnvironmentObject private var storageService: StorageService
 
     @State private var selectedBook: Book?
     @State private var showPaywall = false
@@ -132,32 +133,52 @@ struct LibraryView: View {
 
                 Spacer()
 
-                Text(heatmapSummary)
-                    .font(.system(size: 11))
-                    .foregroundColor(.white.opacity(0.35))
+                // The month-grid calendar has its own month/nav header
+                // below, so this summary line is only useful next to the
+                // heatmap, which has no other date context of its own.
+                if storageService.settings.calendarStyle == .heatmap {
+                    Text(heatmapSummary)
+                        .font(.system(size: 11))
+                        .foregroundColor(.white.opacity(0.35))
+                }
             }
             .padding(.horizontal, Theme.Spacing.xxs)
 
-            ContributionHeatmap(
-                countsByDay: viewModel.sessionCountsByDate,
-                relitDates: viewModel.relitDates
-            )
-            .frame(maxWidth: .infinity)
+            switch storageService.settings.calendarStyle {
+            case .heatmap:
+                ContributionHeatmap(
+                    countsByDay: viewModel.sessionCountsByDate,
+                    relitDates: viewModel.relitDates
+                )
+                .frame(maxWidth: .infinity)
 
-            HStack(spacing: 4) {
-                Spacer()
-                Text("Less")
-                    .font(.system(size: 9))
-                    .foregroundColor(.white.opacity(0.35))
-                ForEach(0..<5, id: \.self) { level in
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(HeatmapCell.fill(forLevel: level))
-                        .frame(width: 9, height: 9)
+                HStack(spacing: 4) {
+                    Spacer()
+                    Text("Less")
+                        .font(.system(size: 9))
+                        .foregroundColor(.white.opacity(0.35))
+                    ForEach(0..<5, id: \.self) { level in
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(HeatmapCell.fill(forLevel: level))
+                            .frame(width: 9, height: 9)
+                    }
+                    Text("More")
+                        .font(.system(size: 9))
+                        .foregroundColor(.white.opacity(0.35))
+                    Spacer()
                 }
-                Text("More")
-                    .font(.system(size: 9))
-                    .foregroundColor(.white.opacity(0.35))
-                Spacer()
+
+            case .monthGrid:
+                // Verg 2.1's calendar, in its existing `compact` mode so it
+                // fits here without scrolling its own section.
+                CalendarView(
+                    currentMonth: $viewModel.currentMonth,
+                    sessionCountsByDate: viewModel.sessionCountsByDate,
+                    relitDates: viewModel.relitDates,
+                    onPreviousMonth: { viewModel.previousMonth() },
+                    onNextMonth: { viewModel.nextMonth() },
+                    compact: true
+                )
             }
         }
     }
@@ -417,7 +438,7 @@ struct AchievementStarIcon: View {
             .font(.system(size: 9))
             .foregroundStyle(
                 LinearGradient(
-                    colors: [Color(hex: "FFE066"), Color(hex: "D4A017")],
+                    colors: [Color(hex: "B08A52"), Color(hex: "8E6B3F")],
                     startPoint: .top,
                     endPoint: .bottom
                 )
@@ -445,7 +466,7 @@ struct LockedMilestonesHint: View {
             onTap()
         }) {
             HStack {
-                Text("Your place on the ladder, with The Ascent.")
+                Text("Your place on the ladder, with The Golden Age.")
                     .font(Theme.Typography.subheadline)
                     .foregroundColor(.white.opacity(0.5))
                 Spacer()
@@ -644,14 +665,14 @@ struct HeatmapCell: View {
     let count: Int
     var isRelit: Bool = false
 
-    /// GitHub's own contribution-graph greens, empty to brightest.
+    /// Ink ladder in the app's own palette — empty room to aged ivory.
     static func fill(forLevel level: Int) -> Color {
         switch level {
         case 0: return Color.white.opacity(0.07)
-        case 1: return Color(hex: "0E4429")
-        case 2: return Color(hex: "006D32")
-        case 3: return Color(hex: "26A641")
-        default: return Color(hex: "39D353")
+        case 1: return Color(hex: "8E3F2B").opacity(0.45)
+        case 2: return Color(hex: "A44A32").opacity(0.65)
+        case 3: return Color(hex: "A44A32")
+        default: return Color(hex: "B08A52")
         }
     }
 

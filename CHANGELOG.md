@@ -65,6 +65,132 @@ on scroll-up on the Library screen.
 - Presets are now 5 / 10 / 15 minutes ahead of the custom MM:SS field
   (20-minute preset removed). Default remains 10 minutes.
 
+### Changed — paywall reviews, laurel placement
+- Attributions cut to bare "— Sibylla" and "— Dante". Both read fine as
+  usernames, so the disclosure moved to a three-word line directly under
+  the review pair: **"Not real reviews."** It renders as part of
+  `reviewStack`, so the cards and the line can't be separated by a layout
+  change. Do not remove it — without it these are two invented five-star
+  testimonials beside a Buy button.
+- The laurel moved out from below the fold to sit between the reviews and
+  the Yearly row, replacing the scroll chevron. Below the fold now holds
+  only the reviews on screens too short for them inline (an SE), so a
+  large phone simply doesn't scroll.
+- Feature copy trimmed: row 2 is "Insights alongside your entire progress
+  on paper of who you're becoming."; row 3 drops "extra" before "candle
+  wicks".
+- Onboarding's closing screen breaks its body across two lines so the app
+  name sits centred on its own: "It helps others find" / "Verg 🕯️".
+
+### Changed — projection closing line, closing-screen mark
+- The projection screen now ends on a spelled-out line: "Two hundred sixty
+  pages you can hold." Computed, not fixed — 3 days a week is 156 pages
+  and 7 is 364, so a hardcoded "two hundred sixty" would be wrong for two
+  of the three paces. Lives on `OnboardingProjection.Result.closingLine`.
+- Closing screen's mark is `CandleTabIcon` (the whole candle, with the tab
+  bar's flicker loop) rather than the static `CandleFlameIcon`, and its
+  body line reads "It helps others find Verg 🕯️".
+- **Onboarding is purple again.** The ember pass from the previous entry
+  is reverted: page dots, pace selection, ritual icons and the shared
+  `Theme.Shadows.button` glow are back to `Colors.accent`. Home's button
+  glow reverts with it, since it was the same token.
+
+### Changed — paywall structure
+- Three feature rows again, the third being customization; the merged
+  two-row version was a five-line paragraph on an SE.
+- Attributions are prefixed with an em dash — "— Sibylla of Cumae",
+  "— Dante, c. 1320". The epithet and the date are back because the
+  standalone "not real customers" line is gone: something on the screen
+  has to mark these as historical figures rather than usernames, and
+  doing it inline is shorter than a disclaimer sentence.
+- The scroll chevron moved from beneath the footer to between the reviews
+  and the Yearly row, pointing at the laurel that scrolls up from under
+  the plans.
+- A pinned-bottom variant (plans fixed, everything above scrolling) was
+  tried first and reverted: on an SE it left a ~250pt scroll window for
+  ~700pt of content, which clipped a review card mid-sentence against the
+  Yearly row.
+
+### Changed — onboarding copy and colour
+- **Screen 2** is now "A journal without typing." over "Pen, paper, ten
+  minutes.", replacing the heavy three-line "Light the candle. Write on
+  paper until it burns out." The candle is the hero here and is sized
+  close to how it appears on Home, since this doubles as the first look
+  at the main screen.
+- **Screen 3** labels tightened to the verb: "Light the candle", "Phone
+  face down", "Write until the bell", "Photograph the page". Note "until
+  the bell", not "until it burns out" — a candle going out is what a
+  missed day means, and the metaphor shouldn't carry both.
+- **Screen 6** is "One rating lights the way." over "It helps others find
+  Verg." The purple heart is gone; the mark is `CandleFlameIcon`.
+- Screens 1, 4 and 5 unchanged.
+- **Every purple accent on these screens is now ember** (`flameOuter`):
+  page dots, the pace options' selected border and checkmark, the ritual
+  row icons, and the glow under Continue. On a black screen with a candle
+  on it the flame should be the only source of colour.
+- The Continue glow lives on the shared `Theme.Shadows.button` token, so
+  **Home's "Light Candle & Begin Writing" button warms up too** — same
+  reasoning, and that screen has the same candle on the same black.
+- Home's primary button reads "Light Candle & Begin Writing" (was "Begin
+  Writing"), and `HomeViewModel.buttonText` now reads from
+  `AppStrings.Home.beginWriting` instead of hardcoding the string.
+
+### Changed — paywall review attributions
+- Cut to bare first names, "Sibylla" and "Dante". That removes the last
+  inline signal that they're jokes, which makes the below-fold line
+  ("Sibylla and Dante are, regrettably, not real customers.") the only
+  disclosure on the screen. It is load-bearing now — noted in
+  `AppStrings.Paywall.reviews`. Don't delete or soften it, and don't let
+  it end up on a screen the reviews aren't on.
+
+### Changed — the paid tier is "The Golden Age"
+- Settled on **The Golden Age** (Virgil's *aurea aetas*), after a shorter
+  pass through plain "Golden". Written in full with the article
+  everywhere: "with The Golden Age", "Included with The Golden Age".
+- Paywall CTA is the name itself — **The Golden Age**, white on a gold
+  gradient button. The gradient is deliberately deeper than the app's
+  ember tokens (`ctaGradient`, not `flameGradient`); white on the pale
+  ember yellow failed contrast outright.
+- Paywall copy rewritten: subtitle is now "Put the phone down. Light the
+  candle. You owe it to yourself." Three benefit rows (journal, progress,
+  the high-end features consolidated into one line), which let the
+  separate "Also included" line be deleted.
+- The five-star review card moved into the slack between the pitch and
+  the plans, so the gap on tall screens holds something. Its content is
+  **a joke, and has to stay legibly one**: Dante, dated c. 1320 and
+  labelled "not a verified purchaser", in period diction. It also stops
+  short of a health claim — "my soul was the better for it" rather than
+  anything about mental health, which on a paywall would be a
+  therapeutic promise the app can't make. A straight-faced invented
+  testimonial here would be a fake review (App Store Guideline 2.3.1,
+  FTC 2024 consumer-review rule); a real one pasted from App Store
+  Connect is the only other acceptable content for that slot.
+- `GoldenPalette` keeps its name — it's the palette of golds, internal to
+  the paywall, and renaming it again buys nothing.
+
+### Changed — the paid tier was renamed from "The Ascent"
+- Renamed the subscription from **The Ascent** to **Golden**, after the
+  golden bough in the *Aeneid* — the token that lets Aeneas return from
+  the underworld. "The Ascent" named the climb, which is free; the name
+  should sit on what's actually bought, which is the way back to pages
+  you already wrote.
+- Copy updated everywhere it's user-visible: paywall subtitle, Settings
+  account row, locked-stat overlay ("Included with Golden."), locked
+  milestones hint, access-code sheet. Written bare — "with Golden", no
+  article, no "Verg Golden".
+- Paywall CTA is now **"Get Golden"** (was "Begin the Ascent"). "Begin
+  Golden" doesn't parse — Golden is an adjective doing proper-noun work,
+  so it resists the "Begin X" shape that "Begin Writing" uses. Trial
+  suffix behavior unchanged ("Get Golden — 3 days free").
+- `AscentPalette` → `GoldenPalette` (internal, paywall-scoped).
+- VOICE.md records the name and how to write it; GAMIFICATION.md,
+  RELEASE_NOTES_2.2.md, and the sounds README follow. Historical
+  changelog entries below keep saying "The Ascent" on purpose — they're
+  a record of what shipped then.
+- No StoreKit or RevenueCat changes: entitlement identifier and the
+  `Verg_Monthly` / `Verg_Yearly` product IDs are untouched. The display
+  name in App Store Connect / RevenueCat is a manual follow-up.
+
 ## [Unreleased] — build 18 (voice, terraces, and volumes — part one)
 
 A defined narrative voice across the app's copy, a revised days-lit

@@ -39,28 +39,42 @@ final class PaywallViewModel: ObservableObject {
     // MARK: - Features
     struct Feature: Identifiable {
         let id = UUID()
+        /// SF Symbol name, rendered in the gold gradient. Ignored when
+        /// `emoji` is set.
         let icon: String
+        /// Draws the app's own procedural candle flame instead of an SF
+        /// Symbol. An actual 🕯️ emoji can't be tinted, so it clashed with
+        /// the gold glyphs on the other rows; this matches them.
+        var usesCandleMark: Bool = false
         let text: String
     }
 
-    // Sells the archive and the stats — not a generic feature list. These
-    // two get their own hero rows; everything else is a smaller
-    // supporting line underneath. Copy per VOICE.md: short declaratives,
-    // concrete nouns, no sales pressure.
+    // Sells the archive and the stats — not a generic feature list. Copy
+    // per VOICE.md: short declaratives, concrete nouns, no sales pressure.
+    // The relight row states the mechanic without gamified framing.
     let heroFeatures: [Feature] = [
-        Feature(icon: "books.vertical.fill", text: "Every page you've written, kept"),
-        Feature(icon: "chart.bar.fill", text: "Pages lit. Days lit. Time reclaimed.")
-    ]
-
-    let supportingFeatures: [Feature] = [
-        Feature(icon: "flame.fill", text: "One relight a week"),
-        Feature(icon: "text.quote", text: "Writing prompts"),
-        Feature(icon: "music.note", text: "Ambient sound"),
-        Feature(icon: "clock.fill", text: "Custom session length")
+        Feature(icon: "books.vertical.fill", text: "A full collection of your journals. Every page and every book, kept private to you."),
+        Feature(icon: "flame.fill", usesCandleMark: true, text: "Insights alongside your entire progress on paper of who you're becoming."),
+        Feature(icon: "slider.horizontal.3", text: "Customization, ambience, prompts, candle wicks, session length, year-by-year history.")
     ]
 
     // MARK: - Dependencies
     var purchaseService: PurchaseService = .shared
+
+    // MARK: - Context-aware subtitle
+    /// Set by the presenting view when the paywall opened from a tap on a
+    /// specific locked page. A date formats to "March 14th is still here."
+    /// — naming the exact thing the person reached for and confirming
+    /// it's safe. Nil falls back to the generic subtitle.
+    var contextSubtitleDate: Date?
+
+    var subtitleText: String {
+        if let date = contextSubtitleDate {
+            let day = date.formatted(.dateTime.month().day())
+            return String(format: AppStrings.Paywall.contextSubtitleFormat, day)
+        }
+        return AppStrings.Paywall.subtitle
+    }
 
     // MARK: - Callbacks
     var onDismiss: (() -> Void)?
@@ -128,9 +142,9 @@ final class PaywallViewModel: ObservableObject {
     /// ("3 days free"), never a hardcoded duration.
     var ctaTitle: String {
         guard selectedPlanHasFreeTrial, let offer = yearlyIntroOffer else {
-            return "Continue"
+            return AppStrings.Paywall.ctaTitle
         }
-        return "Start \(offer)"
+        return "\(AppStrings.Paywall.ctaTitle) — \(offer)"
     }
 
     // MARK: - Initialization

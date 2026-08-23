@@ -1,6 +1,6 @@
 # Sound Files
 
-## Ambient loops (Ascent feature)
+## Ambient loops (The Golden Age feature)
 
 | File | Source | License |
 |---|---|---|
@@ -21,6 +21,37 @@ afconvert rain-30.wav ambient_rain.caf -d LEI16@44100 -c 2
 ```
 
 Originals kept out of the repo in `download/sounds/`.
+
+---
+
+## Longer ambient tracks (added 2026-08-23)
+
+Unlike the three loops above, these are full-length tracks (2–35 min), so
+they're AAC-compressed `.m4a` instead of uncompressed `.caf` — at PCM sizes
+the 35-minute storm track alone would be well over 500MB.
+
+| File | Source | Duration | License |
+|---|---|---|---|
+| `ambient_replenish.m4a` | "Relaxing Music 432 Hz — REPLENISH" by Liborio Conti | 10:02 | "Free, no copyright" per source filename — **verify Liborio Conti's actual terms before shipping** (see note below) |
+| `ambient_motion.m4a` | "...— MOTION" by Liborio Conti | 12:23 | same, unverified |
+| `ambient_floating.m4a` | "...— FLOATING" by Liborio Conti | 12:15 | same, unverified |
+| `ambient_earth.m4a` | "...— EARTH" by Liborio Conti | 10:14 | same, unverified |
+| `ambient_deep.m4a` | "...— THE DEEP" by Liborio Conti | 16:41 | same, unverified |
+| `ambient_movement.m4a` | "...— MOVEMENT" by Liborio Conti | 11:11 | same, unverified |
+| `ambient_storm.m4a` | BigSoundBank #2719 — "Storm and rain 4" by Joseph SARDIN | 34:52 | CC0 (public domain), same terms as the loops above |
+| `ambient_stream.m4a` | BigSoundBank #1354 — "Small stream 4" by Joseph SARDIN | 1:45 | CC0 (public domain), same terms as the loops above |
+
+**Before release**, confirm what "free no copyright music" actually requires for Liborio Conti's tracks —
+that phrase is common on YouTube but isn't a formal license name, and his own terms
+(check the video descriptions / channel) sometimes ask for a credit line even when reuse
+itself is free. The BigSoundBank tracks need no such check; they're CC0 like the existing loops.
+
+Converted with:
+```
+afconvert -f m4af -d aac -b 96000 input.mp3 ambient_name.m4a
+```
+
+Originals for these too are kept out of the repo.
 
 ---
 

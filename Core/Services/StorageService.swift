@@ -497,6 +497,12 @@ final class StorageService: ObservableObject {
         saveSettings()
     }
 
+    /// Replay the onboarding ("Guide" in Settings): clear the flag and let
+    /// ContentView's existing first-launch overlay logic take over.
+    func replayOnboarding() {
+        setHasSeenOnboarding(false)
+    }
+
     func setIsSubscribed(_ subscribed: Bool) {
         settings.isSubscribed = subscribed
         saveSettings()
@@ -509,6 +515,16 @@ final class StorageService: ObservableObject {
 
     func setAmbientSoundID(_ id: String) {
         settings.ambientSoundID = id
+        saveSettings()
+    }
+
+    func setCalendarStyle(_ style: CalendarStyle) {
+        settings.calendarStyle = style
+        saveSettings()
+    }
+
+    func setHasSeenSessionPaywall(_ seen: Bool) {
+        settings.hasSeenSessionPaywall = seen
         saveSettings()
     }
 

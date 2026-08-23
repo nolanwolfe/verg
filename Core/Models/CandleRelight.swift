@@ -1,6 +1,6 @@
 import Foundation
 
-/// Pure, testable logic for the premium "relight" mechanic: Ascent
+/// Pure, testable logic for the premium "relight" mechanic: The Golden Age
 /// subscribers get one relight per rolling 7 days — a missed day doesn't
 /// extinguish the candle. Free users' candles go out on any miss.
 ///

@@ -38,6 +38,14 @@ final class AudioService: ObservableObject {
         case rain
         case fireplace = "fire"
         case deepFocus = "focus"
+        case replenish
+        case motion
+        case floating
+        case earth
+        case deep
+        case movement
+        case storm
+        case stream
 
         var id: String { rawValue }
 
@@ -46,6 +54,14 @@ final class AudioService: ObservableObject {
             case .rain: return "Rain"
             case .fireplace: return "Fireplace"
             case .deepFocus: return "Deep Focus"
+            case .replenish: return "Replenish"
+            case .motion: return "Motion"
+            case .floating: return "Floating"
+            case .earth: return "Earth"
+            case .deep: return "The Deep"
+            case .movement: return "Movement"
+            case .storm: return "Storm"
+            case .stream: return "Stream"
             }
         }
 
@@ -54,10 +70,28 @@ final class AudioService: ObservableObject {
             case .rain: return "cloud.rain.fill"
             case .fireplace: return "flame.fill"
             case .deepFocus: return "waveform"
+            case .replenish: return "drop.fill"
+            case .motion: return "wind"
+            case .floating: return "cloud.fill"
+            case .earth: return "leaf.fill"
+            case .deep: return "moon.stars.fill"
+            case .movement: return "sparkles"
+            case .storm: return "cloud.bolt.rain.fill"
+            case .stream: return "water.waves"
             }
         }
 
         var filename: String { "ambient_\(rawValue)" }
+
+        /// The three original loops are short uncompressed PCM .caf clips;
+        /// the newer, much longer tracks are AAC .m4a (compressed — some run
+        /// 10-35 minutes, and uncompressed at that length would be enormous).
+        var fileExtension: String {
+            switch self {
+            case .rain, .fireplace, .deepFocus: return "caf"
+            default: return "m4a"
+            }
+        }
     }
 
     // MARK: - Initialization
@@ -123,9 +157,9 @@ final class AudioService: ObservableObject {
 
     /// Start a looping ambient track with a gentle fade-in
     func startAmbience(_ sound: AmbientSound) {
-        guard let url = Bundle.main.url(forResource: sound.filename, withExtension: "caf") else {
+        guard let url = Bundle.main.url(forResource: sound.filename, withExtension: sound.fileExtension) else {
             #if DEBUG
-            print("AudioService: missing ambient sound \(sound.filename).caf")
+            print("AudioService: missing ambient sound \(sound.filename).\(sound.fileExtension)")
             #endif
             return
         }

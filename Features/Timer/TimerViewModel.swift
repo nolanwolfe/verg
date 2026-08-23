@@ -200,16 +200,6 @@ final class TimerViewModel: ObservableObject {
         // Play haptic
         audioService.playHaptic(UINotificationFeedbackGenerator.FeedbackType.success)
 
-        // Day 3 of a lit candle, right after the bell — one of exactly
-        // two places this ever fires (the other is onboarding). Never on
-        // cold launch, never twice a session (RatingPromptService enforces
-        // that itself).
-        if storageService.stats.daysLit == 3 {
-            MainActor.assumeIsolated {
-                RatingPromptService.requestReviewIfAppropriate()
-            }
-        }
-
         // Always show "Save your page" notice after session completes
         // This prompts user to upload a photo of their writing
         // Delay matches burnout sequence duration: stutter (0.5s) + extinguish (0.22s) + margin
@@ -261,6 +251,17 @@ final class TimerViewModel: ObservableObject {
         #if DEBUG
         print("[SessionGating] Photo saved. Total sessions: \(sessionCount)")
         #endif
+
+        // The rating prompt, on the third saved page — the only place it
+        // fires now. Asking after three real pages means the person has
+        // something to judge; asking during onboarding (where this used to
+        // live) asked before they'd written a word. RatingPromptService
+        // still enforces never-twice-a-session on top of this.
+        if storageService.stats.totalSessions == 3 {
+            MainActor.assumeIsolated {
+                RatingPromptService.requestReviewIfAppropriate()
+            }
+        }
 
         // Seven terraces — quiet, no full-screen takeover. Just a marked
         // day (calendar, handled elsewhere) and one line of text here.

@@ -78,9 +78,9 @@ struct VergFlameView: View {
         ZStack {
             RadialGradient(
                 colors: [
-                    Color(hex: "FF7000").opacity(lerp(0.30, 0.55, brightness) + glowPulse * 0.04),
-                    Color(hex: "FF5500").opacity(lerp(0.18, 0.35, brightness) + glowPulse * 0.02),
-                    Color(hex: "FF3300").opacity(lerp(0.06, 0.14, brightness)),
+                    Color(hex: "A44A32").opacity(lerp(0.30, 0.55, brightness) + glowPulse * 0.04),
+                    Color(hex: "8E3F2B").opacity(lerp(0.18, 0.35, brightness) + glowPulse * 0.02),
+                    Color(hex: "8E3F2B").opacity(lerp(0.06, 0.14, brightness)),
                     Color.clear
                 ],
                 center: UnitPoint(x: 0.5, y: 0.46),
@@ -90,7 +90,7 @@ struct VergFlameView: View {
             .ignoresSafeArea()
 
             LinearGradient(
-                colors: [Color.clear, Color(hex: "FF6000").opacity(lerp(0.04, 0.12, brightness))],
+                colors: [Color.clear, Color(hex: "A44A32").opacity(lerp(0.04, 0.12, brightness))],
                 startPoint: .center,
                 endPoint: .bottom
             )

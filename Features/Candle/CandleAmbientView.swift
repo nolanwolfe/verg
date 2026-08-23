@@ -53,9 +53,9 @@ struct CandleAmbientView: View {
             // Primary candle-glow sphere — wide and soft
             RadialGradient(
                 colors: [
-                    Color(hex: "FF7000").opacity(lerp(0.30, 0.55, brightness) + glowPulse * 0.04),
-                    Color(hex: "FF5500").opacity(lerp(0.18, 0.35, brightness) + glowPulse * 0.02),
-                    Color(hex: "FF3300").opacity(lerp(0.06, 0.14, brightness)),
+                    Color(hex: "A44A32").opacity(lerp(0.30, 0.55, brightness) + glowPulse * 0.04),
+                    Color(hex: "8E3F2B").opacity(lerp(0.18, 0.35, brightness) + glowPulse * 0.02),
+                    Color(hex: "8E3F2B").opacity(lerp(0.06, 0.14, brightness)),
                     Color.clear
                 ],
                 center: UnitPoint(x: 0.5, y: 0.46),
@@ -68,7 +68,7 @@ struct CandleAmbientView: View {
             LinearGradient(
                 colors: [
                     Color.clear,
-                    Color(hex: "FF6000").opacity(lerp(0.04, 0.12, brightness))
+                    Color(hex: "A44A32").opacity(lerp(0.04, 0.12, brightness))
                 ],
                 startPoint: .center,
                 endPoint: .bottom
@@ -124,7 +124,7 @@ struct CandleAmbientView: View {
                     .foregroundColor(Theme.Colors.flameOuter.opacity(0.5))
 
                 Slider(value: $brightness, in: 0.1...1.0)
-                    .tint(Color(hex: "FFAA00"))
+                    .tint(Color(hex: "B08A52"))
                     .frame(maxWidth: 220)
 
                 Image(systemName: "sun.max")

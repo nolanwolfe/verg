@@ -82,6 +82,7 @@ struct HomeView: View {
             TimerView(onComplete: { _ in
                 showTimer = false
                 viewModel.refresh()
+                presentSessionPaywallIfEarned()
             })
         }
         .onAppear {
@@ -99,6 +100,26 @@ struct HomeView: View {
     // a page beyond the free allotment (see CameraViewModel.usePhoto()).
     private func attemptStartSession() {
         showTimer = true
+    }
+
+    /// The paywall's one unprompted appearance: once, on returning from the
+    /// session that produced the seventh saved page. It used to sit at the
+    /// end of onboarding, before the user had written anything; here they
+    /// have seven pages and the offer is about keeping them.
+    ///
+    /// Deliberately after the timer screen has closed, so it never lands on
+    /// top of a milestone celebration or the Time Reclaimed reveal.
+    private func presentSessionPaywallIfEarned() {
+        guard !gatingService.isPremium,
+              !storageService.settings.hasSeenSessionPaywall,
+              storageService.stats.totalSessions >= 7
+        else { return }
+
+        storageService.setHasSeenSessionPaywall(true)
+        // A beat after dismissal, or the two full-screen covers collide.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            showPaywall = true
+        }
     }
 
     // MARK: - Days Lit Section

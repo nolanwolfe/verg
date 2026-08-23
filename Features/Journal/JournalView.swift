@@ -9,6 +9,7 @@ struct JournalView: View {
     @State private var showFinishAlert = false
     @State private var newBookTitle = ""
     @State private var showPaywall = false
+    @State private var paywallContext: Date?
 
     private let gatingService = SessionGatingService.shared
 
@@ -26,7 +27,7 @@ struct JournalView: View {
                     peekThumbnail: { viewModel.cachedThumbnail(for: $0) },
                     onSelect: { viewModel.selectSession($0, in: viewModel.currentSessions) },
                     isLocked: { !gatingService.canViewPage(dated: $0.date) },
-                    onLockedTap: { _ in showPaywall = true },
+                    onLockedTap: { session in paywallContext = session.date },
                     emptyStateMessage: viewModel.books.isEmpty
                         ? "Complete a writing session to capture your first page"
                         : "Fresh journal — complete a session to add your first page"
@@ -50,7 +51,7 @@ struct JournalView: View {
             )
         }
         .fullScreenCover(isPresented: $showPaywall) {
-            PaywallView()
+            PaywallView(lockedPageDate: paywallContext)
                 .environmentObject(purchaseService)
         }
         .alert("Finish this journal?", isPresented: $showFinishAlert) {

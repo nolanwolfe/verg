@@ -38,7 +38,7 @@ celebrations for existing progress.
 ## Business model note (supersedes the old "keep it free" note)
 
 Per the 2026-08-22 freemium pass: page-count milestones, weekly-goal
-milestones, and general Stats are Ascent (paid) — only "days lit" and the
+milestones, and general Stats are The Golden Age (paid) — only "days lit" and the
 calendar are free, alongside the ritual itself. Terraces are checked
 regardless of subscription tier (the quiet banner isn't gated), but the
 Stats surfaces that show milestone *progress* are behind the paywall like

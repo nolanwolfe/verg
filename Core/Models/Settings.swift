@@ -1,5 +1,21 @@
 import Foundation
 
+/// The Archive tab's "Days Lit" display — the GitHub-style contribution
+/// graph, or the month-grid calendar carried over from Verg 2.1.
+enum CalendarStyle: String, CaseIterable, Identifiable, Codable {
+    case heatmap
+    case monthGrid
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .heatmap: return "Session History"
+        case .monthGrid: return "Calendar"
+        }
+    }
+}
+
 /// App settings and preferences
 struct AppSettings: Codable, Equatable {
     var timerDuration: TimeInterval
@@ -26,6 +42,15 @@ struct AppSettings: Codable, Equatable {
     /// weekly-goal milestone track; purely informational otherwise.
     var weeklyCommitmentDaysPerWeek: Int?
 
+    /// Which "Days Lit" visualization the Archive tab shows.
+    var calendarStyle: CalendarStyle
+
+    /// Whether the post-onboarding paywall (shown once, after the seventh
+    /// saved page) has already been presented. A persisted one-shot rather
+    /// than an `== 7` equality check, so it can't re-fire if pages are
+    /// deleted and the count crosses seven again.
+    var hasSeenSessionPaywall: Bool
+
     init(
         timerDuration: TimeInterval = AppSettings.defaultTimerDuration,
         soundEnabled: Bool = true,
@@ -38,7 +63,9 @@ struct AppSettings: Codable, Equatable {
         ambientSoundEnabled: Bool = false,
         ambientSoundID: String = "rain",
         weeklySummaryNotificationsEnabled: Bool = false,
-        weeklyCommitmentDaysPerWeek: Int? = nil
+        weeklyCommitmentDaysPerWeek: Int? = nil,
+        calendarStyle: CalendarStyle = .heatmap,
+        hasSeenSessionPaywall: Bool = false
     ) {
         self.timerDuration = timerDuration
         self.soundEnabled = soundEnabled
@@ -52,6 +79,8 @@ struct AppSettings: Codable, Equatable {
         self.ambientSoundID = ambientSoundID
         self.weeklySummaryNotificationsEnabled = weeklySummaryNotificationsEnabled
         self.weeklyCommitmentDaysPerWeek = weeklyCommitmentDaysPerWeek
+        self.calendarStyle = calendarStyle
+        self.hasSeenSessionPaywall = hasSeenSessionPaywall
     }
 
     // MARK: - Codable (tolerant decoding)
@@ -71,6 +100,8 @@ struct AppSettings: Codable, Equatable {
         case ambientSoundID
         case weeklySummaryNotificationsEnabled
         case weeklyCommitmentDaysPerWeek
+        case calendarStyle
+        case hasSeenSessionPaywall
     }
 
     init(from decoder: Decoder) throws {
@@ -87,6 +118,8 @@ struct AppSettings: Codable, Equatable {
         ambientSoundID = try container.decodeIfPresent(String.self, forKey: .ambientSoundID) ?? "rain"
         weeklySummaryNotificationsEnabled = try container.decodeIfPresent(Bool.self, forKey: .weeklySummaryNotificationsEnabled) ?? false
         weeklyCommitmentDaysPerWeek = try container.decodeIfPresent(Int.self, forKey: .weeklyCommitmentDaysPerWeek)
+        calendarStyle = try container.decodeIfPresent(CalendarStyle.self, forKey: .calendarStyle) ?? .heatmap
+        hasSeenSessionPaywall = try container.decodeIfPresent(Bool.self, forKey: .hasSeenSessionPaywall) ?? false
     }
 
     /// The app's own pitch: a session is 10 minutes. Also what the

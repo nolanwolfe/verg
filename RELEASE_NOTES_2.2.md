@@ -16,7 +16,7 @@
   1,000,000. Earned rows stay lit; the next one shows how far you have to go.
 - **Time Reclaimed** — see the minutes you spent writing instead of
   scrolling, this week and all-time.
-- **Ambient sounds (Ascent)** — rain, fireplace, or deep focus while you write.
+- **Ambient sounds (The Golden Age)** — rain, fireplace, or deep focus while you write.
 - **+5 more minutes** — candle burned out but you're still flowing? Relight it.
 - **5, 10, or 15 minute sessions**, or set your own length.
 - **Sharper page photos** — tap to focus; close-up focus is fixed.
@@ -27,11 +27,11 @@
   ending in an honest projection of a year at your pace.
 - **Write and save as much as you want, always free** — the last 7 days
   of pages, days lit, and the heatmap are free forever, no account.
-  **The Ascent** unlocks your full archive, stats, prompts, ambient
+  **The Golden Age** unlocks your full archive, stats, prompts, ambient
   sound, custom session length, and relights ($7.99/month or $59.99/year,
   3-day free trial on yearly).
 - **Days lit, not streaks** — a missed day means the candle went out,
-  not a "streak broken." Ascent includes one relight a week, marked on
+  not a "streak broken." The Golden Age includes one relight a week, marked on
   the calendar as its own thing — never shown as if you wrote.
 - **Quiet milestones for days lit** — marked with a line of text after
   the bell. No badges, no points.
@@ -118,7 +118,7 @@
       plain pricing, no trial language (requires the ASC change below to
       be live to see real trial data — local StoreKit config already
       updated)
-- [ ] Paywall redesign ("The Ascent," one screen, no scroll): on iPhone
+- [ ] Paywall redesign ("The Golden Age," one screen, no scroll): on iPhone
       SE (smallest supported size) every section is visible at once with
       no scrolling — header with animated candle logo, both hero feature
       cards, "Also included" line, both plan rows, CTA button, and the
@@ -160,6 +160,15 @@
       Reclaimed, milestones) are unchanged from before the reskin
 
 ## App Store Connect / RevenueCat — manual actions needed
+
+**Tier rename to "The Golden Age" (2026-08-23):**
+- [ ] Update the subscription's **display name** shown to users in App
+      Store Connect (and the RevenueCat offering/package descriptions if
+      they surface anywhere) from "The Ascent" to **The Golden Age**
+- [ ] Leave the **`premium`** entitlement identifier and the
+      **Verg_Monthly** / **Verg_Yearly** product IDs exactly as they are —
+      the rename is display-only, and changing identifiers would strand
+      existing subscribers
 
 **Pricing (per the 2026-08-22 business-model brief — $7.99/mo, $59.99/yr):**
 - [ ] Update **Verg_Monthly** price to $7.99/month in App Store Connect

@@ -16,9 +16,11 @@ final class SettingsViewModel: ObservableObject {
     @Published var ambientSoundEnabled: Bool = false
     @Published var ambientSoundID: String = "rain"
     @Published var weeklySummaryNotificationsEnabled: Bool = false
+    @Published var calendarStyle: CalendarStyle = .heatmap
 
     @Published var showDurationPicker: Bool = false
     @Published var showAmbiencePicker: Bool = false
+    @Published var showCalendarStylePicker: Bool = false
     @Published var showTimePicker: Bool = false
     @Published var showRestoreAlert: Bool = false
     @Published var restoreMessage: String = ""
@@ -91,6 +93,7 @@ final class SettingsViewModel: ObservableObject {
         ambientSoundEnabled = settings.ambientSoundEnabled
         ambientSoundID = settings.ambientSoundID
         weeklySummaryNotificationsEnabled = settings.weeklySummaryNotificationsEnabled
+        calendarStyle = settings.calendarStyle
     }
 
     private func setupBindings() {
@@ -144,6 +147,13 @@ final class SettingsViewModel: ObservableObject {
             .dropFirst()
             .sink { [weak self] enabled in
                 self?.handleWeeklySummaryToggle(enabled)
+            }
+            .store(in: &cancellables)
+
+        $calendarStyle
+            .dropFirst()
+            .sink { [weak self] style in
+                self?.storageService.setCalendarStyle(style)
             }
             .store(in: &cancellables)
     }

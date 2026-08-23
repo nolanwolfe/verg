@@ -28,7 +28,7 @@ final class HomeViewModel: ObservableObject {
     }
 
     var buttonText: String {
-        "Begin Writing"
+        AppStrings.Home.beginWriting
     }
 
     var canStartSession: Bool {

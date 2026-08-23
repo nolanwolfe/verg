@@ -52,9 +52,40 @@ final class AppStringsTests: XCTestCase {
         XCTAssertEqual(AppStrings.Onboarding.commitmentOptions, [3, 5, 7])
     }
 
-    func testOnboardingWhatThisIsLine_IsOneLine() {
-        XCTAssertFalse(AppStrings.Onboarding.whatThisIsLine.contains("\n"))
-        XCTAssertFalse(AppStrings.Onboarding.whatThisIsLine.isEmpty)
+    func testOnboardingPitch_IsTwoSingleLines() {
+        for line in [AppStrings.Onboarding.pitchHeadline, AppStrings.Onboarding.pitchSubline] {
+            XCTAssertFalse(line.contains("\n"))
+            XCTAssertFalse(line.isEmpty)
+        }
+    }
+
+    /// VOICE.md §2.1: no exclamation marks, with one sanctioned exception
+    /// in the share-sheet text. Onboarding is not it.
+    func testOnboardingCopy_HasNoExclamationMarks() {
+        let copy = [
+            AppStrings.Onboarding.epigraphQuote,
+            AppStrings.Onboarding.epigraphAttribution,
+            AppStrings.Onboarding.pitchHeadline,
+            AppStrings.Onboarding.pitchSubline,
+            AppStrings.Onboarding.ritualTitle,
+            AppStrings.Onboarding.commitmentTitle,
+            AppStrings.Onboarding.commitmentSubtitle,
+            AppStrings.Onboarding.projectionIntro,
+            AppStrings.Onboarding.ratingPromptTitle,
+            AppStrings.Onboarding.ratingPromptBody
+        ] + AppStrings.Onboarding.ritualSteps.map(\.text)
+
+        for line in copy {
+            XCTAssertFalse(line.contains("!"), "Exclamation mark in onboarding copy: \(line)")
+        }
+    }
+
+    func testRitualSteps_SayUntilTheBell_NotBurnsOut() {
+        let texts = AppStrings.Onboarding.ritualSteps.map(\.text)
+        XCTAssertTrue(texts.contains("Write until the bell"))
+        // "burns out" is what a missed day means; the ritual rows must not
+        // reuse it for a completed session.
+        XCTAssertFalse(texts.contains { $0.lowercased().contains("burns out") })
     }
 
     func testStartTimerNotice_HasCorrectCopy() {

@@ -7,6 +7,7 @@ struct ContentView: View {
 
     @State private var selectedTab: Tab = .write
     @State private var showOnboarding: Bool = true
+    @State private var onboardingRunID: Int = 0
     @State private var showStartTimerNotice: Bool = false
     @State private var showTimerFromNotice: Bool = false
 
@@ -23,7 +24,8 @@ struct ContentView: View {
             // Main app is always the base layer
             mainTabView
 
-            // Onboarding overlay (first launch only)
+            // Onboarding overlay (first launch, or replayed from
+            // Settings → Guide)
             if showOnboarding && !storageService.settings.hasSeenOnboarding {
                 OnboardingView(onComplete: {
                     // Defer state changes to avoid "Publishing changes from within view updates"
@@ -33,6 +35,7 @@ struct ContentView: View {
                     }
                 })
                 .transition(.opacity)
+                .id(onboardingRunID)
             }
 
             // "Start the timer" coach mark notice (after onboarding, first time only)
@@ -62,6 +65,14 @@ struct ContentView: View {
             TimerView(onComplete: { _ in
                 showTimerFromNotice = false
             })
+        }
+        // Settings → Guide: replay the onboarding immediately. Clears the
+        // flag (so future launches also behave) and re-presents the overlay
+        // in-place by bumping the run ID.
+        .onReceive(NotificationCenter.default.publisher(for: .onboardingReplayRequested).receive(on: DispatchQueue.main)) { _ in
+            storageService.replayOnboarding()
+            onboardingRunID += 1
+            showOnboarding = true
         }
         .onAppear {
             checkSubscriptionStatus()
@@ -164,6 +175,12 @@ struct ContentView: View {
             SettingsView()
         }
     }
+}
+
+// MARK: - Notifications
+extension Notification.Name {
+    /// Fired by Settings → Guide to replay the onboarding sequence.
+    static let onboardingReplayRequested = Notification.Name("onboardingReplayRequested")
 }
 
 // MARK: - Preview

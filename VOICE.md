@@ -54,7 +54,10 @@ The guide speaks *to* the writer, not *about* them.
    confirmations ("Delete this page?", "Delete this book?", "Finish this
    journal?"). Questions elsewhere put the app in the interrogative,
    subservient position; statements keep the guide's footing.
-3. **No emoji.** Anywhere. The candle is the only symbol.
+3. **One emoji, and only one.** 🕯️ is permitted — it's the app's own
+   symbol, and it appears in the days-lit line and on the paywall's candle
+   stats row. No other emoji anywhere. (This rule used to read "no emoji,
+   anywhere"; the candle was carved out deliberately, not by drift.)
 4. **No streak language.** It is always "days lit"; a miss is "the candle
    went out", never "streak broken". A relight is a relight — it never
    pretends a day was written.
@@ -98,9 +101,15 @@ The guide speaks *to* the writer, not *about* them.
 **Use:** candle, light / lit, flame, burn, bell, page, paper, book, shelf,
 ascent, terrace, pace, ritual, session, relight, archive, reclaimed.
 
+**The paid tier is "The Golden Age"** — Virgil's *aurea aetas*, by way of the
+golden bough. The name sits on what's bought (the way back to your pages),
+never on the climb, which is free. Write it in full with the article: "with
+The Golden Age", "Included with The Golden Age" — never "Golden" alone,
+never "Verg Golden", never "the Golden Age plan".
+
 **Avoid:** streak, badge, points, XP, level, quest, reward (as gamified
-noun), unlock (except literal paywall gating — prefer "included with The
-Ascent"), journey (overused by competitors; the ascent is ours), wellness /
+noun), unlock (except literal paywall gating — prefer "included with
+The Golden Age"), journey (overused by competitors; the ascent is ours), wellness /
 mindfulness (category language, not ours), hack, boost, supercharge,
 "mental health companion".
 
@@ -118,7 +127,7 @@ drift toward therapy-speak; that's their lane.
 - **Number + noun, full stop.** "Seven days lit." "117 pages."
 - **The honest trade.** "You wrote for N minutes instead of scrolling."
 - **The plain imperative.** "Set your phone down." "Pick a number you can keep."
-- **The quiet offer.** "Relight the candle with The Ascent." (never "Upgrade
+- **The quiet offer.** "Relight the candle with The Golden Age." (never "Upgrade
   NOW to save your streak!!")
 
 ### Headline decision (resolved)

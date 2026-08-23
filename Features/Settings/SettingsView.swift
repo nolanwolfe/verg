@@ -20,11 +20,17 @@ struct SettingsView: View {
                     // Timer settings
                     timerSection
 
+                    // Archive
+                    archiveSection
+
                     // Notifications
                     notificationsSection
 
                     // Account
                     accountSection
+
+                    // Guide — replay the onboarding sequence
+                    guideSection
 
                     // About
                     aboutSection
@@ -58,6 +64,9 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $viewModel.showAmbiencePicker) {
             ambiencePickerSheet
+        }
+        .sheet(isPresented: $viewModel.showCalendarStylePicker) {
+            calendarStylePickerSheet
         }
         .alert("Restore Purchases", isPresented: $viewModel.showRestoreAlert) {
             Button("OK", role: .cancel) { }
@@ -136,6 +145,19 @@ struct SettingsView: View {
         purchaseService.isSubscribed || purchaseService.isFriendsAndFamily
     }
 
+    // MARK: - Archive Section
+    private var archiveSection: some View {
+        SettingsSection(title: "Archive") {
+            SettingsRow(
+                icon: "calendar",
+                iconColor: .blue,
+                title: "Calendar Style",
+                value: viewModel.calendarStyle.displayName,
+                action: { viewModel.showCalendarStylePicker = true }
+            )
+        }
+    }
+
     // MARK: - Notifications Section
     private var notificationsSection: some View {
         SettingsSection(title: "Notifications") {
@@ -178,7 +200,7 @@ struct SettingsView: View {
                 SettingsButtonRow(
                     icon: "sparkles",
                     iconColor: Theme.Colors.accent,
-                    title: "The Ascent",
+                    title: "The Golden Age",
                     action: { viewModel.showPaywall = true }
                 )
 
@@ -227,6 +249,23 @@ struct SettingsView: View {
                 iconColor: .yellow,
                 title: "View Subscription Options",
                 action: { viewModel.showPaywall = true }
+            )
+        }
+    }
+
+    // MARK: - Guide Section
+    /// Replays the onboarding sequence — the epigraph, the candle, the
+    /// ritual — for anyone who wants to see the guide again. Clears the
+    /// has-seen flag; ContentView's overlay picks it up on next launch.
+    private var guideSection: some View {
+        SettingsSection(title: "Guide") {
+            SettingsButtonRow(
+                icon: "book",
+                iconColor: Theme.Colors.accent,
+                title: "See the Guide again",
+                action: {
+                    NotificationCenter.default.post(name: .onboardingReplayRequested, object: nil)
+                }
             )
         }
     }
@@ -337,7 +376,7 @@ struct SettingsView: View {
                     .ignoresSafeArea()
 
                 VStack(spacing: Theme.Spacing.lg) {
-                    Text("Enter the access code you received. The full ascent, on us.")
+                    Text("Enter the access code you received. The Golden Age, on us.")
                         .font(Theme.Typography.body)
                         .foregroundColor(Theme.Colors.secondaryText)
                         .multilineTextAlignment(.center)
@@ -378,6 +417,48 @@ struct SettingsView: View {
         .presentationDetents([.medium])
     }
 
+    // MARK: - Calendar Style Picker Sheet
+    private var calendarStylePickerSheet: some View {
+        NavigationView {
+            ZStack {
+                Theme.Colors.background.ignoresSafeArea()
+
+                VStack(spacing: Theme.Spacing.sm) {
+                    ForEach(CalendarStyle.allCases) { style in
+                        Button {
+                            viewModel.calendarStyle = style
+                            viewModel.showCalendarStylePicker = false
+                        } label: {
+                            HStack {
+                                Text(style.displayName)
+                                    .font(Theme.Typography.body)
+                                    .foregroundColor(Theme.Colors.primaryText)
+                                Spacer()
+                                if viewModel.calendarStyle == style {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(Theme.Colors.accent)
+                                }
+                            }
+                            .padding(Theme.Spacing.md)
+                            .background(Theme.Colors.cardBackground)
+                            .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small, style: .continuous))
+                        }
+                    }
+                }
+                .padding(Theme.Spacing.md)
+            }
+            .navigationTitle("Calendar Style")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") { viewModel.showCalendarStylePicker = false }
+                        .foregroundColor(Theme.Colors.accent)
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
+
     // MARK: - Duration Picker Sheet
     private var durationPickerSheet: some View {
         DurationPickerSheet(
@@ -394,44 +475,21 @@ struct SettingsView: View {
                 Theme.Colors.background
                     .ignoresSafeArea()
 
-                VStack(spacing: Theme.Spacing.sm) {
-                    // Off
-                    Button {
-                        viewModel.ambientSoundEnabled = false
-                    } label: {
-                        HStack {
-                            Image(systemName: "speaker.slash")
-                                .foregroundColor(Theme.Colors.secondaryText)
-                                .frame(width: 24)
-                            Text("Off")
-                                .font(Theme.Typography.body)
-                                .foregroundColor(Theme.Colors.primaryText)
-                            Spacer()
-                            if !viewModel.ambientSoundEnabled {
-                                Image(systemName: "checkmark")
-                                    .foregroundColor(Theme.Colors.accent)
-                            }
-                        }
-                        .padding(Theme.Spacing.md)
-                        .background(Theme.Colors.cardBackground)
-                        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small, style: .continuous))
-                    }
-
-                    // Sounds
-                    ForEach(AudioService.AmbientSound.allCases) { sound in
+                ScrollView {
+                    VStack(spacing: Theme.Spacing.sm) {
+                        // Off
                         Button {
-                            viewModel.ambientSoundEnabled = true
-                            viewModel.ambientSoundID = sound.rawValue
+                            viewModel.ambientSoundEnabled = false
                         } label: {
                             HStack {
-                                Image(systemName: sound.icon)
-                                    .foregroundColor(Theme.Colors.flameOuter)
+                                Image(systemName: "speaker.slash")
+                                    .foregroundColor(Theme.Colors.secondaryText)
                                     .frame(width: 24)
-                                Text(sound.displayName)
+                                Text("Off")
                                     .font(Theme.Typography.body)
                                     .foregroundColor(Theme.Colors.primaryText)
                                 Spacer()
-                                if viewModel.ambientSoundEnabled && viewModel.ambientSoundID == sound.rawValue {
+                                if !viewModel.ambientSoundEnabled {
                                     Image(systemName: "checkmark")
                                         .foregroundColor(Theme.Colors.accent)
                                 }
@@ -440,14 +498,39 @@ struct SettingsView: View {
                             .background(Theme.Colors.cardBackground)
                             .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small, style: .continuous))
                         }
-                    }
 
-                    Text("Plays softly while you write.")
-                        .font(Theme.Typography.caption)
-                        .foregroundColor(Theme.Colors.secondaryText.opacity(0.7))
-                        .padding(.top, Theme.Spacing.xs)
+                        // Sounds
+                        ForEach(AudioService.AmbientSound.allCases) { sound in
+                            Button {
+                                viewModel.ambientSoundEnabled = true
+                                viewModel.ambientSoundID = sound.rawValue
+                            } label: {
+                                HStack {
+                                    Image(systemName: sound.icon)
+                                        .foregroundColor(Theme.Colors.flameOuter)
+                                        .frame(width: 24)
+                                    Text(sound.displayName)
+                                        .font(Theme.Typography.body)
+                                        .foregroundColor(Theme.Colors.primaryText)
+                                    Spacer()
+                                    if viewModel.ambientSoundEnabled && viewModel.ambientSoundID == sound.rawValue {
+                                        Image(systemName: "checkmark")
+                                            .foregroundColor(Theme.Colors.accent)
+                                    }
+                                }
+                                .padding(Theme.Spacing.md)
+                                .background(Theme.Colors.cardBackground)
+                                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small, style: .continuous))
+                            }
+                        }
+
+                        Text("Plays softly while you write.")
+                            .font(Theme.Typography.caption)
+                            .foregroundColor(Theme.Colors.secondaryText.opacity(0.7))
+                            .padding(.top, Theme.Spacing.xs)
+                    }
+                    .padding(Theme.Spacing.md)
                 }
-                .padding(Theme.Spacing.md)
             }
             .navigationTitle("Ambience")
             .navigationBarTitleDisplayMode(.inline)
@@ -460,7 +543,7 @@ struct SettingsView: View {
                 }
             }
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
     }
 
     // MARK: - Time Picker Sheet

@@ -57,7 +57,7 @@ struct MilestoneBadge: View {
                         isUnlocked
                             ? AnyShapeStyle(
                                 LinearGradient(
-                                    colors: [Theme.Colors.flameOuter, Color(hex: "FF4500")],
+                                    colors: [Theme.Colors.flameOuter, Color(hex: "8E3F2B")],
                                     startPoint: .top,
                                     endPoint: .bottom
                                 )

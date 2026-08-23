@@ -56,7 +56,7 @@ struct CustomTabBar: View {
         .shadow(color: Color.black.opacity(0.45), radius: 24, x: 0, y: 10)
         .shadow(color: Color.black.opacity(0.18), radius: 4,  x: 0, y: 2)
         // Warm ambient glow under the pill (ties to candle aesthetic)
-        .shadow(color: Color(hex: "FF7000").opacity(0.06), radius: 16, x: 0, y: 0)
+        .shadow(color: Color(hex: "A44A32").opacity(0.06), radius: 16, x: 0, y: 0)
         .padding(.horizontal, 22)
         .padding(.bottom, 14)
     }
@@ -182,7 +182,7 @@ struct CandleTabIcon: View {
                     .fill(
                         LinearGradient(
                             colors: isSelected
-                                ? [Color(hex: "FF4500"), Theme.Colors.flameInner]
+                                ? [Color(hex: "8E3F2B"), Theme.Colors.flameInner]
                                 : [Color(hex: "3A3A3A"), Color(hex: "2A2A2A")],
                             startPoint: .bottom,
                             endPoint: .top
@@ -200,7 +200,7 @@ struct CandleTabIcon: View {
                     FlameShape()
                         .fill(
                             LinearGradient(
-                                colors: [Color(hex: "FFE000"), Color.white.opacity(0.9)],
+                                colors: [Color(hex: "B08A52"), Color.white.opacity(0.9)],
                                 startPoint: .bottom,
                                 endPoint: .top
                             )
@@ -222,7 +222,7 @@ struct CandleTabIcon: View {
                     .fill(
                         LinearGradient(
                             colors: isSelected
-                                ? [Color(hex: "FFEEBB"), Color(hex: "E8D8A0")]
+                                ? [Color(hex: "E7E0D2"), Color(hex: "C9BFA9")]
                                 : [Color(hex: "484848"), Color(hex: "363636")],
                             startPoint: .leading,
                             endPoint: .trailing

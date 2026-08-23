@@ -1,6 +1,6 @@
 import Foundation
 
-/// Determines what's free vs. what needs Ascent. Writing and saving pages
+/// Determines what's free vs. what needs The Golden Age. Writing and saving pages
 /// are always free and unlimited — the only thing gated is *viewing*
 /// pages older than the free archive window. Nothing is ever deleted or
 /// hidden from export; this only affects what's viewable in the journal.
@@ -31,7 +31,7 @@ final class SessionGatingService {
 
     // MARK: - Public API
 
-    /// Whether the user is a premium (Ascent) subscriber or has friends & family access
+    /// Whether the user is a premium (The Golden Age) subscriber or has friends & family access
     var isPremium: Bool {
         purchaseService.isSubscribed || purchaseService.isFriendsAndFamily
     }
@@ -40,7 +40,7 @@ final class SessionGatingService {
     /// starting the candle/timer, and nothing gates saving the page either.
     var canStartSession: Bool { true }
 
-    /// Whether a page dated `date` is viewable without Ascent.
+    /// Whether a page dated `date` is viewable without The Golden Age.
     func canViewPage(dated date: Date) -> Bool {
         Self.canViewPage(isPremium: isPremium, date: date)
     }

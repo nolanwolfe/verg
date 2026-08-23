@@ -6,34 +6,29 @@ import SwiftUI
 /// This epigraph never reappears anywhere else in the app.
 struct OnboardingEpigraphView: View {
     var body: some View {
-        VStack(spacing: Theme.Spacing.xl) {
+        VStack(spacing: 0) {
             Spacer()
 
-            VStack(spacing: Theme.Spacing.md) {
-                Text("Thou art alone the one from whom I took\nthe beautiful style that has done me honour.")
-                    .font(.system(size: 22, weight: .regular, design: .serif))
+            VStack(spacing: Theme.Spacing.lg) {
+                // Three lines of verse, and they have to stay three lines —
+                // lineLimit pins the count so a line too wide for the screen
+                // scales down instead of wrapping and breaking the metre.
+                Text(AppStrings.Onboarding.epigraphQuote)
+                    .font(.system(size: 19, weight: .regular, design: .serif))
                     .italic()
-                    .lineSpacing(10)
+                    .lineSpacing(9)
                     .foregroundColor(Theme.Colors.primaryText)
                     .multilineTextAlignment(.center)
+                    .lineLimit(3)
+                    .minimumScaleFactor(0.6)
 
-                Text("Dante, to Virgil, in the dark wood.")
+                Text(AppStrings.Onboarding.epigraphAttribution)
                     .font(.system(size: 15, weight: .regular, design: .serif))
                     .italic()
                     .foregroundColor(Theme.Colors.secondaryText)
                     .multilineTextAlignment(.center)
             }
-            .padding(.horizontal, Theme.Spacing.xl)
-
-            Spacer()
-                .frame(height: Theme.Spacing.xxl)
-
-            Text("Verg is named for him — the guide who walks with you, and then leaves once you reach the summit of the mountain.")
-                .font(.system(size: 17, weight: .regular, design: .serif))
-                .foregroundColor(Theme.Colors.primaryText)
-                .multilineTextAlignment(.center)
-                .lineSpacing(6)
-                .padding(.horizontal, Theme.Spacing.xl)
+            .padding(.horizontal, Theme.Spacing.lg)
 
             Spacer()
         }
@@ -48,15 +43,35 @@ struct OnboardingWhatThisIsView: View {
         VStack(spacing: Theme.Spacing.xl) {
             Spacer()
 
+            // The candle is the hero here — this doubles as the first look
+            // at the home screen, so it's sized close to how it appears
+            // there rather than as a small illustration.
+            //
+            // CandleView lays out 160x425 from fixed internal sizes (160
+            // glow + 50 flame + 15 wick + 200 wax), and scaleEffect shrinks
+            // the drawing but not the layout box. The glow is additionally
+            // drawn with `.offset(y: 60)` inside its own slot, so the top
+            // 60pt of that box is empty. Frame = (425 - 60) x scale, and
+            // offset = -(60 x scale)/2, which makes the ink fill the
+            // reserved space exactly instead of sitting low inside it.
             CandleView(progress: 1.0, isBurning: true)
-                .frame(height: 260)
+                .scaleEffect(0.9)
+                .frame(width: 144, height: 328)
+                .offset(y: -27)
                 .shadow(color: Theme.Colors.flameOuter.opacity(0.4), radius: 30)
 
-            Text(AppStrings.Onboarding.whatThisIsLine)
-                .font(Theme.Typography.largeTitle)
-                .foregroundColor(Theme.Colors.primaryText)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, Theme.Spacing.lg)
+            VStack(spacing: Theme.Spacing.xxs) {
+                Text(AppStrings.Onboarding.pitchHeadline)
+                    .font(Theme.Typography.title)
+                    .foregroundColor(Theme.Colors.primaryText)
+                    .multilineTextAlignment(.center)
+
+                Text(AppStrings.Onboarding.pitchSubline)
+                    .font(Theme.Typography.body)
+                    .foregroundColor(Theme.Colors.secondaryText)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.horizontal, Theme.Spacing.lg)
 
             Spacer()
         }
@@ -178,6 +193,12 @@ struct OnboardingProjectionView: View {
                 )
             }
 
+            Text(projection.closingLine)
+                .font(Theme.Typography.body)
+                .foregroundColor(Theme.Colors.secondaryText)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, Theme.Spacing.lg)
+
             Spacer()
         }
     }
@@ -196,15 +217,21 @@ struct OnboardingProjectionView: View {
     }
 }
 
-// MARK: - Step 5: Rating Prompt
+// MARK: - Step 5: Closing Note
+/// The last screen before the app. Mentions the rating without asking for
+/// one — the system prompt fires on the third saved page, when there's
+/// something to actually judge. The mark is the candle, not a heart.
 struct OnboardingRatingPromptView: View {
     var body: some View {
         VStack(spacing: Theme.Spacing.xl) {
             Spacer()
 
-            Image(systemName: "heart.fill")
-                .font(.system(size: 44))
-                .foregroundColor(Theme.Colors.accent)
+            // CandleTabIcon rather than CandleFlameIcon: it's the whole
+            // candle rather than a bare flame, and it already carries the
+            // flicker loop used in the tab bar.
+            CandleTabIcon(isSelected: true)
+                .frame(width: 26, height: 37)
+                .shadow(color: Theme.Colors.flameOuter.opacity(0.5), radius: 14)
 
             VStack(spacing: Theme.Spacing.sm) {
                 Text(AppStrings.Onboarding.ratingPromptTitle)
@@ -243,6 +270,6 @@ struct OnboardingRatingPromptView: View {
     }
 }
 
-#Preview("Rating Prompt") {
+#Preview("Closing Note") {
     ZStack { Theme.Colors.background.ignoresSafeArea(); OnboardingRatingPromptView() }
 }

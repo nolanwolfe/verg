@@ -307,8 +307,8 @@ enum CandleDaysLitState: Equatable {
         switch self {
         case .fresh: return Theme.Colors.candleWax
         case .settling: return Theme.Colors.candleWax
-        case .established: return Color(hex: "F5E6C8")
-        case .deep: return Color(hex: "F0DBA8")
+        case .established: return Color(hex: "D9CFBA")
+        case .deep: return Color(hex: "C9BFA9")
         }
     }
 
@@ -345,8 +345,8 @@ enum CandleDaysLitState: Equatable {
     var flameOuterColor: Color {
         switch self {
         case .fresh, .settling: return Theme.Colors.flameOuter
-        case .established: return Color(hex: "FF8000")
-        case .deep: return Color(hex: "FF7000")
+        case .established: return Color(hex: "A44A32")
+        case .deep: return Color(hex: "A44A32")
         }
     }
 }
@@ -380,7 +380,7 @@ struct CandleFlameIcon: View {
             FlameShape()
                 .fill(
                     LinearGradient(
-                        colors: [Color(hex: "FF4500"), Theme.Colors.flameInner],
+                        colors: [Color(hex: "8E3F2B"), Theme.Colors.flameInner],
                         startPoint: .bottom,
                         endPoint: .top
                     )
@@ -390,7 +390,7 @@ struct CandleFlameIcon: View {
             FlameShape()
                 .fill(
                     LinearGradient(
-                        colors: [Color(hex: "FFE000"), Color.white.opacity(0.9)],
+                        colors: [Color(hex: "B08A52"), Color.white.opacity(0.9)],
                         startPoint: .bottom,
                         endPoint: .top
                     )
