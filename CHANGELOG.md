@@ -55,14 +55,19 @@ already been inverted to white, and the tab bar's 45% black drop shadow read
 as a bruise under a pill floating on paper.
 
 
-### Changed — a book's date and note sit together
+### Changed — a book's date and note hang on the grid's seams
 
 Inside a book, the date range and the note were flung to opposite screen
-margins by a `Spacer`, which read as two unrelated labels pinned to the
-edges. They are one centred unit now, separated by a hairline, landing over
-the seams between the three columns of pages below rather than outside them.
-The header also takes the grid's own gutter, so it sits inside the page block
-instead of in a wider margin of its own.
+margins by a `Spacer`, reading as two unrelated labels pinned to the edges.
+Each is now centred on one of the two seams between the three columns of
+pages below.
+
+Computed, not eyeballed: the grid is three equal columns separated by two
+`xxs` gutters, so a seam's centre is `column + gutter/2` — 33.0% and 67.0% of
+the content width, not the 33.3%/66.7% that guessing at thirds would give.
+Small, but the entire point of the arrangement is that the labels line up
+with something. The header takes the grid's own gutter so the two share a
+coordinate space.
 
 
 ### Changed — every tab follows Appearance; Verg lights up

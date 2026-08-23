@@ -25,6 +25,76 @@ struct BookDetailView: View {
         viewModel.sessions(for: book)
     }
 
+    // MARK: - Book Info Header
+    /// The date and the note, each hung on one of the two seams between the
+    /// three columns of pages below.
+    ///
+    /// Not thirds by eye: the grid is three equal columns separated by two
+    /// `xxs` gutters, so a seam's centre is at `column + gutter/2`, and that
+    /// is what is computed here from the same width the grid gets. Guessing
+    /// 33%/67% is close but visibly off once the gutters are accounted for,
+    /// and the whole point of the arrangement is that the two labels line up
+    /// with something.
+    private var bookInfoHeader: some View {
+        GeometryReader { geo in
+            let gutter = Theme.Spacing.xxs
+            let column = (geo.size.width - gutter * 2) / 3
+            let firstSeam = column + gutter / 2
+            let secondSeam = column * 2 + gutter * 1.5
+            let slot = column + gutter
+
+            dateBlock
+                .frame(width: slot)
+                .position(x: firstSeam, y: geo.size.height / 2)
+
+            noteBlock
+                .frame(width: slot)
+                .position(x: secondSeam, y: geo.size.height / 2)
+        }
+        // Two lines of caption plus breathing room. Fixed because
+        // GeometryReader has no intrinsic height of its own.
+        .frame(height: 38)
+    }
+
+    private var dateBlock: some View {
+        VStack(spacing: 1) {
+            Text(book.formattedDateRange)
+                .font(Theme.Typography.caption)
+                .foregroundColor(Theme.Colors.secondaryText)
+            Text("\(pages.count) \(pages.count == 1 ? "page" : "pages")")
+                .font(Theme.Typography.caption)
+                .foregroundColor(Theme.Colors.secondaryText.opacity(0.7))
+        }
+        .lineLimit(1)
+        .minimumScaleFactor(0.75)
+        .multilineTextAlignment(.center)
+    }
+
+    /// A little subtitle/memory the user can write about this book — tapping
+    /// it (or "+ Add a note") opens the same sheet used to rename/recolor.
+    private var noteBlock: some View {
+        Button {
+            showCustomize = true
+        } label: {
+            Group {
+                if book.note.isEmpty {
+                    Text("+ Add a note")
+                        .foregroundColor(Theme.Colors.secondaryText.opacity(0.35))
+                } else {
+                    Text(book.note)
+                        .foregroundColor(Theme.Colors.secondaryText.opacity(0.8))
+                }
+            }
+            .font(.system(size: 12, design: .serif).italic())
+            .multilineTextAlignment(.center)
+            .lineLimit(2)
+            .minimumScaleFactor(0.8)
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
     var body: some View {
         NavigationView {
             ZStack {
@@ -32,54 +102,11 @@ struct BookDetailView: View {
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
-                    // Book info — one centred unit, not two things flung to
-                    // opposite margins. Pushed apart by a Spacer they read as
-                    // unrelated labels pinned to the screen edges; grouped in
-                    // the middle they read as a caption belonging to the grid
-                    // of pages under them, and they land over the seams
-                    // between its three columns rather than outside it.
-                    HStack(alignment: .center, spacing: Theme.Spacing.sm) {
-                        VStack(alignment: .trailing, spacing: 1) {
-                            Text(book.formattedDateRange)
-                                .font(Theme.Typography.caption)
-                                .foregroundColor(Theme.Colors.secondaryText)
-                            Text("\(pages.count) \(pages.count == 1 ? "page" : "pages")")
-                                .font(Theme.Typography.caption)
-                                .foregroundColor(Theme.Colors.secondaryText.opacity(0.7))
-                        }
-
-                        // Hairline between the fact and the feeling.
-                        Rectangle()
-                            .fill(Theme.Colors.hairline)
-                            .frame(width: 1, height: 22)
-
-                        // A little subtitle/memory the user can write about
-                        // this book — tapping it (or "+ Add a note") opens
-                        // the same sheet used to rename/recolor.
-                        Button {
-                            showCustomize = true
-                        } label: {
-                            Group {
-                                if book.note.isEmpty {
-                                    Text("+ Add a note")
-                                        .foregroundColor(Theme.Colors.secondaryText.opacity(0.35))
-                                } else {
-                                    Text(book.note)
-                                        .foregroundColor(Theme.Colors.secondaryText.opacity(0.8))
-                                }
-                            }
-                            .font(.system(size: 12, design: .serif).italic())
-                            .multilineTextAlignment(.leading)
-                            .lineLimit(2)
-                            .fixedSize(horizontal: false, vertical: true)
-                        }
-                        .buttonStyle(.plain)
-                        .frame(maxWidth: 170, alignment: .leading)
-                    }
-                    // Same gutter as the grid below, so the unit sits inside
-                    // the page block rather than in its own wider margin.
-                    .padding(.horizontal, Theme.Spacing.sm)
-                    .padding(.vertical, Theme.Spacing.xs)
+                    bookInfoHeader
+                        // Same gutter as the grid below, so the two share a
+                        // coordinate space and the seams line up.
+                        .padding(.horizontal, Theme.Spacing.sm)
+                        .padding(.vertical, Theme.Spacing.xs)
 
                     PageGridView(
                         sessions: pages,
