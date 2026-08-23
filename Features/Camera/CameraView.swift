@@ -248,17 +248,11 @@ struct CameraView: View {
         }
     }
 
-    /// Widest lens reads as "0.5x" the way the system camera labels it, since
-    /// that is the one people reach for to get close to the page.
+    /// Labelled relative to the wide lens, so it reads "1x" / "2x" whether or
+    /// not the device's zoom scale actually starts there.
     private func zoomLabel(_ factor: CGFloat) -> String {
-        guard let wideSwitch = viewModel.zoomOptions.dropFirst().first,
-              viewModel.supportsMacro else {
-            return factor == 1 ? "1x" : String(format: "%gx", factor)
-        }
-        let relative = factor / wideSwitch
-        return relative < 1
-            ? String(format: "%.1gx", relative)
-            : String(format: "%gx", relative)
+        guard let base = viewModel.zoomOptions.first, base > 0 else { return "1x" }
+        return String(format: "%gx", factor / base)
     }
 
     // MARK: - Torch

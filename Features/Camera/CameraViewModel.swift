@@ -16,9 +16,6 @@ final class CameraViewModel: NSObject, ObservableObject {
     @Published var showPhotoPicker: Bool = false
 
     // MARK: - Capture Controls
-    /// True when the device can reach macro range by switching to its
-    /// ultra-wide lens — i.e. when close-ups of a page will actually focus.
-    @Published private(set) var supportsMacro: Bool = false
     @Published private(set) var zoomOptions: [CGFloat] = [1]
     @Published private(set) var zoomFactor: CGFloat = 1
     @Published private(set) var hasFlash: Bool = false
@@ -213,31 +210,28 @@ final class CameraViewModel: NSObject, ObservableObject {
         }
     }
 
-    /// Zoom range, macro availability, torch — published for the controls.
+    /// Zoom range and torch — published for the controls.
     private func publishCapabilities(for camera: AVCaptureDevice) {
-        let hasMacro = camera.constituentDevices.contains { $0.deviceType == .builtInUltraWideCamera }
         let zooms = zoomOptions(for: camera)
+        var initialZoom = zooms.first ?? 1
 
-        // Open on the wide lens, not the ultra-wide. On a virtual device a
-        // zoom factor of 1.0 selects the *ultra-wide*, so leaving the default
-        // alone would greet the user with a distorted, far-too-wide frame and
-        // call it 1x. The wide lens sits at the first switch-over factor.
-        var initialZoom: CGFloat = 1
-        if hasMacro, let wideSwitch = zooms.dropFirst().first {
+        // Open on the wide lens. On a virtual device the default factor of
+        // 1.0 selects the *ultra-wide*, so leaving it alone would greet the
+        // user with a distorted, far-too-wide frame.
+        if initialZoom != 1 {
             do {
                 try camera.lockForConfiguration()
-                camera.videoZoomFactor = wideSwitch
+                camera.videoZoomFactor = initialZoom
                 camera.unlockForConfiguration()
-                initialZoom = wideSwitch
             } catch {
                 // Unlocking a device we never locked is itself a crash, so
                 // the unlock stays inside the successful branch.
+                initialZoom = camera.videoZoomFactor
             }
         }
 
         let resolvedZoom = initialZoom
         DispatchQueue.main.async { [weak self] in
-            self?.supportsMacro = hasMacro
             self?.zoomOptions = zooms
             self?.zoomFactor = resolvedZoom
             self?.hasFlash = camera.hasTorch
@@ -275,22 +269,30 @@ final class CameraViewModel: NSObject, ObservableObject {
         }
     }
 
-    /// The zoom factors worth offering: ultra-wide (if present), 1x, and 2x
-    /// when the hardware can reach it without visible upscaling.
+    /// The zoom factors offered as buttons: the wide lens, and 2x when the
+    /// hardware can reach it.
+    ///
+    /// The ultra-wide is deliberately *not* a button. It is still used — the
+    /// system switches to it on its own once the phone is close enough for
+    /// macro, which is the only reason this app wants that lens at all — but
+    /// as a framing choice for a page it is far too wide.
     private func zoomOptions(for camera: AVCaptureDevice) -> [CGFloat] {
-        var options: [CGFloat] = [1]
-        if camera.constituentDevices.contains(where: { $0.deviceType == .builtInUltraWideCamera }) {
-            // On a virtual device 1.0 is the ultra-wide, and the wide sits at
-            // the first switch-over factor (2.0 on current hardware).
-            options = [1]
-            if let wideSwitch = camera.virtualDeviceSwitchOverVideoZoomFactors.first {
-                options.append(CGFloat(truncating: wideSwitch))
-            }
-        }
-        if let last = options.last, camera.maxAvailableVideoZoomFactor >= last * 2 {
-            options.append(last * 2)
+        var options: [CGFloat] = [wideLensZoomFactor(for: camera)]
+        if let base = options.first, camera.maxAvailableVideoZoomFactor >= base * 2 {
+            options.append(base * 2)
         }
         return options
+    }
+
+    /// Where the plain wide lens sits on this device's zoom scale. On a
+    /// virtual device 1.0 is the ultra-wide and the wide begins at the first
+    /// switch-over factor; on a single-lens device 1.0 is already the wide.
+    private func wideLensZoomFactor(for camera: AVCaptureDevice) -> CGFloat {
+        guard camera.constituentDevices.contains(where: { $0.deviceType == .builtInUltraWideCamera }),
+              let wideSwitch = camera.virtualDeviceSwitchOverVideoZoomFactors.first else {
+            return 1
+        }
+        return CGFloat(truncating: wideSwitch)
     }
 
     /// Set the optical/digital zoom. On a virtual device this is also what

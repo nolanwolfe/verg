@@ -124,8 +124,11 @@ wide, and opts in to automatic lens switching.
 - Opens on the wide lens. On a virtual device zoom factor 1.0 selects the
   ultra-wide, so the default would have been a distorted, far-too-wide frame
   labelled "1x".
-- Added a 0.5x/1x/2x selector (shown only when the device has a real choice)
-  and a torch toggle, since this is an app about writing in a dim room.
+- Added a 1x/2x zoom selector (shown only when the device has a real choice)
+  and a torch toggle, since this is an app about writing in a dim room. The
+  ultra-wide is not offered as a button — far too wide a framing for a page —
+  but is still reached automatically when the phone gets close enough for
+  macro, which is the only reason that lens matters here.
 - Session configuration moved off the main thread, and both early-return
   paths now balance `beginConfiguration()` — they returned without
   committing, leaving the session wedged mid-configuration.
