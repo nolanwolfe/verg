@@ -172,7 +172,7 @@ struct LibraryView: View {
     /// One consistent grid — every tile the same design and width.
     private var statsGrid: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            Text("STATS")
+            Text("INSIGHTS")
                 .font(.system(size: 11, weight: .semibold))
                 .foregroundColor(.white.opacity(0.4))
                 .padding(.horizontal, Theme.Spacing.xxs)

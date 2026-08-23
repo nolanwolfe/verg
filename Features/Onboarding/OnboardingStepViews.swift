@@ -65,6 +65,8 @@ struct OnboardingWhatThisIsView: View {
                     .font(Theme.Typography.title)
                     .foregroundColor(Theme.Colors.primaryText)
                     .multilineTextAlignment(.center)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
 
                 Text(AppStrings.Onboarding.pitchSubline)
                     .font(Theme.Typography.body)
@@ -236,7 +238,7 @@ struct OnboardingRatingPromptView: View {
             }
             .shadow(color: Color(hex: "D4A017").opacity(0.4), radius: 12)
 
-            VStack(spacing: Theme.Spacing.xs) {
+            VStack(spacing: Theme.Spacing.sm) {
                 // title, not largeTitle: at 34pt this wrapped to two lines
                 // and pushed the screen past the bottom on an SE.
                 Text(AppStrings.Onboarding.ratingPromptTitle)
