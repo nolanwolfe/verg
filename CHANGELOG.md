@@ -29,7 +29,14 @@ on scroll-up on the Library screen.
   an orange glow. It takes the room's own ink on paper.
 - The year-by-year bar is a plain line again. Gold made a measurement look
   like an award.
-- Appearance moved from Guide to Account, directly under The Golden Age.
+- Appearance moved from Guide to Account, directly under The Golden Age, and
+  its icon is blue. Restore is gold.
+- **The writing timer follows Appearance too.** Its ground, countdown, and
+  control chrome all adapt, and its glow is scaled for paper the same way
+  Verg's is. The scrims behind the pause and sound buttons invert with it —
+  a 40% black disc under white glyphs is a hole punched in a paper page.
+  Only the fullscreen page viewer still pins itself dark now, which is how
+  every photo viewer behaves.
 
 
 ### Added — Appearance: Light, Dark, System

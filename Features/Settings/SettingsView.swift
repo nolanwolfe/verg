@@ -223,7 +223,7 @@ struct SettingsView: View {
 
             SettingsRow(
                 icon: "circle.lefthalf.filled",
-                iconColor: Theme.Colors.accent,
+                iconColor: .blue,
                 title: "Appearance",
                 value: viewModel.appearance.displayName,
                 action: {
@@ -236,7 +236,7 @@ struct SettingsView: View {
 
             SettingsButtonRow(
                 icon: "arrow.clockwise",
-                iconColor: .blue,
+                iconColor: Theme.Colors.accent,
                 title: "Restore",
                 action: {
                     AudioService.shared.playUITick()

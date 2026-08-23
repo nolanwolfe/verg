@@ -21,12 +21,18 @@ struct TimerView: View {
     private let gatingService = SessionGatingService.shared
 
     // Brightness (swipe up/down, no visual indicator)
+    @Environment(\.colorScheme) private var colorScheme
+    /// See VergFlameView: these opacities were tuned against near-black and
+    /// turn the room orange when laid over paper at full strength.
+    private var glowScale: Double { colorScheme == .dark ? 1.0 : 0.34 }
     @State private var brightness: Double = 0.7
     @State private var dragStartBrightness: Double = 0.7
 
     var body: some View {
         ZStack {
-            Color(hex: "080400").ignoresSafeArea()
+            // Same warm ground as the Verg tab: near-black by candlelight,
+            // paper near a flame in the light theme.
+            Theme.Colors.adaptive(light: "FBF3E6", dark: "080400").ignoresSafeArea()
 
             ambientGlow
 
@@ -114,10 +120,10 @@ struct TimerView: View {
                 VStack {
                     Text(terraceMessage)
                         .font(Theme.Typography.subheadline.italic())
-                        .foregroundColor(.white.opacity(0.85))
+                        .foregroundColor(Theme.Colors.primaryText.opacity(0.85))
                         .padding(.horizontal, Theme.Spacing.md)
                         .padding(.vertical, Theme.Spacing.xs)
-                        .background(Capsule().fill(Color.black.opacity(0.4)))
+                        .background(Capsule().fill(Theme.Colors.adaptive(light: "FFFFFFA6", dark: "00000066")))
                         .padding(.top, Theme.Spacing.xxl)
                     Spacer()
                 }
@@ -192,8 +198,7 @@ struct TimerView: View {
             UIApplication.shared.isIdleTimerDisabled = false
         }
         .statusBar(hidden: true)
-        // The writing ritual stays dark whatever the app is set to.
-        .preferredColorScheme(.dark)
+
     }
 
     // MARK: - Controls Overlay
@@ -206,7 +211,7 @@ struct TimerView: View {
                     Button { viewModel.cancelSession() } label: {
                         Image(systemName: "xmark")
                             .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(.white.opacity(0.6))
+                            .foregroundColor(Theme.Colors.secondaryText)
                             .frame(width: 44, height: 44)
                     }
                     Spacer()
@@ -220,7 +225,7 @@ struct TimerView: View {
             GeometryReader { geo in
                 Text(viewModel.formattedTime)
                     .font(Theme.Typography.timerDisplay)
-                    .foregroundColor(.white)
+                    .foregroundColor(Theme.Colors.primaryText)
                     .monospacedDigit()
                     .shadow(color: Theme.Colors.flameOuter.opacity((0.5 + 0.3 * viewModel.progress) * (0.6 + glowPulse * 0.4)), radius: 14, x: 0, y: 0)
                     .shadow(color: Theme.Colors.flameInner.opacity(0.25 * viewModel.progress), radius: 5, x: 0, y: 0)
@@ -245,9 +250,9 @@ struct TimerView: View {
             Button(action: handleAmbienceTap) {
                 Image(systemName: "music.note")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.white.opacity(gatingService.isPremium ? 1 : 0.4))
+                    .foregroundColor(Theme.Colors.primaryText.opacity(gatingService.isPremium ? 1 : 0.4))
                     .frame(width: 44, height: 44)
-                    .background(Circle().fill(Color.black.opacity(0.4)))
+                    .background(Circle().fill(Theme.Colors.adaptive(light: "FFFFFFA6", dark: "00000066")))
             }
 
             Button {
@@ -257,15 +262,15 @@ struct TimerView: View {
                     .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(.white)
                     .frame(width: 60, height: 60)
-                    .background(Circle().fill(Color.black.opacity(0.4)))
+                    .background(Circle().fill(Theme.Colors.adaptive(light: "FFFFFFA6", dark: "00000066")))
             }
 
             Button(action: handleMuteTap) {
                 Image(systemName: viewModel.ambientSoundEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
                     .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.white.opacity(gatingService.isPremium ? 1 : 0.4))
+                    .foregroundColor(Theme.Colors.primaryText.opacity(gatingService.isPremium ? 1 : 0.4))
                     .frame(width: 44, height: 44)
-                    .background(Circle().fill(Color.black.opacity(0.4)))
+                    .background(Circle().fill(Theme.Colors.adaptive(light: "FFFFFFA6", dark: "00000066")))
             }
         }
         .buttonStyle(.plain)
@@ -353,9 +358,9 @@ struct TimerView: View {
         ZStack {
             RadialGradient(
                 colors: [
-                    Color(hex: "FF7000").opacity((0.30 + glowPulse * 0.04) * viewModel.progress),
-                    Color(hex: "FF5500").opacity((0.22 + glowPulse * 0.02) * viewModel.progress),
-                    Color(hex: "FF3300").opacity(0.10 * viewModel.progress),
+                    Color(hex: "FF7000").opacity((0.30 + glowPulse * 0.04) * viewModel.progress * glowScale),
+                    Color(hex: "FF5500").opacity((0.22 + glowPulse * 0.02) * viewModel.progress * glowScale),
+                    Color(hex: "FF3300").opacity(0.10 * viewModel.progress * glowScale),
                     Color.clear
                 ],
                 center: UnitPoint(x: 0.5, y: 0.44),
@@ -365,7 +370,7 @@ struct TimerView: View {
             .ignoresSafeArea()
 
             LinearGradient(
-                colors: [Color.clear, Color(hex: "FF6000").opacity(0.10 * viewModel.progress)],
+                colors: [Color.clear, Color(hex: "FF6000").opacity(0.10 * viewModel.progress * glowScale)],
                 startPoint: .center,
                 endPoint: .bottom
             )
