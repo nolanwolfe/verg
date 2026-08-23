@@ -139,7 +139,7 @@ struct OnboardingCommitmentView: View {
                         }
                         .padding(Theme.Spacing.md)
                         .background(Theme.Colors.cardBackground)
-                        .cornerRadius(Theme.CornerRadius.small)
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small, style: .continuous))
                         .overlay(
                             RoundedRectangle(cornerRadius: Theme.CornerRadius.small, style: .continuous)
                                 .stroke(

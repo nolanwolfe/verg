@@ -44,11 +44,12 @@ final class PaywallViewModel: ObservableObject {
     }
 
     // Sells the archive and the stats — not a generic feature list. These
-    // two get their own hero-sized cards; everything else is a smaller
-    // supporting row underneath.
+    // two get their own hero rows; everything else is a smaller
+    // supporting line underneath. Copy per VOICE.md: short declaratives,
+    // concrete nouns, no sales pressure.
     let heroFeatures: [Feature] = [
-        Feature(icon: "books.vertical.fill", text: "Your full archive, not just the last 7 days"),
-        Feature(icon: "chart.bar.fill", text: "Every stat. Pages, longest run, time reclaimed")
+        Feature(icon: "books.vertical.fill", text: "Every page you've written, kept"),
+        Feature(icon: "chart.bar.fill", text: "Pages lit. Days lit. Time reclaimed.")
     ]
 
     let supportingFeatures: [Feature] = [

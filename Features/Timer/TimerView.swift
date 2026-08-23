@@ -12,6 +12,10 @@ struct TimerView: View {
     @State private var hideTask: Task<Void, Never>?
     @State private var glowPulse: Double = 0.0
     @State private var completionFlash: Double = 0.0
+    @State private var showAmbiencePicker = false
+    @State private var showPaywall = false
+
+    private let gatingService = SessionGatingService.shared
 
     // Brightness (swipe up/down, no visual indicator)
     @State private var brightness: Double = 0.7
@@ -24,18 +28,18 @@ struct TimerView: View {
 
             ambientGlow
 
-            // Candle — upper position matching Verg tab
+            // Candle — smaller, more centered in the screen
             GeometryReader { geo in
                 CandleView(
                     progress: viewModel.progress,
                     isBurning: viewModel.isRunning
                 )
-                .scaleEffect(1.9)
+                .scaleEffect(1.3)
                 .shadow(
                     color: Theme.Colors.flameOuter.opacity(0.5 * viewModel.progress + glowPulse * 0.08),
                     radius: 50, x: 0, y: 0
                 )
-                .position(x: geo.size.width / 2, y: geo.size.height * 0.40)
+                .position(x: geo.size.width / 2, y: geo.size.height * 0.45)
             }
             .ignoresSafeArea()
             .allowsHitTesting(false)
@@ -153,6 +157,13 @@ struct TimerView: View {
                 }
             )
         }
+        .sheet(isPresented: $showAmbiencePicker) {
+            ambiencePickerSheet
+        }
+        .fullScreenCover(isPresented: $showPaywall) {
+            PaywallView()
+                .environmentObject(PurchaseService.shared)
+        }
         .onAppear {
             viewModel.onComplete = { session in dismiss(); onComplete?(session) }
             scheduleHide()
@@ -178,13 +189,13 @@ struct TimerView: View {
 
     private var controlsOverlay: some View {
         ZStack {
-            // X button — top left
+            // X button — top left, small and white
             VStack {
                 HStack {
                     Button { viewModel.cancelSession() } label: {
                         Image(systemName: "xmark")
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Theme.Colors.flameOuter.opacity(0.5))
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(.white.opacity(0.6))
                             .frame(width: 44, height: 44)
                     }
                     Spacer()
@@ -194,7 +205,7 @@ struct TimerView: View {
                 Spacer()
             }
 
-            // Countdown — floats above the candle, room to breathe
+            // Countdown — floats right above the candle
             GeometryReader { geo in
                 Text(viewModel.formattedTime)
                     .font(Theme.Typography.timerDisplay)
@@ -203,9 +214,126 @@ struct TimerView: View {
                     .shadow(color: Theme.Colors.flameOuter.opacity((0.5 + 0.3 * viewModel.progress) * (0.6 + glowPulse * 0.4)), radius: 14, x: 0, y: 0)
                     .shadow(color: Theme.Colors.flameInner.opacity(0.25 * viewModel.progress), radius: 5, x: 0, y: 0)
                     .frame(maxWidth: .infinity)
-                    .position(x: geo.size.width / 2, y: geo.size.height * 0.19)
+                    .position(x: geo.size.width / 2, y: geo.size.height * 0.30)
+            }
+
+            // Bottom controls — pause/resume, plus sound choice and mute
+            // (Pro features; tapping either while free opens the paywall)
+            VStack {
+                Spacer()
+                bottomControls
+                    .padding(.bottom, Theme.Spacing.xxl)
             }
         }
+    }
+
+    // MARK: - Bottom Controls
+
+    private var bottomControls: some View {
+        HStack(spacing: Theme.Spacing.xl) {
+            Button(action: handleAmbienceTap) {
+                Image(systemName: "music.note")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.white.opacity(gatingService.isPremium ? 1 : 0.4))
+                    .frame(width: 44, height: 44)
+                    .background(Circle().fill(Color.black.opacity(0.4)))
+            }
+
+            Button {
+                viewModel.isRunning ? viewModel.pauseTimer() : viewModel.resumeTimer()
+            } label: {
+                Image(systemName: viewModel.isRunning ? "pause.fill" : "play.fill")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(width: 60, height: 60)
+                    .background(Circle().fill(Color.black.opacity(0.4)))
+            }
+
+            Button(action: handleMuteTap) {
+                Image(systemName: viewModel.ambientSoundEnabled ? "speaker.wave.2.fill" : "speaker.slash.fill")
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.white.opacity(gatingService.isPremium ? 1 : 0.4))
+                    .frame(width: 44, height: 44)
+                    .background(Circle().fill(Color.black.opacity(0.4)))
+            }
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func handleAmbienceTap() {
+        if gatingService.isPremium {
+            AudioService.shared.playImpact(.light)
+            showAmbiencePicker = true
+        } else {
+            showPaywall = true
+        }
+    }
+
+    private func handleMuteTap() {
+        if gatingService.isPremium {
+            viewModel.toggleAmbienceMuted()
+        } else {
+            showPaywall = true
+        }
+    }
+
+    // MARK: - Ambience Picker Sheet
+    private var ambiencePickerSheet: some View {
+        NavigationView {
+            ZStack {
+                Theme.Colors.background.ignoresSafeArea()
+
+                VStack(spacing: Theme.Spacing.sm) {
+                    Button {
+                        viewModel.setAmbienceEnabled(false)
+                    } label: {
+                        ambienceRow(icon: "speaker.slash", iconColor: Theme.Colors.secondaryText, title: "Off", isSelected: !viewModel.ambientSoundEnabled)
+                    }
+
+                    ForEach(AudioService.AmbientSound.allCases) { sound in
+                        Button {
+                            viewModel.selectAmbientSound(sound)
+                        } label: {
+                            ambienceRow(
+                                icon: sound.icon,
+                                iconColor: Theme.Colors.flameOuter,
+                                title: sound.displayName,
+                                isSelected: viewModel.ambientSoundEnabled && viewModel.ambientSoundID == sound.rawValue
+                            )
+                        }
+                    }
+                }
+                .padding(Theme.Spacing.md)
+            }
+            .navigationTitle("Ambience")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") { showAmbiencePicker = false }
+                        .foregroundColor(Theme.Colors.accent)
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
+
+    private func ambienceRow(icon: String, iconColor: Color, title: String, isSelected: Bool) -> some View {
+        HStack {
+            Image(systemName: icon)
+                .foregroundColor(iconColor)
+                .frame(width: 24)
+            Text(title)
+                .font(Theme.Typography.body)
+                .foregroundColor(Theme.Colors.primaryText)
+            Spacer()
+            if isSelected {
+                Image(systemName: "checkmark")
+                    .foregroundColor(Theme.Colors.accent)
+            }
+        }
+        .padding(Theme.Spacing.md)
+        .background(Theme.Colors.cardBackground)
+        .cornerRadius(Theme.CornerRadius.small)
     }
 
     // MARK: - Ambient Glow

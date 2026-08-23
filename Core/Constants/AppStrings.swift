@@ -101,6 +101,7 @@ enum AppStrings {
     // MARK: - Paywall
     enum Paywall {
         static let title = "On the Verg of Becoming"
+        static let subtitle = "Everything you write, kept."
         static let restorePurchases = "Restore Purchases"
     }
 

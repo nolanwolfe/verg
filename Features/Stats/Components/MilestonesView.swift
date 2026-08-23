@@ -90,7 +90,7 @@ struct MilestoneBadge: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, Theme.Spacing.md)
         .background(Theme.Colors.cardBackground.opacity(isUnlocked ? 1.0 : 0.5))
-        .cornerRadius(Theme.CornerRadius.medium)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.medium, style: .continuous))
     }
 }
 

@@ -1,8 +1,32 @@
-# Sound Files Required
+# Sound Files
 
-The Ink app requires the following audio files. If not present, the app will fall back to system sounds.
+## Ambient loops (Ascent feature)
 
-## Required Files
+| File | Source | License |
+|---|---|---|
+| `ambient_rain.caf` | BigSoundBank #1019 — "Summer Rain on Terrace" by Joseph SARDIN (2:37, trimmed to 30s loop) | CC0 (public domain) |
+| `ambient_fire.caf` | BigSoundBank #2857 — "Fireplace #5" by Joseph SARDIN (0:46, trimmed to 30s loop) | CC0 (public domain) |
+| `ambient_focus.caf` | BigSoundBank #0432 — "Pink Noise" by Joseph SARDIN (19s, full) | CC0 (public domain) |
+
+All three are CC0: commercial use permitted, no attribution required.
+Source pages: https://bigsoundbank.com/summer-rain-on-terrace-s1019.html ·
+https://bigsoundbank.com/fireplace-5-s2857.html ·
+https://bigsoundbank.com/pink-noise-s0432.html
+
+Regenerate from source MP3s (in `~/dev/verg/download/sounds/`):
+```
+ffmpeg -i rain.mp3 -t 30 -af "afade=t=in:d=1,afade=t=out:st=29:d=1" rain-30.wav
+afconvert rain-30.wav ambient_rain.caf -d LEI16@44100 -c 2
+# same shape for fire; focus keeps its natural length with soft fades
+```
+
+Originals kept out of the repo in `download/sounds/`.
+
+---
+
+## Legacy notes (bell sounds)
+
+The app requires the following audio files. If not present, the app will fall back to system sounds.
 
 ### 1. bell_start.mp3
 - **Purpose**: Plays when the timer begins

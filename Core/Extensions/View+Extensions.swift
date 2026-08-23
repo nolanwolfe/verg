@@ -10,7 +10,7 @@ extension View {
     func cardStyle() -> some View {
         self
             .background(Theme.Colors.cardBackground)
-            .cornerRadius(Theme.CornerRadius.medium)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.medium, style: .continuous))
     }
 
     /// Apply primary button style
@@ -21,7 +21,7 @@ extension View {
             .frame(maxWidth: .infinity)
             .frame(height: Theme.Layout.buttonHeight)
             .background(Theme.Colors.accentGradient)
-            .cornerRadius(Theme.CornerRadius.medium)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.medium, style: .continuous))
     }
 
     /// Apply secondary button style
@@ -32,7 +32,7 @@ extension View {
             .frame(maxWidth: .infinity)
             .frame(height: Theme.Layout.buttonHeight)
             .background(Theme.Colors.cardBackground)
-            .cornerRadius(Theme.CornerRadius.medium)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.medium, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: Theme.CornerRadius.medium, style: .continuous)
                     .stroke(Theme.Colors.accent, lineWidth: 1)
@@ -160,7 +160,7 @@ struct PrimaryButtonStyle: ButtonStyle {
                     }
                 }
             )
-            .cornerRadius(Theme.CornerRadius.medium)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.medium, style: .continuous))
             .opacity(configuration.isPressed ? 0.8 : 1.0)
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
             .animation(Theme.Animation.quick, value: configuration.isPressed)
@@ -176,7 +176,7 @@ struct SecondaryButtonStyle: ButtonStyle {
             .frame(maxWidth: .infinity)
             .frame(height: Theme.Layout.buttonHeight)
             .background(Theme.Colors.cardBackground)
-            .cornerRadius(Theme.CornerRadius.medium)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.medium, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: Theme.CornerRadius.medium, style: .continuous)
                     .stroke(Theme.Colors.accent, lineWidth: 1)

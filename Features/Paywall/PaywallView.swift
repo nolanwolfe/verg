@@ -157,7 +157,7 @@ struct NativePaywallView: View {
                 .foregroundColor(AscentPalette.primaryText)
                 .multilineTextAlignment(.center)
 
-            Text("Your full archive. Your stats. Your pace.")
+            Text(AppStrings.Paywall.subtitle)
                 .font(Theme.Typography.subheadline)
                 .foregroundColor(AscentPalette.secondaryText)
                 .multilineTextAlignment(.center)
@@ -165,35 +165,33 @@ struct NativePaywallView: View {
     }
 
     // MARK: - Hero Features (the actual sell — archive + stats)
+    /// Quiet rows, not boxed cards: the paywall borrows the app's own
+    /// plain-list language rather than a marketing-page card grid.
     private var heroFeatureCards: some View {
-        VStack(spacing: Theme.Spacing.xxs) {
+        VStack(spacing: Theme.Spacing.sm) {
             ForEach(viewModel.heroFeatures) { feature in
                 HStack(spacing: Theme.Spacing.xs) {
                     Image(systemName: feature.icon)
-                        .font(.system(size: 16))
+                        .font(.system(size: 15))
                         .foregroundStyle(AscentPalette.flameGradient)
                         .frame(width: 22)
 
                     Text(feature.text)
-                        .font(Theme.Typography.subheadline)
+                        .font(Theme.Typography.body)
                         .foregroundColor(AscentPalette.primaryText)
                         .lineLimit(2)
                         .minimumScaleFactor(0.9)
 
                     Spacer(minLength: 0)
                 }
-                .padding(.horizontal, Theme.Spacing.sm)
-                .padding(.vertical, Theme.Spacing.xs)
-                .background(
-                    RoundedRectangle(cornerRadius: AscentPalette.cornerRadius, style: .continuous)
-                        .fill(AscentPalette.cardBackground)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: AscentPalette.cornerRadius, style: .continuous)
-                        .stroke(AscentPalette.cardBorder, lineWidth: 1)
-                )
             }
+
+            Rectangle()
+                .fill(AscentPalette.cardBorder)
+                .frame(height: 1)
+                .padding(.horizontal, Theme.Spacing.xxs)
         }
+        .padding(.horizontal, Theme.Spacing.xs)
     }
 
     // MARK: - Supporting Features (compressed to one line — cut first if space is tight)

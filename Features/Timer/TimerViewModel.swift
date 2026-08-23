@@ -127,6 +127,52 @@ final class TimerViewModel: ObservableObject {
         onComplete?(nil)
     }
 
+    /// Pause the countdown in place (distinct from cancelling the session);
+    /// resume continues from the same time remaining.
+    func pauseTimer() {
+        audioService.playImpact(.light)
+        audioService.stopAmbience(fadeOut: 0.3)
+        timerService.pause()
+    }
+
+    func resumeTimer() {
+        audioService.playImpact(.light)
+        timerService.resume()
+        startAmbienceIfEnabled()
+    }
+
+    // MARK: - Ambience (Pro)
+    var ambientSoundEnabled: Bool { storageService.settings.ambientSoundEnabled }
+    var ambientSoundID: String { storageService.settings.ambientSoundID }
+
+    /// Quick mute/unmute of the current ambience — persists like the
+    /// Settings toggle does, so it stays off/on next session too.
+    func toggleAmbienceMuted() {
+        setAmbienceEnabled(!ambientSoundEnabled)
+    }
+
+    func setAmbienceEnabled(_ enabled: Bool) {
+        audioService.playImpact(.light)
+        storageService.setAmbientSoundEnabled(enabled)
+        objectWillChange.send()
+        if enabled {
+            startAmbienceIfEnabled()
+        } else {
+            audioService.stopAmbience(fadeOut: 0.3)
+        }
+    }
+
+    /// Choosing a sound also turns ambience on — picking one is the intent.
+    func selectAmbientSound(_ sound: AudioService.AmbientSound) {
+        audioService.playImpact(.light)
+        storageService.setAmbientSoundID(sound.rawValue)
+        storageService.setAmbientSoundEnabled(true)
+        objectWillChange.send()
+        if isRunning {
+            audioService.startAmbience(sound)
+        }
+    }
+
     /// Start looping ambience if the option is on and the user is Pro.
     /// Always called on the main thread (view-driven).
     private func startAmbienceIfEnabled() {

@@ -174,7 +174,7 @@ struct CameraView: View {
                     }
                 }
                 .aspectRatio(3/4, contentMode: .fit)
-                .cornerRadius(Theme.CornerRadius.medium)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.medium, style: .continuous))
                 .padding(.horizontal, Theme.Spacing.md)
 
                 if !viewModel.isCameraReady {
@@ -240,7 +240,7 @@ struct CameraView: View {
             Image(uiImage: image)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .cornerRadius(Theme.CornerRadius.medium)
+                .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.medium, style: .continuous))
                 .padding(.horizontal, Theme.Spacing.md)
 
             Spacer()

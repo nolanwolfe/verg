@@ -49,7 +49,7 @@ enum Theme {
 
         // Timer specific
         static let timerDisplay = Font.system(size: 48, weight: .light, design: .monospaced)
-        static let daysLitDisplay = Font.system(size: 20, weight: .semibold, design: .default)
+        static let daysLitDisplay = Font.system(size: 20, weight: .semibold, design: .default).monospacedDigit()
     }
 
     // MARK: - Spacing

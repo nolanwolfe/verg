@@ -179,7 +179,7 @@ struct StatCard: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(Theme.Spacing.md)
         .background(Theme.Colors.cardBackground)
-        .cornerRadius(Theme.CornerRadius.medium)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.medium, style: .continuous))
     }
 }
 

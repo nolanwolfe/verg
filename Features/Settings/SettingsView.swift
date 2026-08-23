@@ -414,7 +414,7 @@ struct SettingsView: View {
                         }
                         .padding(Theme.Spacing.md)
                         .background(Theme.Colors.cardBackground)
-                        .cornerRadius(Theme.CornerRadius.small)
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small, style: .continuous))
                     }
 
                     // Sounds
@@ -438,7 +438,7 @@ struct SettingsView: View {
                             }
                             .padding(Theme.Spacing.md)
                             .background(Theme.Colors.cardBackground)
-                            .cornerRadius(Theme.CornerRadius.small)
+                            .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small, style: .continuous))
                         }
                     }
 
@@ -511,7 +511,7 @@ struct SettingsSection<Content: View>: View {
             }
             .padding(Theme.Spacing.sm)
             .background(Theme.Colors.cardBackground)
-            .cornerRadius(Theme.CornerRadius.medium)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.medium, style: .continuous))
         }
     }
 }
@@ -670,7 +670,7 @@ struct DurationPickerSheet: View {
                             }
                             .padding(Theme.Spacing.md)
                             .background(Theme.Colors.cardBackground)
-                            .cornerRadius(Theme.CornerRadius.small)
+                            .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small, style: .continuous))
                         }
                     }
 
@@ -708,7 +708,7 @@ struct DurationPickerSheet: View {
                     }
                     .padding(Theme.Spacing.md)
                     .background(Theme.Colors.cardBackground)
-                    .cornerRadius(Theme.CornerRadius.small)
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small, style: .continuous))
                 }
                 .padding(Theme.Spacing.md)
             }

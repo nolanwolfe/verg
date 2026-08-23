@@ -104,7 +104,7 @@ struct PageThumbnail: View {
                         .foregroundColor(.white)
                 }
             }
-            .cornerRadius(Theme.CornerRadius.small)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small, style: .continuous))
         }
         .task(id: session.id) {
             // Cached thumbnails render on the first frame; only cache misses
