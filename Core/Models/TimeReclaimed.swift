@@ -28,17 +28,43 @@ struct TimeReclaimedSummary: Equatable {
 /// sentence so the full-screen card can give the number its own visual
 /// weight instead of burying it in prose.
 struct TimeReclaimedMoment: Equatable {
+    /// Minutes in the session that just ended — not the day's running
+    /// total. The card names it "Your session", so it has to be the session.
     let minutes: Int
-    let leadingText: String
-    let trailingText: String
+    /// Minutes written across the whole day, carried only when today holds
+    /// more than the one session just finished. Nil on the first session,
+    /// where it would only repeat `minutes` back.
+    let todayMinutes: Int?
     let daysLit: Int
+
+    var eyebrow: String { "Your session" }
+
+    var unit: String { minutes == 1 ? "minute" : "minutes" }
+
+    /// What the minutes were spent instead of. The whole premise of the
+    /// number, so it stays on the card rather than being implied.
+    var framing: String { "instead of scrolling." }
+
+    /// Second line, on a day with more than one session.
+    var todayLine: String? {
+        guard let todayMinutes else { return nil }
+        return "\(todayMinutes) minutes today"
+    }
+
+    /// The candle, formatted exactly as the Write screen formats it — the
+    /// emoji from two days on, per `AppStrings.Home.daysLitBadge`.
+    var daysLitLine: String? {
+        AppStrings.Home.daysLitBadge(daysLit)
+    }
 
     /// One coherent sentence — used for VoiceOver and anywhere a single
     /// string is more appropriate than the split layout.
     var accessibleSentence: String {
-        guard minutes > 0 else { return "\(leadingText) \(trailingText)" }
-        let unit = minutes == 1 ? "minute" : "minutes"
-        return "\(leadingText) \(minutes) \(unit) \(trailingText)"
+        guard minutes > 0 else { return "Your session ran less than a minute." }
+        var sentence = "Your session: \(minutes) \(unit) \(framing)"
+        if let todayLine { sentence += " \(todayLine)." }
+        if let daysLitLine { sentence += " \(daysLitLine)" }
+        return sentence
     }
 }
 
@@ -107,20 +133,18 @@ enum TimeReclaimed {
 
     /// Same copy rules as `confirmationMessage`, split into pieces for the
     /// full-screen session-end reveal.
-    static func moment(todaySeconds: TimeInterval, isFirstSessionToday: Bool, daysLit: Int) -> TimeReclaimedMoment {
-        let minutes = Int((todaySeconds / 60).rounded())
-        guard minutes > 0 else {
-            return TimeReclaimedMoment(
-                minutes: 0,
-                leadingText: "You wrote for",
-                trailingText: "less than a minute today.",
-                daysLit: daysLit
-            )
-        }
-        if isFirstSessionToday {
-            return TimeReclaimedMoment(minutes: minutes, leadingText: "You wrote for", trailingText: "instead of scrolling.", daysLit: daysLit)
-        } else {
-            return TimeReclaimedMoment(minutes: minutes, leadingText: "You've written", trailingText: "today.", daysLit: daysLit)
-        }
+    static func moment(
+        sessionSeconds: TimeInterval,
+        todaySeconds: TimeInterval,
+        daysLit: Int
+    ) -> TimeReclaimedMoment {
+        let minutes = Int((sessionSeconds / 60).rounded())
+        let dayTotal = Int((todaySeconds / 60).rounded())
+        return TimeReclaimedMoment(
+            minutes: minutes,
+            // Only when the day genuinely holds more than this session.
+            todayMinutes: dayTotal > minutes ? dayTotal : nil,
+            daysLit: daysLit
+        )
     }
 }

@@ -83,6 +83,18 @@ enum AppStrings {
             }
         }
 
+        /// The candle count as a standalone badge, or nil when unlit. The
+        /// emoji arrives at two days — one day is a start, not yet a run.
+        /// Shared so the Write screen and the post-session card can never
+        /// drift apart on it.
+        static func daysLitBadge(_ daysLit: Int) -> String? {
+            switch daysLit {
+            case ..<1: return nil
+            case 1: return "1 day lit"
+            default: return "\(daysLit) days lit 🕯️"
+            }
+        }
+
         static func sessionsTodayText(_ count: Int) -> String {
             switch count {
             case 0: return startFirstSession

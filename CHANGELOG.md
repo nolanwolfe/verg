@@ -12,6 +12,24 @@ pages. Journal becomes just the current journal. Books gain rename and
 cover-color customization. The tab bar hides on scroll-down and returns
 on scroll-up on the Library screen.
 
+### Changed — the post-session reveal
+
+Reads **"Your session / 24 / minutes / instead of scrolling."** and carries
+the candle: "4 days lit 🕯️", formatted by the same helper the Write screen
+uses so the two can never drift apart.
+
+- **The number is now the session, not the day.** It was the day's running
+  total all along — fine under the old "You've written…" heading, wrong the
+  moment the card names it *your session*. On a second or later session the
+  day's figure moves to its own quiet line beneath ("41 minutes today"), and
+  is omitted entirely when it would just repeat the session back.
+- Tighter and bolder: the hourglass is gone, the eyebrow is gold and tracked,
+  and the figure is heavier at a tighter track. It is no longer set in
+  `.rounded` — rounded read friendly, and this is the screen that should feel
+  earned. A hairline of gold separates the number from the totals under it,
+  the only ornament on the screen.
+
+
 ### Changed — Settings goes gold; the trial moves onto the plan title
 
 - **Settings icons are gold**, replacing the iOS multicolour set tried in the

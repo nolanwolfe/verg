@@ -329,11 +329,10 @@ final class TimerViewModel: ObservableObject {
     private func presentTimeReclaimedMoment(for session: Session) {
         let calendar = Calendar.current
         let todaysSessions = storageService.sessions.filter { calendar.isDateInToday($0.date) }
-        let isFirstSessionToday = todaysSessions.count <= 1
         let todaySeconds = todaysSessions.reduce(0) { $0 + $1.activeDuration }
         timeReclaimedMoment = TimeReclaimed.moment(
+            sessionSeconds: session.activeDuration,
             todaySeconds: todaySeconds,
-            isFirstSessionToday: isFirstSessionToday,
             daysLit: storageService.stats.daysLit
         )
     }

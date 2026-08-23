@@ -127,26 +127,50 @@ final class TimeReclaimedAggregationTests: XCTestCase {
 
     // MARK: - Session-end card moment
 
-    func testMoment_FirstSessionToday_SplitsIntoNumberAndFraming() {
-        let moment = TimeReclaimed.moment(todaySeconds: 12 * 60, isFirstSessionToday: true, daysLit: 4)
+    func testMoment_FirstSessionOfDay_ShowsTheSessionAndNoDayTotal() {
+        // The card says "Your session", so the number is the session's own —
+        // and on the first of the day the running total would only repeat it.
+        let moment = TimeReclaimed.moment(sessionSeconds: 12 * 60, todaySeconds: 12 * 60, daysLit: 4)
         XCTAssertEqual(moment.minutes, 12)
-        XCTAssertEqual(moment.leadingText, "You wrote for")
-        XCTAssertEqual(moment.trailingText, "instead of scrolling.")
-        XCTAssertEqual(moment.daysLit, 4)
-        XCTAssertEqual(moment.accessibleSentence, "You wrote for 12 minutes instead of scrolling.")
+        XCTAssertNil(moment.todayLine)
+        XCTAssertEqual(moment.unit, "minutes")
+        XCTAssertEqual(moment.daysLitLine, "4 days lit 🕯️")
+        XCTAssertEqual(moment.accessibleSentence,
+                       "Your session: 12 minutes instead of scrolling. 4 days lit 🕯️")
     }
 
-    func testMoment_SecondSessionToday_ReportsRunningTotal() {
-        let moment = TimeReclaimed.moment(todaySeconds: 25 * 60, isFirstSessionToday: false, daysLit: 1)
-        XCTAssertEqual(moment.minutes, 25)
-        XCTAssertEqual(moment.leadingText, "You've written")
-        XCTAssertEqual(moment.trailingText, "today.")
+    func testMoment_LaterSessionOfDay_ReportsSessionThenDayTotal() {
+        // 24 minutes just now, 41 across the day. The headline number must be
+        // the session, never the total — this is the case the old model got
+        // wrong, showing the day's figure under a per-session heading.
+        let moment = TimeReclaimed.moment(sessionSeconds: 24 * 60, todaySeconds: 41 * 60, daysLit: 2)
+        XCTAssertEqual(moment.minutes, 24)
+        XCTAssertEqual(moment.todayLine, "41 minutes today")
+    }
+
+    func testMoment_SingularMinute() {
+        let moment = TimeReclaimed.moment(sessionSeconds: 60, todaySeconds: 60, daysLit: 1)
+        XCTAssertEqual(moment.unit, "minute")
+        // One day is a start, not yet a run: no emoji until two.
+        XCTAssertEqual(moment.daysLitLine, "1 day lit")
+    }
+
+    func testMoment_UnlitCandle_HasNoDaysLitLine() {
+        let moment = TimeReclaimed.moment(sessionSeconds: 10 * 60, todaySeconds: 10 * 60, daysLit: 0)
+        XCTAssertNil(moment.daysLitLine)
     }
 
     func testMoment_SubMinute_ZeroMinutesWithNeutralCopy() {
-        let moment = TimeReclaimed.moment(todaySeconds: 20, isFirstSessionToday: true, daysLit: 0)
+        let moment = TimeReclaimed.moment(sessionSeconds: 20, todaySeconds: 20, daysLit: 0)
         XCTAssertEqual(moment.minutes, 0)
-        XCTAssertEqual(moment.accessibleSentence, "You wrote for less than a minute today.")
+        XCTAssertEqual(moment.accessibleSentence, "Your session ran less than a minute.")
+    }
+
+    func testMoment_DayTotalEqualToSessionIsNotShownTwice() {
+        // Rounding can make a later session's total match the session itself;
+        // repeating the same figure under it would read as a bug.
+        let moment = TimeReclaimed.moment(sessionSeconds: 30 * 60, todaySeconds: 30 * 60, daysLit: 3)
+        XCTAssertNil(moment.todayLine)
     }
 }
 
