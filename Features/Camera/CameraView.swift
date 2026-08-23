@@ -115,7 +115,7 @@ struct CameraView: View {
             Spacer()
 
             ZStack {
-                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium, style: .continuous)
                     .fill(Theme.Colors.cardBackground)
                     .aspectRatio(3/4, contentMode: .fit)
                     .padding(.horizontal, Theme.Spacing.md)
@@ -164,8 +164,8 @@ struct CameraView: View {
                 })
                 .overlay {
                     if let focusPoint {
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color(hex: "FF9500"), lineWidth: 1.5)
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .stroke(Theme.Colors.flameOuter, lineWidth: 1.5)
                             .frame(width: 70, height: 70)
                             .scaleEffect(focusRingScale)
                             .opacity(focusRingOpacity)

@@ -32,7 +32,7 @@ struct TimerView: View {
                 )
                 .scaleEffect(1.9)
                 .shadow(
-                    color: Color(hex: "FF9500").opacity(0.5 * viewModel.progress + glowPulse * 0.08),
+                    color: Theme.Colors.flameOuter.opacity(0.5 * viewModel.progress + glowPulse * 0.08),
                     radius: 50, x: 0, y: 0
                 )
                 .position(x: geo.size.width / 2, y: geo.size.height * 0.40)
@@ -184,7 +184,7 @@ struct TimerView: View {
                     Button { viewModel.cancelSession() } label: {
                         Image(systemName: "xmark")
                             .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(Color(hex: "FF9500").opacity(0.5))
+                            .foregroundColor(Theme.Colors.flameOuter.opacity(0.5))
                             .frame(width: 44, height: 44)
                     }
                     Spacer()
@@ -200,8 +200,8 @@ struct TimerView: View {
                     .font(Theme.Typography.timerDisplay)
                     .foregroundColor(.white)
                     .monospacedDigit()
-                    .shadow(color: Color(hex: "FF9500").opacity((0.5 + 0.3 * viewModel.progress) * (0.6 + glowPulse * 0.4)), radius: 14, x: 0, y: 0)
-                    .shadow(color: Color(hex: "FFCC00").opacity(0.25 * viewModel.progress), radius: 5, x: 0, y: 0)
+                    .shadow(color: Theme.Colors.flameOuter.opacity((0.5 + 0.3 * viewModel.progress) * (0.6 + glowPulse * 0.4)), radius: 14, x: 0, y: 0)
+                    .shadow(color: Theme.Colors.flameInner.opacity(0.25 * viewModel.progress), radius: 5, x: 0, y: 0)
                     .frame(maxWidth: .infinity)
                     .position(x: geo.size.width / 2, y: geo.size.height * 0.19)
             }

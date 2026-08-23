@@ -3,6 +3,68 @@
 All notable changes to Verg are logged here as they're made. Dates are
 when the change was written, not necessarily released.
 
+## [Unreleased] — build 19 (Library redesign, book customization, tab bar)
+
+A new Library tab that carries the whole record of the writing — the
+year-by-year ledger, finished books, a GitHub-style days-lit heatmap,
+the stat grid, and the full page-milestone ladder out to one million
+pages. Journal becomes just the current journal. Books gain rename and
+cover-color customization. The tab bar hides on scroll-down and returns
+on scroll-up on the Library screen.
+
+### Added — Library
+- New **Library** tab (replaces Stats in the tab order: Verg · Journal ·
+  Write · Library · Settings). Black-and-white archive aesthetic — the
+  only warmth on this screen is what the user's pages earned.
+- **Year by Year** ledger: every year of writing with proportional bars
+  and page counts.
+- **Books shelf** moved here from Journal (see Journal below).
+- **Days Lit heatmap**: GitHub-style contribution grid in monochrome ink
+  — fixed 11pt cells, horizontally scrollable across the last 12 months,
+  anchored to the newest week, month labels riding above the grid and
+  Mon/Wed/Fri gutter pinned left. Written days climb white by page count;
+  relit days keep their open-ring distinction, never rendered as written.
+- **Stat grid**: Days Lit (always free), Total Pages, Longest Run, Time
+  Reclaimed, This Week (+delta vs last week), Avg Session, Pages This
+  Month, Best Day. Locked tiles redact their value and open the paywall.
+- **Milestones ladder** listed in full at the bottom: 10 → 25 → 50 → 100
+  → 250 → 500 → 1,000 → 2,500 → 5,000 → 10,000 → 25,000 → 50,000 →
+  100,000 → 250,000 → 500,000 → 1,000,000 pages. Earned rows solid white
+  with "earned", unearned show "N to go" with a thin progress underline
+  on the next threshold.
+
+### Changed — Journal
+- Journal tab is now only the current journal: header ("Your Journal"),
+  page-count subtitle, and the pages grid. No books shelf.
+- Tab order rearranged so Write sits center: Verg · Journal · Write ·
+  Library · Settings.
+
+### Added — book customization
+- Books can be renamed (40-character cap) and given a cover color from a
+  seven-swatch palette (leather default, walnut, oxblood, forest, indigo,
+  charcoal, gold-tan). Live cover preview in the customize sheet; also
+  reachable from inside a book via Rename & Color.
+- `Book.colorIndex` persists through tolerant decoding — existing books
+  default to leather and keep their look.
+- Long titles truncate cleanly on covers: two lines, auto-shrink, tail
+  ellipsis.
+
+### Added — auto-hiding tab bar
+- On Library, scrolling down fades/slides the tab bar away; scrolling up
+  brings it back. Preference-key offset reader with a top-of-page bounce
+  guard. Write and Verg never hide it.
+
+### Fixed
+- Heatmap day placement: previous implementation used `LazyHGrid`
+  (row-major) fed column-major data — days rendered into scrambled cells.
+  Rebuilt as explicit week columns.
+- Tapping a book on Library now opens its detail view (page browsing);
+  previously it opened the customize sheet directly.
+
+### Changed — timer durations
+- Presets are now 5 / 10 / 15 minutes ahead of the custom MM:SS field
+  (20-minute preset removed). Default remains 10 minutes.
+
 ## [Unreleased] — build 18 (voice, terraces, and volumes — part one)
 
 A defined narrative voice across the app's copy, a revised days-lit

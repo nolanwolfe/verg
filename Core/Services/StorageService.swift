@@ -254,6 +254,29 @@ final class StorageService: ObservableObject {
         saveBooks()
     }
 
+    /// Rename a book (titles cap at 40 characters so covers stay legible)
+    func renameBook(id: UUID, to title: String) {
+        let trimmed = title.trimmingCharacters(in: .whitespaces)
+        guard let index = books.firstIndex(where: { $0.id == id }),
+              !trimmed.isEmpty else { return }
+        books[index].title = String(trimmed.prefix(40))
+        saveBooks()
+    }
+
+    /// Set a book's cover color (index into BookCoverView.palette)
+    func setBookColor(id: UUID, colorIndex: Int) {
+        guard let index = books.firstIndex(where: { $0.id == id }) else { return }
+        books[index].colorIndex = colorIndex
+        saveBooks()
+    }
+
+    /// Set a book's note — a short memory line, capped so it stays a line, not a page
+    func setBookNote(id: UUID, note: String) {
+        guard let index = books.firstIndex(where: { $0.id == id }) else { return }
+        books[index].note = String(note.prefix(80))
+        saveBooks()
+    }
+
     /// Get image for a session (cached, full resolution)
     func getImage(for session: Session) -> UIImage? {
         let key = session.imagePath as NSString

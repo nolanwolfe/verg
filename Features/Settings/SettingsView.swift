@@ -178,7 +178,7 @@ struct SettingsView: View {
                 SettingsButtonRow(
                     icon: "sparkles",
                     iconColor: Theme.Colors.accent,
-                    title: "Upgrade — On the Verg of Becoming",
+                    title: "The Ascent",
                     action: { viewModel.showPaywall = true }
                 )
 
@@ -337,7 +337,7 @@ struct SettingsView: View {
                     .ignoresSafeArea()
 
                 VStack(spacing: Theme.Spacing.lg) {
-                    Text("Enter the access code you received to unlock unlimited access to Verg.")
+                    Text("Enter the access code you received. The full ascent, on us.")
                         .font(Theme.Typography.body)
                         .foregroundColor(Theme.Colors.secondaryText)
                         .multilineTextAlignment(.center)
@@ -425,7 +425,7 @@ struct SettingsView: View {
                         } label: {
                             HStack {
                                 Image(systemName: sound.icon)
-                                    .foregroundColor(Color(hex: "FF9500"))
+                                    .foregroundColor(Theme.Colors.flameOuter)
                                     .frame(width: 24)
                                 Text(sound.displayName)
                                     .font(Theme.Typography.body)

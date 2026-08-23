@@ -229,7 +229,7 @@ struct DayCell: View {
                     .frame(width: 6, height: 6)
             } else if isRelit {
                 Circle()
-                    .strokeBorder(Color(hex: "FF9500"), lineWidth: 1.5)
+                    .strokeBorder(Theme.Colors.flameOuter, lineWidth: 1.5)
                     .frame(width: 6, height: 6)
             } else {
                 Circle()

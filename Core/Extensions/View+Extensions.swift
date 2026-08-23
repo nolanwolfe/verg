@@ -34,7 +34,7 @@ extension View {
             .background(Theme.Colors.cardBackground)
             .cornerRadius(Theme.CornerRadius.medium)
             .overlay(
-                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium, style: .continuous)
                     .stroke(Theme.Colors.accent, lineWidth: 1)
             )
     }
@@ -178,7 +178,7 @@ struct SecondaryButtonStyle: ButtonStyle {
             .background(Theme.Colors.cardBackground)
             .cornerRadius(Theme.CornerRadius.medium)
             .overlay(
-                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium, style: .continuous)
                     .stroke(Theme.Colors.accent, lineWidth: 1)
             )
             .opacity(configuration.isPressed ? 0.8 : 1.0)

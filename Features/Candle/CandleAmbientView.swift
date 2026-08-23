@@ -86,7 +86,7 @@ struct CandleAmbientView: View {
                 CandleView(progress: 1.0, isBurning: true)
                     .scaleEffect(1.9)
                     .shadow(
-                        color: Color(hex: "FF9500").opacity(0.5 * brightness + glowPulse * 0.08),
+                        color: Theme.Colors.flameOuter.opacity(0.5 * brightness + glowPulse * 0.08),
                         radius: 50, x: 0, y: 0
                     )
                 Spacer()
@@ -104,7 +104,7 @@ struct CandleAmbientView: View {
             // Label
             Text("candlelight")
                 .font(.system(size: 13, weight: .ultraLight, design: .serif))
-                .foregroundColor(Color(hex: "FF9500").opacity(0.45))
+                .foregroundColor(Theme.Colors.flameOuter.opacity(0.45))
                 .tracking(5)
                 .padding(.top, 64)
 
@@ -121,7 +121,7 @@ struct CandleAmbientView: View {
             HStack(spacing: 14) {
                 Image(systemName: "sun.min")
                     .font(.system(size: 13, weight: .light))
-                    .foregroundColor(Color(hex: "FF9500").opacity(0.5))
+                    .foregroundColor(Theme.Colors.flameOuter.opacity(0.5))
 
                 Slider(value: $brightness, in: 0.1...1.0)
                     .tint(Color(hex: "FFAA00"))
@@ -129,7 +129,7 @@ struct CandleAmbientView: View {
 
                 Image(systemName: "sun.max")
                     .font(.system(size: 17, weight: .light))
-                    .foregroundColor(Color(hex: "FF9500").opacity(0.8))
+                    .foregroundColor(Theme.Colors.flameOuter.opacity(0.8))
             }
             .padding(.horizontal, 40)
             .padding(.vertical, 14)
@@ -138,7 +138,7 @@ struct CandleAmbientView: View {
                     .fill(Color.black.opacity(0.35))
                     .overlay(
                         Capsule()
-                            .strokeBorder(Color(hex: "FF9500").opacity(0.15), lineWidth: 0.5)
+                            .strokeBorder(Theme.Colors.flameOuter.opacity(0.15), lineWidth: 0.5)
                     )
             )
             .padding(.horizontal, 32)

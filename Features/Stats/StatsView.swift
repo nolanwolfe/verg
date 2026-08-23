@@ -85,7 +85,7 @@ struct StatsView: View {
     private var ambientGlow: some View {
         RadialGradient(
             colors: [
-                Color(hex: "FF9500").opacity(0.10),
+                Theme.Colors.flameOuter.opacity(0.10),
                 Color(hex: "FF7000").opacity(0.04),
                 Color.clear
             ],
@@ -195,7 +195,7 @@ struct StatsView: View {
                             Image(systemName: "lock.fill")
                                 .font(.system(size: 20))
                                 .foregroundColor(Theme.Colors.primaryText)
-                            Text("Unlock to view.")
+                            Text("Included with The Ascent.")
                                 .font(Theme.Typography.caption)
                                 .foregroundColor(Theme.Colors.primaryText)
                         }
@@ -219,12 +219,12 @@ struct StatsView: View {
             .font(.system(size: 20))
             .foregroundStyle(
                 LinearGradient(
-                    colors: [Color(hex: "FFCC00"), Color(hex: "FF9500")],
+                    colors: [Theme.Colors.flameInner, Theme.Colors.flameOuter],
                     startPoint: .top,
                     endPoint: .bottom
                 )
             )
-            .shadow(color: Color(hex: "FF9500").opacity(0.35), radius: 6)
+            .shadow(color: Theme.Colors.flameOuter.opacity(0.35), radius: 6)
     }
 
     // MARK: - Weekly Goal Card
@@ -429,7 +429,7 @@ struct LockedFeatureCard: View {
                     .font(.system(size: 22))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [Color(hex: "FFCC00"), Color(hex: "FF9500")],
+                            colors: [Theme.Colors.flameInner, Theme.Colors.flameOuter],
                             startPoint: .top,
                             endPoint: .bottom
                         )

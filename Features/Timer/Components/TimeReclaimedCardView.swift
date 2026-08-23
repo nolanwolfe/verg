@@ -16,7 +16,7 @@ struct TimeReclaimedCardView: View {
                 .ignoresSafeArea()
 
             RadialGradient(
-                colors: [Color(hex: "FF9500").opacity(0.28), Color.clear],
+                colors: [Theme.Colors.flameOuter.opacity(0.28), Color.clear],
                 center: .center,
                 startRadius: 10,
                 endRadius: 280

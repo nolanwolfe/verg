@@ -213,7 +213,7 @@ struct NativePaywallView: View {
                 title: "Yearly",
                 price: viewModel.yearlyMonthlyEquivalentPrice,
                 period: "/mo",
-                badge: "Best Value",
+                badge: nil,
                 subtitle: viewModel.yearlySubtitle,
                 isSelected: viewModel.selectedPlan == .yearly,
                 onTap: { viewModel.selectPlan(.yearly) }

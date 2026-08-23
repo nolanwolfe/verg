@@ -149,8 +149,8 @@ struct DurationOption: Identifiable, Equatable {
     let label: String
 
     static let allOptions: [DurationOption] = [
+        DurationOption(duration: 300,  label: "5 minutes"),
         DurationOption(duration: 600,  label: "10 minutes"),
-        DurationOption(duration: 900,  label: "15 minutes"),
-        DurationOption(duration: 1200, label: "20 minutes")
+        DurationOption(duration: 900,  label: "15 minutes")
     ]
 }

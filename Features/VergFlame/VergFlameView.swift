@@ -107,7 +107,7 @@ struct VergFlameView: View {
                 CandleView(progress: 1.0, isBurning: true)
                     .scaleEffect(1.9)
                     .shadow(
-                        color: Color(hex: "FF9500").opacity(0.5 * brightness + glowPulse * 0.08),
+                        color: Theme.Colors.flameOuter.opacity(0.5 * brightness + glowPulse * 0.08),
                         radius: 50, x: 0, y: 0
                     )
                 Spacer()
@@ -123,7 +123,7 @@ struct VergFlameView: View {
         VStack {
             Text(phrases[phraseIndex])
                 .font(.system(size: 13, weight: .ultraLight, design: .serif))
-                .foregroundColor(Color(hex: "FF9500").opacity(0.45))
+                .foregroundColor(Theme.Colors.flameOuter.opacity(0.45))
                 .tracking(5)
                 .multilineTextAlignment(.center)
                 .padding(.top, 64)

@@ -99,6 +99,9 @@ final class TimerViewModel: ObservableObject {
     func startTimer(duration: TimeInterval? = nil) {
         let duration = duration ?? storageService.settings.timerDuration
 
+        // Impact as the candle catches — the ritual's tactile beat
+        audioService.playImpact(.medium)
+
         // Play start bell if sound enabled
         if storageService.settings.soundEnabled {
             audioService.playStartBell()
@@ -234,6 +237,7 @@ final class TimerViewModel: ObservableObject {
         if let milestone = AchievementService.shared.checkForNewMilestones(
             totalSessions: storageService.stats.totalSessions
         ) {
+            audioService.playHaptic(UINotificationFeedbackGenerator.FeedbackType.success)
             celebratedMilestone = milestone
             return
         }
@@ -264,6 +268,7 @@ final class TimerViewModel: ObservableObject {
     private func presentNextCelebrationOrTimeReclaimed(for session: Session) {
         if let goalMilestone = pendingGoalMilestone {
             pendingGoalMilestone = nil
+            audioService.playHaptic(UINotificationFeedbackGenerator.FeedbackType.success)
             celebratedGoalMilestone = goalMilestone
             return
         }

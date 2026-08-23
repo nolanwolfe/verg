@@ -319,7 +319,7 @@ final class SettingsViewModel: ObservableObject {
     func shareApp() {
         let url = URL(string: "https://apps.apple.com/app/id6758077555")!
         let activityVC = UIActivityViewController(
-            activityItems: ["Check out Verg - a journaling timer app!", url],
+            activityItems: ["Verg — light a candle. Write until it burns out.", url],
             applicationActivities: nil
         )
 

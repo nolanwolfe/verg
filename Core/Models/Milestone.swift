@@ -11,7 +11,8 @@ struct Milestone: Identifiable, Codable, Equatable {
 }
 
 extension Milestone {
-    /// All page milestones, ascending
+    /// All page milestones, ascending — the full ladder out to a million
+    /// pages. A career of mornings, listed in full on the Library tab.
     static let all: [Milestone] = [
         Milestone(threshold: 10, title: "10 Pages", icon: "book.closed.fill"),
         Milestone(threshold: 25, title: "25 Pages", icon: "books.vertical.fill"),
@@ -19,7 +20,16 @@ extension Milestone {
         Milestone(threshold: 100, title: "100 Pages", icon: "star.fill"),
         Milestone(threshold: 250, title: "250 Pages", icon: "crown.fill"),
         Milestone(threshold: 500, title: "500 Pages", icon: "laurel.leading"),
-        Milestone(threshold: 1000, title: "1,000 Pages", icon: "trophy.fill")
+        Milestone(threshold: 1_000, title: "1,000 Pages", icon: "trophy.fill"),
+        Milestone(threshold: 2_500, title: "2,500 Pages", icon: "trophy.fill"),
+        Milestone(threshold: 5_000, title: "5,000 Pages", icon: "trophy.fill"),
+        Milestone(threshold: 10_000, title: "10,000 Pages", icon: "trophy.fill"),
+        Milestone(threshold: 25_000, title: "25,000 Pages", icon: "trophy.fill"),
+        Milestone(threshold: 50_000, title: "50,000 Pages", icon: "trophy.fill"),
+        Milestone(threshold: 100_000, title: "100,000 Pages", icon: "trophy.fill"),
+        Milestone(threshold: 250_000, title: "250,000 Pages", icon: "trophy.fill"),
+        Milestone(threshold: 500_000, title: "500,000 Pages", icon: "trophy.fill"),
+        Milestone(threshold: 1_000_000, title: "1,000,000 Pages", icon: "trophy.fill")
     ]
 
     /// The next milestone still ahead of the given page count
@@ -45,5 +55,12 @@ extension Milestone {
     /// Milestones newly crossed given the current count and what's already unlocked
     static func newlyCrossed(totalSessions: Int, unlocked: Set<Int>) -> [Milestone] {
         all.filter { $0.threshold <= totalSessions && !unlocked.contains($0.threshold) }
+    }
+
+    /// "1,000" — grouped thousands, no unit
+    static func formattedThreshold(_ threshold: Int) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        return formatter.string(from: NSNumber(value: threshold)) ?? "\(threshold)"
     }
 }

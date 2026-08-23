@@ -59,7 +59,7 @@ struct CoachMarkNoticeView: View {
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, Theme.Spacing.sm)
                                 .background(
-                                    RoundedRectangle(cornerRadius: Theme.CornerRadius.small)
+                                    RoundedRectangle(cornerRadius: Theme.CornerRadius.small, style: .continuous)
                                         .stroke(Theme.Colors.secondaryText.opacity(0.4), lineWidth: 1)
                                 )
                         }
@@ -82,7 +82,7 @@ struct CoachMarkNoticeView: View {
             .padding(Theme.Spacing.lg)
             .padding(.vertical, Theme.Spacing.md)
             .background(
-                RoundedRectangle(cornerRadius: Theme.CornerRadius.large)
+                RoundedRectangle(cornerRadius: Theme.CornerRadius.large, style: .continuous)
                     .fill(Theme.Colors.cardBackground)
             )
             .padding(.horizontal, Theme.Spacing.lg)

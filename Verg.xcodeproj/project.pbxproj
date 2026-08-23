@@ -71,6 +71,8 @@
 		A10000010000000000000052 /* OnboardingStepViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000052 /* OnboardingStepViews.swift */; };
 		A10000010000000000000053 /* CandleRelight.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000053 /* CandleRelight.swift */; };
 		A10000010000000000000054 /* Terrace.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000054 /* Terrace.swift */; };
+		A10000010000000000000055 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000055 /* LibraryView.swift */; };
+		A10000010000000000000057 /* TabBarAutoHide.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000057 /* TabBarAutoHide.swift */; };
 		B149AD1EF9111F56CF2898BD /* MilestoneLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3F6D131429DF832DEC156D /* MilestoneLogicTests.swift */; };
 		B8D3EDEFD64E0B0FFDB2309A /* CandleDaysLitStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85EC2041E044532B57A5617A /* CandleDaysLitStateTests.swift */; };
 		DBF85CC00BAB63176ADB9C70 /* ProductIdentifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D95EF34BEA0EECAB4880F8D /* ProductIdentifiers.swift */; };
@@ -158,6 +160,8 @@
 		A20000010000000000000052 /* OnboardingStepViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStepViews.swift; sourceTree = "<group>"; };
 		A20000010000000000000053 /* CandleRelight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandleRelight.swift; sourceTree = "<group>"; };
 		A20000010000000000000054 /* Terrace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Terrace.swift; sourceTree = "<group>"; };
+		A20000010000000000000055 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
+		A20000010000000000000057 /* TabBarAutoHide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabBarAutoHide.swift; sourceTree = "<group>"; };
 		ACC785888D739156328E98A1 /* TerraceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TerraceTests.swift; sourceTree = "<group>"; };
 		BA85F0D61ED1E6AE8A4E80C4 /* VergTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VergTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0E9AAF30597470AE40B5615 /* SessionGatingService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionGatingService.swift; path = Core/Services/SessionGatingService.swift; sourceTree = "<group>"; };
@@ -241,6 +245,7 @@
 				A20000010000000000000001 /* VergApp.swift */,
 				A20000010000000000000002 /* ContentView.swift */,
 				A20000010000000000000034 /* CustomTabBar.swift */,
+				A20000010000000000000057 /* TabBarAutoHide.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -267,6 +272,7 @@
 				A40000010000000000000014 /* Paywall */,
 				A40000010000000000000015 /* Settings */,
 				A40000010000000000000016 /* Stats */,
+				A40000010000000000000056 /* Library */,
 				A40000010000000000000017 /* Timer */,
 				A40000010000000000000022 /* VergFlame */,
 			);
@@ -452,6 +458,14 @@
 				A20000010000000000000035 /* VergFlameView.swift */,
 			);
 			path = VergFlame;
+			sourceTree = "<group>";
+		};
+		A40000010000000000000056 /* Library */ = {
+			isa = PBXGroup;
+			children = (
+				A20000010000000000000055 /* LibraryView.swift */,
+			);
+			path = Library;
 			sourceTree = "<group>";
 		};
 		A40000010000000000000023 /* Journal */ = {
@@ -653,6 +667,8 @@
 				A10000010000000000000052 /* OnboardingStepViews.swift in Sources */,
 				A10000010000000000000053 /* CandleRelight.swift in Sources */,
 				A10000010000000000000054 /* Terrace.swift in Sources */,
+				A10000010000000000000055 /* LibraryView.swift in Sources */,
+				A10000010000000000000057 /* TabBarAutoHide.swift in Sources */,
 				A10000010000000000000024 /* StatsView.swift in Sources */,
 				A10000010000000000000025 /* StatsViewModel.swift in Sources */,
 				A10000010000000000000026 /* CandleView.swift in Sources */,

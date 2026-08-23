@@ -50,7 +50,7 @@ struct OnboardingWhatThisIsView: View {
 
             CandleView(progress: 1.0, isBurning: true)
                 .frame(height: 260)
-                .shadow(color: Color(hex: "FF9500").opacity(0.4), radius: 30)
+                .shadow(color: Theme.Colors.flameOuter.opacity(0.4), radius: 30)
 
             Text(AppStrings.Onboarding.whatThisIsLine)
                 .font(Theme.Typography.largeTitle)
@@ -141,7 +141,7 @@ struct OnboardingCommitmentView: View {
                         .background(Theme.Colors.cardBackground)
                         .cornerRadius(Theme.CornerRadius.small)
                         .overlay(
-                            RoundedRectangle(cornerRadius: Theme.CornerRadius.small)
+                            RoundedRectangle(cornerRadius: Theme.CornerRadius.small, style: .continuous)
                                 .stroke(
                                     selectedDaysPerWeek == days ? Theme.Colors.accent : Color.clear,
                                     lineWidth: 2

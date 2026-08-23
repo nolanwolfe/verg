@@ -160,6 +160,29 @@ final class StatsViewModel: ObservableObject {
         loadData()
     }
 
+    func renameBook(_ book: Book, to title: String) {
+        storageService.renameBook(id: book.id, to: title)
+        loadData()
+    }
+
+    func setBookColor(_ book: Book, colorIndex: Int) {
+        storageService.setBookColor(id: book.id, colorIndex: colorIndex)
+        loadData()
+    }
+
+    func setBookNote(_ book: Book, note: String) {
+        storageService.setBookNote(id: book.id, note: note)
+        loadData()
+    }
+
+    /// Per-year page counts, oldest year first — the year-after-year record.
+    func pageCountsByYear() -> [(year: Int, pages: Int)] {
+        let calendar = Calendar.current
+        let grouped = Dictionary(grouping: sessions) { calendar.component(.year, from: $0.date) }
+        return grouped.map { (year: $0.key, pages: $0.value.count) }
+            .sorted { $0.year < $1.year }
+    }
+
     func sessions(for book: Book) -> [Session] {
         storageService.sessions(for: book)
     }

@@ -23,15 +23,16 @@ struct HomeView: View {
             Theme.Colors.background
                 .ignoresSafeArea()
 
-            // Candle — anchored to top, respects status bar
-            VStack(spacing: 0) {
+            // Candle — smaller still, with generous quiet space around it
+            // rather than pinned flush to the top (same positioning idea
+            // as the running timer's candle in TimerView).
+            GeometryReader { geo in
                 CandleView(progress: 1.0, isBurning: true, daysLit: viewModel.daysLit)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 320)
-                    .shadow(color: Color(hex: "FF9500").opacity(0.4), radius: 30)
-                Spacer()
+                    .frame(height: 170)
+                    .shadow(color: Theme.Colors.flameOuter.opacity(0.4), radius: 30)
+                    .position(x: geo.size.width / 2, y: geo.size.height * 0.32)
             }
-            .padding(.top, 44)
+            .ignoresSafeArea()
 
             // Days lit + button — anchored well below candle
             VStack(spacing: 0) {
@@ -117,7 +118,7 @@ struct HomeView: View {
                     )
             }
 
-            Text("🕯️ \(viewModel.sessionsTodayText)")
+            Text("\(viewModel.sessionsTodayText)")
                 .font(Theme.Typography.subheadline)
                 .foregroundColor(Theme.Colors.secondaryText)
         }

@@ -2,41 +2,39 @@
 
 ## App Store "What's New" draft
 
-**Verg 2.2 — Your journal, leveled up.**
+**Verg 2.2 — Light a candle. Write until it burns out.**
 
-- **Books** — finish a journal, give it a name, and start a fresh one. Your
-  collection lives on a shelf in the Journal tab.
-- **Milestone rewards** — celebrate 10, 25, 50, 100, 250, 500, and 1,000 pages
-  with a little fire.
-- **New Stats tab** — swipe through your streak, total pages, longest streak,
-  and milestone progress.
-- **Ambient sounds (Pro)** — rain, fireplace, or deep focus while you write.
+- **Library** — a new tab that holds the whole record of your writing:
+  year-by-year totals, finished books, every stat, and the full
+  milestone ladder out to one million pages.
+- **Days lit heatmap** — a full year of writing at a glance, in ink.
+  Scroll back through the months; brighter cells mean more pages that day.
+- **Books, customized** — rename any book and choose its cover color.
+  Books live on the Library tab now; the Journal tab is just your current
+  journal.
+- **Milestones** — the whole ladder listed plainly: 10 pages to
+  1,000,000. Earned rows stay lit; the next one shows how far you have to go.
+- **Time Reclaimed** — see the minutes you spent writing instead of
+  scrolling, this week and all-time.
+- **Ambient sounds (Ascent)** — rain, fireplace, or deep focus while you write.
 - **+5 more minutes** — candle burned out but you're still flowing? Relight it.
-- **Pick your session length right on the home screen.**
-- **Sharper page photos** — tap to focus, and close-up focus is fixed.
-- **Pinch to zoom** — zoom and pan any page in the fullscreen viewer, swipe
-  down to dismiss.
-- **Faster journal** — smoother scrolling and instant page browsing, even with
-  hundreds of pages.
-- **Time Reclaimed** — see how many minutes you spent writing instead of
-  scrolling, today and all-time, on the Stats tab.
+- **5, 10, or 15 minute sessions**, or set your own length.
+- **Sharper page photos** — tap to focus; close-up focus is fixed.
+- **Pinch to zoom** — zoom and pan any page; swipe down to dismiss.
+- **Faster journal** — smooth scrolling and instant page browsing, even
+  with hundreds of pages.
 - **New onboarding** — the Dante/Virgil epigraph, then five quick screens
-  (what Verg is, the ritual, your weekly commitment, an honest projection
-  of a year at that pace) leading into your first session and the paywall.
+  ending in an honest projection of a year at your pace.
 - **Write and save as much as you want, always free** — the last 7 days
-  of pages, days lit, and the calendar are free forever, no account.
-  **The Ascent** unlocks your full archive, Stats, prompts, ambient
-  sound, custom session length, and relights.
-- **Days lit, not streaks** — a missed day means the candle went out, not
-  a "streak broken." Ascent subscribers get one relight a week: a missed
-  day doesn't have to put the candle out, marked distinctly on the
-  calendar, never shown as if you wrote.
-- **Seven Terraces** — quiet milestones at 7, 14, 30, 60, 100, 200, and
-  365 days lit. No badges, no points — a marked day and one line of text.
-- **Weekly goal milestones** — commit to 3, 5, or 7 days a week during
-  onboarding and get celebrated for keeping the pace, alongside the
-  existing page-count milestones.
-- **Friendlier Stats tab** — warmer visuals, same numbers.
+  of pages, days lit, and the heatmap are free forever, no account.
+  **The Ascent** unlocks your full archive, stats, prompts, ambient
+  sound, custom session length, and relights ($7.99/month or $59.99/year,
+  3-day free trial on yearly).
+- **Days lit, not streaks** — a missed day means the candle went out,
+  not a "streak broken." Ascent includes one relight a week, marked on
+  the calendar as its own thing — never shown as if you wrote.
+- **Quiet milestones for days lit** — marked with a line of text after
+  the bell. No badges, no points.
 
 ## QA checklist before submission (needs a physical device)
 

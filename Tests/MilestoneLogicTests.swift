@@ -8,13 +8,17 @@ import XCTest
 final class MilestoneLogicTests: XCTestCase {
 
     func testThresholds() {
-        XCTAssertEqual(Milestone.all.map(\.threshold), [10, 25, 50, 100, 250, 500, 1000])
+        XCTAssertEqual(
+            Milestone.all.map(\.threshold),
+            [10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10_000, 25_000, 50_000, 100_000, 250_000, 500_000, 1_000_000]
+        )
     }
 
     func testNextMilestone() {
         XCTAssertEqual(Milestone.nextMilestone(after: 0)?.threshold, 10)
         XCTAssertEqual(Milestone.nextMilestone(after: 117)?.threshold, 250)
-        XCTAssertNil(Milestone.nextMilestone(after: 1000))
+        XCTAssertEqual(Milestone.nextMilestone(after: 1000)?.threshold, 2500)
+        XCTAssertNil(Milestone.nextMilestone(after: 1_000_000))
     }
 
     func testBackfillForExistingUser() {
@@ -35,6 +39,7 @@ final class MilestoneLogicTests: XCTestCase {
     func testProgressTowardNext() {
         // 117 pages: between 100 and 250 → (117-100)/(250-100)
         XCTAssertEqual(Milestone.progress(totalSessions: 117), 17.0 / 150.0, accuracy: 0.0001)
-        XCTAssertEqual(Milestone.progress(totalSessions: 1000), 1.0)
+        // Past the final milestone the ladder is complete
+        XCTAssertEqual(Milestone.progress(totalSessions: 1_000_000), 1.0)
     }
 }

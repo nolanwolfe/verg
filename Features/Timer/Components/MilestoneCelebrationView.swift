@@ -30,13 +30,13 @@ struct MilestoneCelebrationView: View {
 
             VStack(spacing: Theme.Spacing.lg) {
                 CandleFlameIcon(size: 48)
-                    .shadow(color: Color(hex: "FF9500").opacity(0.6), radius: 24)
+                    .shadow(color: Theme.Colors.flameOuter.opacity(0.6), radius: 24)
 
                 Image(systemName: icon)
                     .font(.system(size: 44))
                     .foregroundStyle(
                         LinearGradient(
-                            colors: [Color(hex: "FFCC00"), Color(hex: "FF9500")],
+                            colors: [Theme.Colors.flameInner, Theme.Colors.flameOuter],
                             startPoint: .top,
                             endPoint: .bottom
                         )

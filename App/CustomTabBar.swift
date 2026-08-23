@@ -5,26 +5,26 @@ struct CustomTabBar: View {
 
     var body: some View {
         HStack(spacing: 0) {
-            writeItem
+            standardItem(tab: .verg, icon: nil, label: "Verg")
             standardItem(tab: .journal, icon: "book.closed.fill", label: "Journal")
-            vergCandleItem
-            standardItem(tab: .stats, icon: "chart.bar.fill", label: "Stats")
+            writeItem
+            standardItem(tab: .library, icon: "books.vertical.fill", label: "Archive")
             standardItem(tab: .settings, icon: "gearshape.fill", label: "Settings")
         }
         .frame(height: 56)
         .padding(.horizontal, 8)
         .background(
-            RoundedRectangle(cornerRadius: 32)
+            RoundedRectangle(cornerRadius: 32, style: .continuous)
                 // Blur base
                 .fill(.ultraThinMaterial)
                 // Black tint — makes it dark liquid glass not grey
                 .overlay(
-                    RoundedRectangle(cornerRadius: 32)
+                    RoundedRectangle(cornerRadius: 32, style: .continuous)
                         .fill(Color.black.opacity(0.72))
                 )
                 // Specular highlight — thin strip of light at the very top
                 .overlay(
-                    RoundedRectangle(cornerRadius: 32)
+                    RoundedRectangle(cornerRadius: 32, style: .continuous)
                         .fill(
                             LinearGradient(
                                 colors: [
@@ -38,7 +38,7 @@ struct CustomTabBar: View {
                 )
                 // Edge border — glass rim catching light
                 .overlay(
-                    RoundedRectangle(cornerRadius: 32)
+                    RoundedRectangle(cornerRadius: 32, style: .continuous)
                         .strokeBorder(
                             LinearGradient(
                                 colors: [
@@ -63,15 +63,26 @@ struct CustomTabBar: View {
 
     // MARK: - Standard Tab Item
 
-    private func standardItem(tab: ContentView.Tab, icon: String, label: String) -> some View {
+    private func standardItem(tab: ContentView.Tab, icon: String?, label: String) -> some View {
         Button { selectedTab = tab } label: {
             VStack(spacing: 4) {
-                Image(systemName: icon)
-                    .font(.system(size: 19, weight: .medium))
-                    .foregroundColor(selectedTab == tab
-                        ? Theme.Colors.accent
-                        : Theme.Colors.secondaryText.opacity(0.45))
-                    .scaleEffect(selectedTab == tab ? 1.05 : 1.0)
+                if tab == .verg {
+                    CandleTabIcon(isSelected: selectedTab == .verg)
+                        .frame(width: 22, height: 31)
+                        .shadow(
+                            color: Theme.Colors.flameOuter.opacity(selectedTab == .verg ? 0.5 : 0.25),
+                            radius: 8
+                        )
+                        // Candle sits a touch taller — keep the row balanced
+                        .offset(y: -4)
+                } else {
+                    Image(systemName: icon ?? "")
+                        .font(.system(size: 19, weight: .medium))
+                        .foregroundColor(selectedTab == tab
+                            ? Theme.Colors.accent
+                            : Theme.Colors.secondaryText.opacity(0.45))
+                        .scaleEffect(selectedTab == tab ? 1.05 : 1.0)
+                }
 
                 Text(label)
                     .font(.system(size: 10, weight: selectedTab == tab ? .semibold : .regular))
@@ -79,6 +90,7 @@ struct CustomTabBar: View {
                         ? Theme.Colors.accent
                         : Theme.Colors.secondaryText.opacity(0.45))
             }
+            .offset(y: tab == .verg ? -3 : 0)
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
         }
@@ -106,31 +118,6 @@ struct CustomTabBar: View {
         }
         .buttonStyle(.plain)
         .animation(Theme.Animation.quick, value: selectedTab)
-    }
-
-    // MARK: - Verg Candle Tab
-
-    private var vergCandleItem: some View {
-        Button { selectedTab = .verg } label: {
-            VStack(spacing: 4) {
-                CandleTabIcon(isSelected: selectedTab == .verg)
-                    .frame(width: 22, height: 31)
-                    .shadow(
-                        color: Color(hex: "FF9500").opacity(selectedTab == .verg ? 0.5 : 0.25),
-                        radius: 8
-                    )
-
-                Text("Verg")
-                    .font(.system(size: 10, weight: selectedTab == .verg ? .semibold : .regular))
-                    .foregroundColor(selectedTab == .verg
-                        ? Color(hex: "FF9500")
-                        : Theme.Colors.secondaryText.opacity(0.45))
-            }
-            .offset(y: -6)
-            .frame(maxWidth: .infinity)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
     }
 }
 
@@ -187,7 +174,7 @@ struct CandleTabIcon: View {
             ZStack {
                 if isSelected {
                     Circle()
-                        .fill(Color(hex: "FF9500").opacity(glowOpacity))
+                        .fill(Theme.Colors.flameOuter.opacity(glowOpacity))
                         .frame(width: 18, height: 18)
                         .blendMode(.screen)
                 }
@@ -195,7 +182,7 @@ struct CandleTabIcon: View {
                     .fill(
                         LinearGradient(
                             colors: isSelected
-                                ? [Color(hex: "FF4500"), Color(hex: "FFCC00")]
+                                ? [Color(hex: "FF4500"), Theme.Colors.flameInner]
                                 : [Color(hex: "3A3A3A"), Color(hex: "2A2A2A")],
                             startPoint: .bottom,
                             endPoint: .top

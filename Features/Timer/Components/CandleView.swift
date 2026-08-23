@@ -200,7 +200,7 @@ struct CandleView: View {
 
     private var candleBody: some View {
         ZStack(alignment: .top) {
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .fill(
                     LinearGradient(
                         colors: [daysLitState.waxColor, daysLitState.waxColorDark, daysLitState.waxColor],
@@ -209,7 +209,7 @@ struct CandleView: View {
                 )
                 .frame(width: candleWidth, height: candleHeight)
 
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
                 .fill(
                     LinearGradient(
                         colors: [Color.white.opacity(0.4), Color.clear],
@@ -380,7 +380,7 @@ struct CandleFlameIcon: View {
             FlameShape()
                 .fill(
                     LinearGradient(
-                        colors: [Color(hex: "FF4500"), Color(hex: "FFCC00")],
+                        colors: [Color(hex: "FF4500"), Theme.Colors.flameInner],
                         startPoint: .bottom,
                         endPoint: .top
                     )

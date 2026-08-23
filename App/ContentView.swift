@@ -14,7 +14,7 @@ struct ContentView: View {
         case write
         case journal
         case verg
-        case stats
+        case library
         case settings
     }
 
@@ -121,12 +121,32 @@ struct ContentView: View {
 
     // MARK: - Main Tab View
 
+    /// The tab bar fades out as the user scrolls down and slides back in
+    /// on scroll-up — content gets the full screen while reading, chrome
+    /// returns the moment you head back up. The timer (Write) and candle
+    /// (Verg) screens never hide it: they have no scroll and the bar is
+    /// part of those rituals.
     private var mainTabView: some View {
         currentTabContent
+            .environment(\.tabBarVisibility, $tabBarVisibility)
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 CustomTabBar(selectedTab: $selectedTab)
+                    .opacity(tabBarOpacity)
+                    .offset(y: tabBarHidden ? 80 : 0)
+                    .animation(Theme.Animation.standard, value: tabBarHidden)
+                    .allowsHitTesting(!tabBarHidden)
             }
     }
+
+    private var tabBarHidden: Bool {
+        tabBarVisibility == .hidden
+    }
+
+    private var tabBarOpacity: Double {
+        tabBarHidden ? 0 : 1
+    }
+
+    @State private var tabBarVisibility: TabBarVisibility = .visible
 
     @ViewBuilder
     private var currentTabContent: some View {
@@ -138,8 +158,8 @@ struct ContentView: View {
         case .verg:
             VergFlameView()
                 .ignoresSafeArea()
-        case .stats:
-            StatsView()
+        case .library:
+            LibraryView()
         case .settings:
             SettingsView()
         }
