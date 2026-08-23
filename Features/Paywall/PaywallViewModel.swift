@@ -76,6 +76,13 @@ final class PaywallViewModel: ObservableObject {
         return AppStrings.Paywall.subtitle
     }
 
+    /// The line above the title. When the paywall was opened by tapping a
+    /// specific locked page, it names that page instead — "March 14th is
+    /// still here." earns its place over a generic instruction.
+    var leadText: String {
+        contextSubtitleDate == nil ? AppStrings.Paywall.lead : subtitleText
+    }
+
     // MARK: - Callbacks
     var onDismiss: (() -> Void)?
     var onSubscribed: (() -> Void)?
@@ -149,13 +156,13 @@ final class PaywallViewModel: ObservableObject {
         }
     }
 
-    /// e.g. "Start 3 days free" — built from the real offer text
-    /// ("3 days free"), never a hardcoded duration.
+    /// e.g. "The Golden Age — 3 days free". Built from the real trial length
+    /// reported by StoreKit, never a hardcoded duration.
     var ctaTitle: String {
         guard selectedPlanHasFreeTrial, let offer = yearlyIntroOffer else {
             return AppStrings.Paywall.ctaTitle
         }
-        return "\(AppStrings.Paywall.ctaTitle) — \(offer)"
+        return "\(AppStrings.Paywall.ctaTitle) — \(offer) free"
     }
 
     // MARK: - Initialization

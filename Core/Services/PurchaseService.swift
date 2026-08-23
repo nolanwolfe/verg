@@ -145,7 +145,10 @@ final class PurchaseService: ObservableObject {
                 let storeProduct = yearlyPkg.storeProduct
                 yearlyPrice = formattedPrice(storeProduct.price, using: storeProduct.priceFormatter)
                 yearlyMonthlyEquivalentPrice = formattedMonthlyEquivalent(storeProduct.price, using: storeProduct.priceFormatter)
-                if let intro = storeProduct.introductoryDiscount {
+                // Free trials only. A paid introductory price is still an
+                // "introductory discount", and calling one a free trial on
+                // the paywall would be a straightforward false claim.
+                if let intro = storeProduct.introductoryDiscount, intro.paymentMode == .freeTrial {
                     yearlyIntroOffer = intro.localizedSubscriptionPeriod
                 }
                 await refreshYearlyIntroEligibility()
@@ -204,6 +207,30 @@ final class PurchaseService: ObservableObject {
         do {
             products = try await Product.products(for: [ProductIdentifiers.monthly, ProductIdentifiers.yearly])
 
+            // Fallback: RevenueCat's offering metadata can arrive without the
+            // introductory offer even when App Store Connect has one attached
+            // to the product — a misconfigured offering then hides a trial the
+            // subscriber is genuinely entitled to. StoreKit is asked directly
+            // rather than assuming. This reads the real product; it never
+            // invents an offer, so a product with no trial still shows none.
+            if !isUsingStoreKitTesting, yearlyIntroOffer == nil,
+               let yearly = products.first(where: { $0.id == ProductIdentifiers.yearly }) {
+                yearlyIntroOffer = yearly.freeTrialPeriod
+                if yearlyIntroOffer != nil, let subscription = yearly.subscription {
+                    yearlyIntroEligible = await subscription.isEligibleForIntroOffer
+                }
+            }
+
+            #if DEBUG
+            let yearlyProduct = products.first { $0.id == ProductIdentifiers.yearly }
+            print("""
+            [Trial] offer=\(yearlyIntroOffer ?? "nil") \
+            eligible=\(yearlyIntroEligible) \
+            storeKitTrial=\(yearlyProduct?.freeTrialPeriod ?? "nil") \
+            productFound=\(yearlyProduct != nil)
+            """)
+            #endif
+
             guard isUsingStoreKitTesting else { return }
             for product in products {
                 if product.id == ProductIdentifiers.monthly {
@@ -215,7 +242,7 @@ final class PurchaseService: ObservableObject {
                         yearlyMonthlyEquivalentPrice = formattedMonthlyEquivalent(product.price, using: nil)
                         yearlyIntroEligible = await subscription.isEligibleForIntroOffer
                     }
-                    yearlyIntroOffer = product.introOfferDescription
+                    yearlyIntroOffer = product.freeTrialPeriod
                 }
             }
         } catch {
@@ -418,6 +445,29 @@ final class PurchaseService: ObservableObject {
 
 // MARK: - Product Extensions
 extension Product {
+    /// The free-trial length alone — "3 days".
+    ///
+    /// Bare period, deliberately: RevenueCat's path already yields just the
+    /// period while `introOfferDescription` yields "3 days free", and having
+    /// two sources emit two phrasings produced "3 days free free trial" on
+    /// whichever path the device happened to take. The paywall composes the
+    /// sentence; both sources supply only the length.
+    ///
+    /// Nil for a paid introductory price — that is an introductory offer but
+    /// not a free trial, and the paywall's wording would be false.
+    var freeTrialPeriod: String? {
+        guard let intro = subscription?.introductoryOffer,
+              intro.paymentMode == .freeTrial else { return nil }
+        let period = intro.period
+        switch period.unit {
+        case .day:   return period.value == 1 ? "1 day" : "\(period.value) days"
+        case .week:  return period.value == 1 ? "1 week" : "\(period.value) weeks"
+        case .month: return period.value == 1 ? "1 month" : "\(period.value) months"
+        case .year:  return period.value == 1 ? "1 year" : "\(period.value) years"
+        @unknown default: return nil
+        }
+    }
+
     /// Introductory offer description if available
     var introOfferDescription: String? {
         guard let intro = subscription?.introductoryOffer else { return nil }

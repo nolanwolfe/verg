@@ -12,6 +12,40 @@ pages. Journal becomes just the current journal. Books gain rename and
 cover-color customization. The tab bar hides on scroll-down and returns
 on scroll-up on the Library screen.
 
+### Changed — paywall header is one sentence; trial plumbing fixed
+
+The header now reads as a single thought broken across two weights: the
+instructions small on top, the title landing as its ending.
+
+> Put the phone down. Light the candle.
+> **Write what you are on the Verg 🕯️ of ______**
+
+Title above instructions made the blank read as a headline with a caption
+under it; this way the sentence completes into the blank. When the paywall
+was opened from a specific locked page, that page still gets the top line
+("March 14th is still here.") — naming the thing they reached for beats a
+generic instruction.
+
+**Two trial bugs, both found chasing "I don't see the free trial":**
+
+- The two sources disagreed on format. RevenueCat yields the bare period
+  ("3 days"); StoreKit's `introOfferDescription` yields "3 days free". The
+  paywall composed `"\(offer) free trial"` around it, so on the StoreKit path
+  it read **"3 days free free trial"**, and the CTA read "— 3 days" on the
+  other. Both sources now supply only the length via `freeTrialPeriod`, and
+  the paywall composes the sentence.
+- **A trial could be hidden entirely.** The offer was read only from
+  RevenueCat's offering metadata, which can arrive without the introductory
+  offer even when App Store Connect has one attached to the product. StoreKit
+  is now asked directly as a fallback. It reads the real product and never
+  invents an offer — a product with no trial still shows none.
+- A paid introductory price no longer counts as a free trial on either path.
+  It is an "introductory discount" to the API, and calling one a free trial
+  would be a false claim.
+- DEBUG builds log the trial state (`[Trial] offer=… eligible=…`) so a
+  missing trial can be diagnosed from the device console.
+
+
 ### Changed — the post-session reveal
 
 Reads **"Your session / 24 / minutes / instead of scrolling."** and carries

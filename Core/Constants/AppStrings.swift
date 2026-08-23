@@ -124,10 +124,18 @@ enum AppStrings {
 
     // MARK: - Paywall
     enum Paywall {
-        /// Left unfinished on purpose. "Becoming" answered the question for
-        /// the reader; the blank hands it back — whatever they are on the
-        /// verge of is the thing they'd be paying for.
-        static let title = "On the Verg 🕯️ of ______"
+        /// The header is one sentence broken across two weights. The
+        /// instructions come first, small, then the title lands as the end of
+        /// the same thought — read together it is "Put the phone down. Light
+        /// the candle. Write what you are on the Verg of ______".
+        ///
+        /// Left unfinished on purpose: naming the thing (it was "Becoming")
+        /// answered the question for the reader. The blank hands it back, and
+        /// whatever they fill in is what they'd be paying for.
+        static let lead = "Put the phone down. Light the candle."
+        static let title = "Write what you are on the Verg 🕯️ of ______"
+        /// Kept for the context-aware case, where the paywall opened from a
+        /// specific locked page and says so instead.
         static let subtitle = "Put the phone down. Light the candle. Write what you are."
         static let ctaTitle = "The Golden Age"
         static let contextSubtitleFormat = "%@ is still here."

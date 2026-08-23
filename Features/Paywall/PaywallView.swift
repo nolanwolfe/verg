@@ -223,14 +223,11 @@ struct NativePaywallView: View {
         VStack(spacing: Theme.Spacing.xs) {
             PaywallIcon()
 
-            Text(AppStrings.Paywall.title)
-                .font(Theme.Typography.title2)
-                .foregroundColor(GoldenPalette.primaryText)
-                .multilineTextAlignment(.center)
-                .lineLimit(2)
-                .minimumScaleFactor(0.85)
-
-            Text(viewModel.subtitleText)
+            // Lead first, title second: the two are one sentence, and the
+            // title is its ending. Reversing them — title above, instructions
+            // below — made the blank read as a headline with a caption under
+            // it rather than a thought completing.
+            Text(viewModel.leadText)
                 .font(Theme.Typography.footnote)
                 .foregroundColor(GoldenPalette.secondaryText)
                 .multilineTextAlignment(.center)
@@ -238,6 +235,15 @@ struct NativePaywallView: View {
                 // Without this the line gets offered a single-line width by
                 // the surrounding stack and truncates mid-sentence instead
                 // of wrapping to the second line it's allowed.
+                .fixedSize(horizontal: false, vertical: true)
+                .padding(.horizontal, Theme.Spacing.xs)
+
+            Text(AppStrings.Paywall.title)
+                .font(Theme.Typography.title2)
+                .foregroundColor(GoldenPalette.primaryText)
+                .multilineTextAlignment(.center)
+                .lineLimit(3)
+                .minimumScaleFactor(0.8)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, Theme.Spacing.xs)
         }
