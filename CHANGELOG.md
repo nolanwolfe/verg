@@ -3,6 +3,55 @@
 All notable changes to Verg are logged here as they're made. Dates are
 when the change was written, not necessarily released.
 
+## [Unreleased] — build 17 (paywall redesign)
+
+Full visual rebuild of the paywall ("The Ascent"), one screen, no
+scrolling down to iPhone SE.
+
+### Added
+- `PaywallCandleLogo`: small animated candle in the paywall header,
+  replacing the generic mountain icon. Reuses `FlameShape` from
+  `CandleView.swift` at a slower, calmer ~2.6s flicker loop (CandleView's
+  own loop is deliberately more energetic and too busy for a header
+  mark). Only the flame animates — the mark itself never bounces or
+  scales. Respects Reduce Motion (static flame when it's on).
+- `AscentPalette`: local, light-only warm-paper palette scoped to the
+  paywall screen only (`FFFCF6` background, not stark white) — the rest
+  of the app stays dark by design via `Theme.swift`.
+- Adaptive `isCompact` layout via `GeometryReader` — the "Also included"
+  line is the one thing that gets cut on a screen too short to fit
+  everything; the CTA and footer never do. Empirically, iPhone SE (the
+  smallest supported size) fits everything with room to spare, so the
+  cut threshold is set as a safety net below any real supported device
+  rather than something SE itself should trigger.
+
+### Fixed
+- Duplicate price display: each plan row previously showed its price
+  twice (once in the subtitle, once on the right). Now shown exactly
+  once, right-aligned — Yearly shows its per-month equivalence, Monthly
+  its plain monthly price. Trial/context text moved to the left subtitle
+  only, sourced from RevenueCat's real offer text, never hardcoded.
+- CTA label now correctly reflects trial eligibility, not just plan
+  selection — a lapsed subscriber (not intro-offer-eligible) sees plain
+  "Continue" even on Yearly, instead of falsely promising a trial they
+  can't get.
+- `VergProducts.storekit` had two stale bugs surfaced while testing this
+  redesign: product IDs were lowercase (`verg_monthly`/`verg_yearly`)
+  while `ProductIdentifiers.swift` expects exact-case `Verg_Monthly`/
+  `Verg_Yearly`, so local StoreKit testing could never resolve the
+  products; and pricing/trial were still the old $4.99/$60/1-month-trial
+  numbers. Both corrected to $7.99/mo, $59.99/yr, 3-day trial on Yearly
+  only.
+
+### Changed
+- Close button: tap target widened to the full 44×44pt HIG minimum
+  (visible glyph stays the same small size), still top-right.
+- Footer collapsed to a single line: Restore Purchases · Terms · Privacy.
+- Corners standardized to 12pt continuous throughout this screen
+  (previously 16pt circular via `Theme.CornerRadius.medium`).
+- No purple, no cool gray, no glowing borders anywhere on this screen —
+  audited and confirmed against `Theme.Colors.accent` and shadow usage.
+
 ## [Unreleased] — build 14 (Dante/Virgil business-model pass)
 
 Freemium restructure, done largely autonomously per "do your best" while

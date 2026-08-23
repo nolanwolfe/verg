@@ -76,7 +76,7 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "4.99",
+          "displayPrice" : "7.99",
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "6478523901",
@@ -87,7 +87,7 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "verg_monthly",
+          "productID" : "Verg_Monthly",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Verg Monthly",
           "subscriptionGroupID" : "21467892",
@@ -100,16 +100,16 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "60.00",
+          "displayPrice" : "59.99",
           "familyShareable" : false,
           "groupNumber" : 2,
           "internalID" : "6478523902",
           "introductoryOffer" : {
             "displayPrice" : "0",
             "internalID" : "1234567892",
-            "numberOfPeriods" : 1,
+            "numberOfPeriods" : 3,
             "paymentMode" : "free",
-            "subscriptionPeriod" : "P1M"
+            "subscriptionPeriod" : "P1D"
           },
           "localizations" : [
             {
@@ -118,7 +118,7 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "verg_yearly",
+          "productID" : "Verg_Yearly",
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "Verg Yearly",
           "subscriptionGroupID" : "21467892",

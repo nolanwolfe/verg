@@ -114,11 +114,35 @@
 - [ ] Onboarding epigraph: first screen is the Dante/Virgil quote in an
       italic serif font (confirm it's the ONLY serif screen in the app),
       skippable, and never appears again anywhere else after onboarding
-- [ ] Trial: paywall shows "Start Free Trial" and the trial disclosure
-      only when Yearly is selected; switching to Monthly changes the CTA
-      to "Continue" with plain auto-renewal copy, no trial language
-      (requires the ASC change below to be live to see real trial data —
-      local StoreKit config already updated)
+- [ ] Trial: paywall shows "Start 3 days free" and the trial disclosure
+      only when Yearly is selected and the subscriber is intro-offer
+      eligible; switching to Monthly changes the CTA to "Continue" with
+      plain pricing, no trial language (requires the ASC change below to
+      be live to see real trial data — local StoreKit config already
+      updated)
+- [ ] Paywall redesign ("The Ascent," one screen, no scroll): on iPhone
+      SE (smallest supported size) every section is visible at once with
+      no scrolling — header with animated candle logo, both hero feature
+      cards, "Also included" line, both plan rows, CTA button, and the
+      Restore/Terms/Privacy footer. Nothing is clipped or pushed off
+      screen
+- [ ] Reduce Motion: with the system setting on, the paywall's candle
+      flame is static (no flicker loop); with it off, the flame flickers
+      slowly and calmly (~2-3s loop) — the logo itself never bounces or
+      scales, only the flame
+- [ ] Trial-ineligible (lapsed subscriber) state: Yearly row shows the
+      plain $59.99/year price with no trial line, and the CTA reads
+      "Continue" instead of "Start 3 days free" — verify against a
+      sandbox account that has previously redeemed the intro offer
+- [ ] Restore Purchases (footer link): tapping it actually restores an
+      existing subscription and unlocks premium; shows an error state
+      when there's nothing to restore
+- [ ] Price accuracy: the price shown on each plan row, the Yearly
+      per-month equivalence, and the CTA's trial wording all match
+      exactly what RevenueCat/StoreKit returns for the real product IDs
+      — no hardcoded numbers anywhere in this screen
+- [ ] Duplicate price bug (previous build): confirm each plan row shows
+      its price exactly once (right-aligned) — not once on each side
 - [ ] Ambient sound: still plays correctly during a session (rain/
       fireplace/deep focus), now silenced by the physical mute switch —
       confirm flipping silent mid-session stops it; confirm it still
@@ -146,8 +170,26 @@
       trial** specifically (not the 30-day one the code's fallback text
       used to imply) — update both ASC and the RevenueCat package
 - [ ] Remove **Verg_Monthly**'s introductory offer entirely — Monthly
-      gets no trial, in both ASC and RevenueCat (this part was already
-      flagged and the local StoreKit test config already reflects it)
+      gets no trial, in both ASC and RevenueCat
+- [ ] In the RevenueCat dashboard, confirm the **`premium`** offering's
+      current packages point at **Verg_Monthly** and **Verg_Yearly**
+      (exact casing) with the pricing/trial above, before relying on the
+      paywall to display them — the paywall reads pricing and trial
+      eligibility from this offering at runtime and shows nothing (blank
+      price, no trial line) rather than a guess if it isn't configured
+
+**Local dev/testing note (already fixed in code):** `VergProducts.storekit`
+had two bugs found while testing this paywall redesign — its product IDs
+were lowercase (`verg_monthly`/`verg_yearly`) while `ProductIdentifiers.swift`
+expects `Verg_Monthly`/`Verg_Yearly` (case-sensitive), so local StoreKit
+testing could never find the products; and it still had the old $4.99 /
+$60 / 1-month-trial numbers. Both are corrected to match this brief.
+Separately: `PurchaseService`'s `revenueCatAPIKey` is currently a real,
+non-empty production key, which makes `isUsingStoreKitTesting` always
+`false` — so local StoreKit testing (Xcode's StoreKit Configuration file)
+doesn't actually activate right now regardless of the scheme. Testing the
+live price/trial text end-to-end requires either a signed-in App Store
+sandbox tester or the RevenueCat offering above actually configured.
 
 **Weekly SKU — code has never known about this product:**
 - [ ] Stop offering it for new purchases in App Store Connect (mark it
@@ -180,4 +222,4 @@
 ## Version
 
 - Marketing version: 2.2
-- Build: 14
+- Build: 17

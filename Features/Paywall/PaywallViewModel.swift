@@ -65,13 +65,20 @@ final class PaywallViewModel: ObservableObject {
     var onDismiss: (() -> Void)?
     var onSubscribed: (() -> Void)?
 
-    // MARK: - Dynamic Prices from PurchaseService
+    // MARK: - Dynamic Prices from PurchaseService (never hardcoded — all
+    // sourced from RevenueCat's offerings at runtime, see PurchaseService)
     var monthlyPrice: String {
         purchaseService.monthlyPrice
     }
 
     var yearlyPrice: String {
         purchaseService.yearlyPrice
+    }
+
+    /// Yearly's price divided by 12 — the equivalence shown prominently
+    /// on the Yearly row, comparable at a glance to Monthly's own price.
+    var yearlyMonthlyEquivalentPrice: String {
+        purchaseService.yearlyMonthlyEquivalentPrice
     }
 
     var monthlyIntroOffer: String? {
@@ -82,34 +89,47 @@ final class PaywallViewModel: ObservableObject {
         purchaseService.yearlyIntroOffer
     }
 
-    /// Full trial disclosure text, e.g. "30 days free, then $4.99/month"
-    var monthlyTrialDisclosure: String {
-        if let offer = purchaseService.monthlyIntroOffer {
-            return "\(offer), then \(purchaseService.monthlyPrice)/month"
+    /// Whether THIS subscriber can actually get Yearly's trial — false for
+    /// a lapsed subscriber even if the product still has an offer configured.
+    var yearlyIntroEligible: Bool {
+        purchaseService.yearlyIntroEligible
+    }
+
+    /// Whether Yearly's trial should be shown at all right now.
+    private var yearlyTrialAvailable: Bool {
+        yearlyIntroOffer != nil && yearlyIntroEligible
+    }
+
+    /// Yearly row's subtitle: the trial disclosure when eligible, or the
+    /// plain per-year price with no trial line when not (e.g. a lapsed
+    /// subscriber) — the price still appears, just not twice on the row,
+    /// since the equivalence on the right is the only other number shown.
+    var yearlySubtitle: String {
+        if yearlyTrialAvailable, let offer = yearlyIntroOffer {
+            return "\(offer), then \(yearlyPrice)/year"
         }
-        return "\(purchaseService.monthlyPrice)/month"
+        return "\(yearlyPrice)/year"
     }
 
-    var yearlyTrialDisclosure: String {
-        if let offer = purchaseService.yearlyIntroOffer {
-            return "\(offer), then \(purchaseService.yearlyPrice)/year"
-        }
-        return "\(purchaseService.yearlyPrice)/year"
-    }
-
-    /// Whether any plan has a free trial (used for the auto-renew disclosure)
-    var hasFreeTrial: Bool {
-        monthlyIntroOffer != nil || yearlyIntroOffer != nil
-    }
-
-    /// Whether the CURRENTLY SELECTED plan has a trial — trial is
-    /// yearly-only, so this must not just check "any plan," or selecting
-    /// Monthly (no trial) would still show "Start Free Trial."
+    /// Whether the CURRENTLY SELECTED plan has a trial available right
+    /// now — trial is yearly-only AND eligibility-gated, so this must not
+    /// just check "does the product have an offer," or a lapsed
+    /// subscriber would still see "Start Free Trial" for a trial they
+    /// can't actually get.
     var selectedPlanHasFreeTrial: Bool {
         switch selectedPlan {
-        case .monthly: return monthlyIntroOffer != nil
-        case .yearly: return yearlyIntroOffer != nil
+        case .monthly: return false
+        case .yearly: return yearlyTrialAvailable
         }
+    }
+
+    /// e.g. "Start 3 days free" — built from the real offer text
+    /// ("3 days free"), never a hardcoded duration.
+    var ctaTitle: String {
+        guard selectedPlanHasFreeTrial, let offer = yearlyIntroOffer else {
+            return "Continue"
+        }
+        return "Start \(offer)"
     }
 
     // MARK: - Initialization

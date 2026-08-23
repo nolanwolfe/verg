@@ -31,12 +31,20 @@ final class PurchaseService: ObservableObject {
         #endif
     }
     @MainActor @Published private(set) var isLoading: Bool = false
-    @MainActor @Published private(set) var monthlyPrice: String = "$4.99"
-    @MainActor @Published private(set) var yearlyPrice: String = "$60.00"
-    // Trial is yearly-only — monthly's default has no placeholder trial text
-    // so it never flashes an offer that isn't real before StoreKit data loads.
+    // No hardcoded fallback numbers — empty until real data loads, so the
+    // paywall never flashes a price or trial length that isn't real.
+    @MainActor @Published private(set) var monthlyPrice: String = ""
+    @MainActor @Published private(set) var yearlyPrice: String = ""
+    /// The per-year price divided by 12, formatted with the same currency
+    /// formatter — for the "$X/mo" equivalence shown next to Yearly.
+    @MainActor @Published private(set) var yearlyMonthlyEquivalentPrice: String = ""
     @MainActor @Published private(set) var monthlyIntroOffer: String?
-    @MainActor @Published private(set) var yearlyIntroOffer: String? = "30 days free"
+    @MainActor @Published private(set) var yearlyIntroOffer: String?
+    /// Whether *this* subscriber is eligible for Yearly's introductory
+    /// offer — distinct from whether the product has one configured at
+    /// all. A previously-subscribed (lapsed) user typically isn't eligible
+    /// even though the product still has an intro offer attached.
+    @MainActor @Published private(set) var yearlyIntroEligible: Bool = true
     @MainActor @Published var errorMessage: String?
 
     // RevenueCat API key - empty means use StoreKit testing
@@ -106,6 +114,10 @@ final class PurchaseService: ObservableObject {
     }
 
     // MARK: - Fetch Offerings from RevenueCat
+    // RevenueCat's offerings are the source of truth for everything the
+    // paywall displays (price, trial copy, eligibility) — never hardcoded.
+    // fetchProducts() below only uses raw StoreKit for the Product handle
+    // the actual purchase transaction needs, not for display text.
 
     @MainActor
     func fetchOfferingsFromRevenueCat() async {
@@ -115,38 +127,54 @@ final class PurchaseService: ObservableObject {
             #endif
             let offerings = try await Purchases.shared.offerings()
             self.currentOffering = offerings["premium"] ?? offerings.current
-            if let current = self.currentOffering {
-                // Map monthly and yearly packages by identifier or product id
-                if let monthlyPkg = current.availablePackages.first(where: { $0.identifier.lowercased().contains("month") || $0.storeProduct.productIdentifier == ProductIdentifiers.monthly }) {
-                    if let formatted = monthlyPkg.storeProduct.priceFormatter?.string(from: monthlyPkg.storeProduct.price as NSDecimalNumber) {
-                        monthlyPrice = formatted
-                    } else {
-                        monthlyPrice = "$\(monthlyPkg.storeProduct.price)"
-                    }
-                    if let intro = monthlyPkg.storeProduct.introductoryDiscount {
-                        monthlyIntroOffer = intro.localizedSubscriptionPeriod
-                    }
-                }
-                if let yearlyPkg = current.availablePackages.first(where: { $0.identifier.lowercased().contains("year") || $0.storeProduct.productIdentifier == ProductIdentifiers.yearly }) {
-                    if let formatted = yearlyPkg.storeProduct.priceFormatter?.string(from: yearlyPkg.storeProduct.price as NSDecimalNumber) {
-                        yearlyPrice = formatted
-                    } else {
-                        yearlyPrice = "$\(yearlyPkg.storeProduct.price)"
-                    }
-                    if let intro = yearlyPkg.storeProduct.introductoryDiscount {
-                        yearlyIntroOffer = intro.localizedSubscriptionPeriod
-                    }
-                }
-            } else {
+            guard let current = self.currentOffering else {
                 #if DEBUG
                 print("[RC][WARN] No current offering configured.")
                 #endif
+                return
+            }
+
+            // Map monthly and yearly packages by identifier or product id
+            if let monthlyPkg = current.availablePackages.first(where: { $0.identifier.lowercased().contains("month") || $0.storeProduct.productIdentifier == ProductIdentifiers.monthly }) {
+                monthlyPrice = formattedPrice(monthlyPkg.storeProduct.price, using: monthlyPkg.storeProduct.priceFormatter)
+                if let intro = monthlyPkg.storeProduct.introductoryDiscount {
+                    monthlyIntroOffer = intro.localizedSubscriptionPeriod
+                }
+            }
+            if let yearlyPkg = current.availablePackages.first(where: { $0.identifier.lowercased().contains("year") || $0.storeProduct.productIdentifier == ProductIdentifiers.yearly }) {
+                let storeProduct = yearlyPkg.storeProduct
+                yearlyPrice = formattedPrice(storeProduct.price, using: storeProduct.priceFormatter)
+                yearlyMonthlyEquivalentPrice = formattedPrice(storeProduct.price / 12, using: storeProduct.priceFormatter)
+                if let intro = storeProduct.introductoryDiscount {
+                    yearlyIntroOffer = intro.localizedSubscriptionPeriod
+                }
+                await refreshYearlyIntroEligibility()
             }
         } catch {
             #if DEBUG
             print("[RC][ERROR] Failed to fetch offerings: \(error)")
             #endif
             self.errorMessage = "RevenueCat offerings error: \(error.localizedDescription)"
+        }
+    }
+
+    private func formattedPrice(_ price: Decimal, using formatter: NumberFormatter?) -> String {
+        if let formatted = formatter?.string(from: price as NSDecimalNumber) {
+            return formatted
+        }
+        return "$\(price)"
+    }
+
+    /// Whether *this* subscriber (not just the product) is eligible for
+    /// Yearly's introductory offer — a lapsed subscriber who already used
+    /// the trial is not, even though the product still has one configured.
+    @MainActor
+    private func refreshYearlyIntroEligibility() async {
+        let eligibility = await Purchases.shared.checkTrialOrIntroDiscountEligibility(
+            productIdentifiers: [ProductIdentifiers.yearly]
+        )
+        if let status = eligibility[ProductIdentifiers.yearly]?.status {
+            yearlyIntroEligible = (status == .eligible)
         }
     }
 
@@ -158,16 +186,24 @@ final class PurchaseService: ObservableObject {
             await fetchOfferingsFromRevenueCat()
         }
 
-        // Always fetch StoreKit products so the native paywall has products available
+        // Fetch StoreKit products so purchaseMonthly()/purchaseYearly() have
+        // a Product to call .purchase() on — this does NOT drive display
+        // text when RevenueCat is configured; only the StoreKit-testing
+        // fallback below (no RC key) uses it for pricing/offer copy too.
         do {
             products = try await Product.products(for: [ProductIdentifiers.monthly, ProductIdentifiers.yearly])
 
+            guard isUsingStoreKitTesting else { return }
             for product in products {
                 if product.id == ProductIdentifiers.monthly {
                     monthlyPrice = product.displayPrice
                     monthlyIntroOffer = product.introOfferDescription
                 } else if product.id == ProductIdentifiers.yearly {
                     yearlyPrice = product.displayPrice
+                    if let subscription = product.subscription {
+                        yearlyMonthlyEquivalentPrice = formattedPrice(product.price / 12, using: nil)
+                        yearlyIntroEligible = await subscription.isEligibleForIntroOffer
+                    }
                     yearlyIntroOffer = product.introOfferDescription
                 }
             }

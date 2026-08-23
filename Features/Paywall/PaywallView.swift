@@ -7,9 +7,12 @@ import SwiftUI
 /// The one screen in the app that's light, not dark: the rest of Verg is
 /// candle-dark by design (write at night, phone face down), but Ascent is
 /// the summit — you climb out of the dark into daylight. `AscentPalette`
-/// is a local light palette scoped to this screen only; Theme.swift stays
-/// dark for everywhere else. The warm flame gradient (FFCC00->FF9500) is
-/// the one thread carried over, and it reads even better against white.
+/// is a local warm-paper light palette scoped to this screen only;
+/// Theme.swift stays dark for everywhere else.
+///
+/// Single screen, no scrolling, fits down to iPhone SE — see
+/// `isCompact` below. If the "also included" line has to go to make that
+/// true, it goes; the CTA and footer never do.
 struct PaywallView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var purchaseService: PurchaseService
@@ -30,21 +33,22 @@ struct PaywallView: View {
     }
 }
 
-// MARK: - Ascent Palette (local, light — not part of the app-wide dark Theme)
-private enum AscentPalette {
-    static let background = Color(hex: "FFFFFF")
-    static let summitGlow = Color(hex: "FFF4D6")
-    static let cardBackground = Color(hex: "F8F6F2")
-    static let cardBorder = Color(hex: "EBE7DF")
-    static let primaryText = Color(hex: "16140F")
-    static let secondaryText = Color(hex: "6B6660")
-    static let flameTop = Color(hex: "FFCC00")
-    static let flameBottom = Color(hex: "FF9500")
-    static let flameGradient = LinearGradient(
-        colors: [flameTop, flameBottom],
-        startPoint: .top,
-        endPoint: .bottom
-    )
+// MARK: - Ascent Palette (local, warm-light — not part of the app-wide dark Theme)
+// Per design.md: SF Pro (Theme.Typography already is), 8pt spacing base,
+// 12pt continuous corners, warm palette only — wax/ember/paper, no purple,
+// no cool gray, no glowing borders.
+enum AscentPalette {
+    static let background = Color(hex: "FFFCF6")       // paper, not stark white
+    static let summitGlow = Color(hex: "FFF1D6")
+    static let cardBackground = Color(hex: "F9F5EC")
+    static let cardBorder = Color(hex: "EAE2D2")
+    static let primaryText = Color(hex: "1E1B14")
+    static let secondaryText = Color(hex: "746C5E")     // warm gray, not cool
+    static let waxColor = Color(hex: "FFF8E7")
+    static let flameTop = Color(hex: "FFCC00")          // ember
+    static let flameBottom = Color(hex: "FF9500")       // ember
+    static let flameGradient = LinearGradient(colors: [flameTop, flameBottom], startPoint: .top, endPoint: .bottom)
+    static let cornerRadius: CGFloat = 12
 }
 
 /// The actual paywall content.
@@ -52,61 +56,73 @@ struct NativePaywallView: View {
     @ObservedObject var viewModel: PaywallViewModel
 
     var body: some View {
-        ZStack {
-            AscentPalette.background
-                .ignoresSafeArea()
+        GeometryReader { geo in
+            // geo.size already excludes the safe area (status bar / home
+            // indicator), so this is genuinely available content height.
+            // SE's ~647pt of available height fits everything, including
+            // "Also included" — this threshold is a safety net for a
+            // smaller class of device, not something SE itself should hit.
+            let isCompact = geo.size.height < 600
 
-            summitGlow
+            ZStack {
+                AscentPalette.background.ignoresSafeArea()
+                summitGlow
 
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: Theme.Spacing.xl) {
+                VStack(spacing: 0) {
                     header
+                        .padding(.top, isCompact ? Theme.Spacing.md : Theme.Spacing.lg)
+
+                    Spacer(minLength: Theme.Spacing.sm)
 
                     heroFeatureCards
 
-                    supportingFeatureRow
+                    Spacer(minLength: Theme.Spacing.xs)
+
+                    // "Also included" is the first thing to go if a screen
+                    // genuinely can't fit it — never the CTA or footer.
+                    if !isCompact {
+                        supportingFeatureLine
+                    }
+
+                    Spacer(minLength: Theme.Spacing.sm)
 
                     planSelection
 
+                    Spacer(minLength: Theme.Spacing.sm)
+
                     ctaSection
 
-                    restoreAndLegal
+                    footer
+                        .padding(.top, Theme.Spacing.xs)
+                        .padding(.bottom, Theme.Spacing.xxs)
                 }
                 .padding(.horizontal, Theme.Spacing.md)
-                .padding(.top, Theme.Spacing.lg)
-                .padding(.bottom, Theme.Spacing.xl)
-            }
 
-            closeButton
+                closeButton
+            }
         }
-        .preferredColorScheme(.light)
         .alert("Error", isPresented: $viewModel.showError) {
             Button("OK", role: .cancel) {}
         } message: {
             Text(viewModel.errorMessage ?? "Something went wrong")
         }
+        .preferredColorScheme(.light)
     }
 
     // MARK: - Summit Glow
-    /// Soft warm light from above — dawn at the summit, not a celebration
-    /// glow. Subtler than the dark screens' glows since it's sitting on
-    /// white, not black.
     private var summitGlow: some View {
         RadialGradient(
-            colors: [
-                AscentPalette.summitGlow.opacity(0.9),
-                AscentPalette.summitGlow.opacity(0.25),
-                Color.clear
-            ],
+            colors: [AscentPalette.summitGlow.opacity(0.8), AscentPalette.summitGlow.opacity(0.2), Color.clear],
             center: UnitPoint(x: 0.5, y: 0),
             startRadius: 10,
-            endRadius: 420
+            endRadius: 380
         )
         .ignoresSafeArea()
         .allowsHitTesting(false)
     }
 
     // MARK: - Close Button
+    /// 44x44 tap target per HIG, even though the visible glyph is smaller.
     private var closeButton: some View {
         VStack {
             HStack {
@@ -115,15 +131,17 @@ struct NativePaywallView: View {
                     viewModel.dismiss()
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(.system(size: 14, weight: .semibold))
                         .foregroundColor(AscentPalette.secondaryText)
-                        .frame(width: 32, height: 32)
+                        .frame(width: 28, height: 28)
                         .background(AscentPalette.cardBackground)
                         .overlay(Circle().stroke(AscentPalette.cardBorder, lineWidth: 1))
                         .clipShape(Circle())
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
                 }
-                .padding(.trailing, Theme.Spacing.md)
-                .padding(.top, Theme.Spacing.sm)
+                .padding(.trailing, Theme.Spacing.xs)
+                .padding(.top, Theme.Spacing.xxs)
             }
             Spacer()
         }
@@ -131,88 +149,71 @@ struct NativePaywallView: View {
 
     // MARK: - Header
     private var header: some View {
-        VStack(spacing: Theme.Spacing.sm) {
-            Image(systemName: "mountain.2.fill")
-                .font(.system(size: 40))
-                .foregroundStyle(AscentPalette.flameGradient)
-                .shadow(color: AscentPalette.flameBottom.opacity(0.35), radius: 16)
+        VStack(spacing: Theme.Spacing.xxs) {
+            PaywallCandleLogo()
 
             Text("The Ascent")
-                .font(Theme.Typography.largeTitle)
+                .font(Theme.Typography.title)
                 .foregroundColor(AscentPalette.primaryText)
 
             Text("Your full archive. Your stats. Your pace.")
-                .font(Theme.Typography.body)
+                .font(Theme.Typography.subheadline)
                 .foregroundColor(AscentPalette.secondaryText)
                 .multilineTextAlignment(.center)
         }
-        .padding(.top, Theme.Spacing.md)
     }
 
     // MARK: - Hero Features (the actual sell — archive + stats)
     private var heroFeatureCards: some View {
-        VStack(spacing: Theme.Spacing.sm) {
+        VStack(spacing: Theme.Spacing.xxs) {
             ForEach(viewModel.heroFeatures) { feature in
-                HStack(spacing: Theme.Spacing.md) {
+                HStack(spacing: Theme.Spacing.xs) {
                     Image(systemName: feature.icon)
-                        .font(.system(size: 22))
+                        .font(.system(size: 16))
                         .foregroundStyle(AscentPalette.flameGradient)
-                        .frame(width: 32)
+                        .frame(width: 22)
 
                     Text(feature.text)
-                        .font(Theme.Typography.body)
+                        .font(Theme.Typography.subheadline)
                         .foregroundColor(AscentPalette.primaryText)
-                        .multilineTextAlignment(.leading)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.9)
 
                     Spacer(minLength: 0)
                 }
-                .padding(Theme.Spacing.md)
-                .background(AscentPalette.cardBackground)
-                .cornerRadius(Theme.CornerRadius.medium)
+                .padding(.horizontal, Theme.Spacing.sm)
+                .padding(.vertical, Theme.Spacing.xs)
+                .background(
+                    RoundedRectangle(cornerRadius: AscentPalette.cornerRadius, style: .continuous)
+                        .fill(AscentPalette.cardBackground)
+                )
                 .overlay(
-                    RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
+                    RoundedRectangle(cornerRadius: AscentPalette.cornerRadius, style: .continuous)
                         .stroke(AscentPalette.cardBorder, lineWidth: 1)
                 )
             }
         }
     }
 
-    // MARK: - Supporting Features (smaller — also included)
-    private var supportingFeatureRow: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-            Text("ALSO INCLUDED")
-                .font(Theme.Typography.caption.weight(.semibold))
-                .tracking(1)
-                .foregroundColor(AscentPalette.secondaryText.opacity(0.8))
-
-            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                ForEach(viewModel.supportingFeatures) { feature in
-                    HStack(spacing: Theme.Spacing.xs) {
-                        Image(systemName: feature.icon)
-                            .font(.system(size: 14))
-                            .foregroundColor(AscentPalette.flameBottom)
-                            .frame(width: 20)
-
-                        Text(feature.text)
-                            .font(Theme.Typography.subheadline)
-                            .foregroundColor(AscentPalette.secondaryText)
-                    }
-                }
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, Theme.Spacing.xxs)
+    // MARK: - Supporting Features (compressed to one line — cut first if space is tight)
+    private var supportingFeatureLine: some View {
+        Text(viewModel.supportingFeatures.map(\.text).joined(separator: "  ·  "))
+            .font(Theme.Typography.caption)
+            .foregroundColor(AscentPalette.secondaryText)
+            .multilineTextAlignment(.center)
+            .lineLimit(2)
+            .frame(maxWidth: .infinity)
     }
 
     // MARK: - Plan Selection
     private var planSelection: some View {
-        VStack(spacing: Theme.Spacing.sm) {
+        VStack(spacing: Theme.Spacing.xxs) {
             PlanCard(
                 title: "Yearly",
-                price: viewModel.yearlyPrice,
-                period: "/year",
+                price: viewModel.yearlyMonthlyEquivalentPrice,
+                period: "/mo",
                 badge: "Best Value",
-                subtitle: viewModel.yearlyTrialDisclosure,
+                subtitle: viewModel.yearlySubtitle,
                 isSelected: viewModel.selectedPlan == .yearly,
                 onTap: { viewModel.selectPlan(.yearly) }
             )
@@ -220,9 +221,9 @@ struct NativePaywallView: View {
             PlanCard(
                 title: "Monthly",
                 price: viewModel.monthlyPrice,
-                period: "/month",
+                period: "/mo",
                 badge: nil,
-                subtitle: viewModel.monthlyTrialDisclosure,
+                subtitle: nil,
                 isSelected: viewModel.selectedPlan == .monthly,
                 onTap: { viewModel.selectPlan(.monthly) }
             )
@@ -230,75 +231,69 @@ struct NativePaywallView: View {
     }
 
     // MARK: - CTA
-    /// Solid dark button — the strongest possible contrast against the
-    /// white page, and a deliberate visual echo of the app's own dark
-    /// theme showing through at the moment you commit to the climb.
+    /// Solid dark button — the strongest contrast against the white page,
+    /// and a deliberate echo of the app's own dark theme at the moment
+    /// you commit to the climb.
     private var ctaSection: some View {
-        VStack(spacing: Theme.Spacing.xs) {
-            Button {
-                viewModel.purchase()
-            } label: {
-                Group {
-                    if viewModel.isLoading {
-                        ProgressView()
-                            .tint(.white)
-                    } else {
-                        Text(viewModel.selectedPlanHasFreeTrial ? "Start Free Trial" : "Continue")
-                            .font(Theme.Typography.headline)
-                    }
+        Button {
+            viewModel.purchase()
+        } label: {
+            Group {
+                if viewModel.isLoading {
+                    ProgressView().tint(.white)
+                } else {
+                    Text(viewModel.ctaTitle)
+                        .font(Theme.Typography.headline)
                 }
-                .frame(maxWidth: .infinity)
-                .frame(height: Theme.Layout.buttonHeight)
-                .foregroundColor(.white)
-                .background(AscentPalette.primaryText)
-                .cornerRadius(Theme.CornerRadius.medium)
             }
-            .disabled(viewModel.isLoading)
-            .opacity(viewModel.isLoading ? 0.6 : 1)
-
-            Text(viewModel.selectedPlanHasFreeTrial
-                ? "Free trial auto-renews at \(viewModel.selectedPlan == .yearly ? viewModel.yearlyPrice + "/year" : viewModel.monthlyPrice + "/month") unless cancelled."
-                : "Subscription auto-renews unless cancelled.")
-                .font(Theme.Typography.caption)
-                .foregroundColor(AscentPalette.secondaryText)
-                .multilineTextAlignment(.center)
+            .frame(maxWidth: .infinity)
+            .frame(height: 50)
+            .foregroundColor(.white)
+            .background(
+                RoundedRectangle(cornerRadius: AscentPalette.cornerRadius, style: .continuous)
+                    .fill(AscentPalette.primaryText)
+            )
         }
+        .disabled(viewModel.isLoading)
+        .opacity(viewModel.isLoading ? 0.6 : 1)
     }
 
-    // MARK: - Restore & Legal
-    private var restoreAndLegal: some View {
-        VStack(spacing: Theme.Spacing.xs) {
+    // MARK: - Footer
+    /// One line: Restore Purchases · Terms · Privacy.
+    private var footer: some View {
+        HStack(spacing: Theme.Spacing.xxs) {
             Button("Restore Purchases") {
                 viewModel.restorePurchases()
             }
-            .font(Theme.Typography.subheadline)
-            .foregroundColor(AscentPalette.primaryText)
-
-            HStack(spacing: Theme.Spacing.xxs) {
-                Link("Terms", destination: URL(string: "https://nolanwolfe.github.io/verg/terms")!)
-                Text("•")
-                Link("Privacy", destination: URL(string: "https://nolanwolfe.github.io/verg/privacy")!)
-            }
-            .font(Theme.Typography.caption)
-            .foregroundColor(AscentPalette.secondaryText.opacity(0.8))
+            Text("·")
+            Link("Terms", destination: URL(string: "https://nolanwolfe.github.io/verg/terms")!)
+            Text("·")
+            Link("Privacy", destination: URL(string: "https://nolanwolfe.github.io/verg/privacy")!)
         }
+        .font(Theme.Typography.caption)
+        .foregroundColor(AscentPalette.secondaryText)
+        .lineLimit(1)
+        .minimumScaleFactor(0.85)
+        .frame(maxWidth: .infinity)
     }
 }
 
-/// Individual plan selection card
+/// Individual plan selection card — price appears exactly once, on the
+/// right. Yearly's subtitle carries the trial/full-price disclosure;
+/// Monthly has none, per "shown plainly."
 struct PlanCard: View {
     let title: String
     let price: String
     let period: String
     let badge: String?
-    let subtitle: String
+    let subtitle: String?
     let isSelected: Bool
     let onTap: () -> Void
 
     var body: some View {
         Button(action: onTap) {
             HStack {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: Theme.Spacing.xxs) {
                         Text(title)
                             .font(Theme.Typography.headline)
@@ -315,9 +310,13 @@ struct PlanCard: View {
                         }
                     }
 
-                    Text(subtitle)
-                        .font(Theme.Typography.caption)
-                        .foregroundColor(AscentPalette.secondaryText)
+                    if let subtitle {
+                        Text(subtitle)
+                            .font(Theme.Typography.caption)
+                            .foregroundColor(AscentPalette.secondaryText)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.85)
+                    }
                 }
 
                 Spacer()
@@ -331,15 +330,65 @@ struct PlanCard: View {
                         .foregroundColor(AscentPalette.secondaryText)
                 }
             }
-            .padding(Theme.Spacing.md)
-            .background(AscentPalette.cardBackground)
-            .cornerRadius(Theme.CornerRadius.medium)
+            .padding(.horizontal, Theme.Spacing.sm)
+            .padding(.vertical, Theme.Spacing.xs)
+            .background(
+                RoundedRectangle(cornerRadius: AscentPalette.cornerRadius, style: .continuous)
+                    .fill(AscentPalette.cardBackground)
+            )
             .overlay(
-                RoundedRectangle(cornerRadius: Theme.CornerRadius.medium)
+                RoundedRectangle(cornerRadius: AscentPalette.cornerRadius, style: .continuous)
                     .stroke(isSelected ? AscentPalette.flameBottom : AscentPalette.cardBorder, lineWidth: isSelected ? 2 : 1)
             )
         }
         .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Paywall Candle Logo
+/// A small, calm, live flame — not the full CandleView (too large/energetic
+/// for a header mark), but the same FlameShape/gradient language at a
+/// slower, gentler loop. Only the flame moves; the mark as a whole never
+/// bounces or scales. Respects Reduce Motion.
+struct PaywallCandleLogo: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var flicker = false
+
+    var body: some View {
+        ZStack {
+            Circle()
+                .fill(
+                    RadialGradient(
+                        colors: [AscentPalette.flameTop.opacity(0.4), Color.clear],
+                        center: .center, startRadius: 2, endRadius: 26
+                    )
+                )
+                .frame(width: 52, height: 52)
+                .offset(y: -6)
+
+            VStack(spacing: 0) {
+                FlameShape()
+                    .fill(AscentPalette.flameGradient)
+                    .frame(width: 14, height: 22)
+                    .scaleEffect(x: flicker ? 1.05 : 0.95, y: flicker ? 0.96 : 1.05, anchor: .bottom)
+                    .offset(x: flicker ? 0.5 : -0.5)
+
+                Rectangle()
+                    .fill(Color(hex: "2C2C2E"))
+                    .frame(width: 2.5, height: 8)
+
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .fill(AscentPalette.waxColor)
+                    .frame(width: 30, height: 20)
+            }
+        }
+        .frame(height: 48)
+        .onAppear {
+            guard !reduceMotion else { return }
+            withAnimation(.easeInOut(duration: 2.6).repeatForever(autoreverses: true)) {
+                flicker = true
+            }
+        }
     }
 }
 
