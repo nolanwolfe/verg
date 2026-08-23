@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Paywall screen — always a custom SwiftUI build, deliberately not
 /// RevenueCat's hosted template (see git history: the app tried that once
@@ -46,14 +47,24 @@ struct PaywallView: View {
 // gray, no glowing borders. The single purple on this screen is the app
 // icon itself, which is the mark and stays as drawn.
 enum GoldenPalette {
-    static let background = Color(hex: "FFFDF9")       // paper, near-white
-    static let crown = Color(hex: "FFFFFF")            // the break of light, top of frame
-    static let haloGold = Color(hex: "FFDE9B")         // the gold in the opening
-    static let summitGlow = Color(hex: "FFF4E0")
-    static let cardBackground = Color(hex: "FBF7EF")
-    static let cardBorder = Color(hex: "EDE5D6")
-    static let primaryText = Color(hex: "1E1B14")
-    static let secondaryText = Color(hex: "746C5E")     // warm gray, not cool
+    /// The paywall is always the opposite of the app. In a dark app it is the
+    /// break of daylight; in a light app it becomes the one dark room, which
+    /// keeps it the same gesture either way — you step out of wherever you
+    /// were. `PaywallView` pins the inverted scheme, and because these are
+    /// trait-resolved the "light" column below is simply what gets drawn when
+    /// that inversion lands on light.
+    private static func inverting(_ light: String, _ dark: String) -> Color {
+        Theme.Colors.adaptive(light: light, dark: dark)
+    }
+
+    static let background = inverting("FFFDF9", "0B0A08")       // paper / lamplit black
+    static let crown = inverting("FFFFFF", "2A2113")            // the break of light, top of frame
+    static let haloGold = inverting("FFDE9B", "8A6A22")         // the gold in the opening
+    static let summitGlow = inverting("FFF4E0", "17130C")
+    static let cardBackground = inverting("FBF7EF", "17150F")
+    static let cardBorder = inverting("EDE5D6", "2E2A20")
+    static let primaryText = inverting("1E1B14", "F7F1E2")
+    static let secondaryText = inverting("746C5E", "9A9184")     // warm gray, not cool
     static let waxColor = Color(hex: "FFF8E7")
     static let flameTop = Color(hex: "FFCC00")          // ember
     static let flameBottom = Color(hex: "FF9500")       // ember
@@ -61,7 +72,10 @@ enum GoldenPalette {
     /// Deeper than `flameGradient` so white text clears contrast on it —
     /// the pale ember yellow alone is far too light to sit white on.
     static let ctaGradient = LinearGradient(
-        colors: [Color(hex: "E8A317"), Color(hex: "C67A0B")],
+        colors: [
+            inverting("E8A317", "E8B53A"),
+            inverting("C67A0B", "B07E14")
+        ],
         startPoint: .top,
         endPoint: .bottom
     )
@@ -71,6 +85,17 @@ enum GoldenPalette {
 /// The actual paywall content.
 struct NativePaywallView: View {
     @ObservedObject var viewModel: PaywallViewModel
+    /// Whether the app itself is dark. Read from the setting rather than
+    /// the environment: the paywall is often presented from Write or Verg,
+    /// which pin themselves dark, and inheriting *their* scheme would make
+    /// the paywall light even when the app is set to light.
+    private var appIsDark: Bool {
+        switch StorageService.shared.settings.appearance {
+        case .dark: return true
+        case .light: return false
+        case .system: return UITraitCollection.current.userInterfaceStyle == .dark
+        }
+    }
 
     /// The close glyph starts hidden; see `closeButton`.
     @State private var closeIsVisible = false
@@ -131,7 +156,10 @@ struct NativePaywallView: View {
         } message: {
             Text(viewModel.errorMessage ?? "Something went wrong")
         }
-        .preferredColorScheme(.light)
+        // The reverse of wherever the app is. `colorScheme` here is the
+        // resolved scheme inherited from the app root — including the case
+        // where the setting is "System" and the phone decided it.
+        .preferredColorScheme(appIsDark ? .light : .dark)
     }
 
     private var reviewStack: some View {

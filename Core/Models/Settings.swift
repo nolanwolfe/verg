@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 /// The Archive tab's "Days Lit" display — the GitHub-style contribution
 /// graph, or the month-grid calendar carried over from Verg 2.1.
@@ -12,6 +13,32 @@ enum CalendarStyle: String, CaseIterable, Identifiable, Codable {
         switch self {
         case .heatmap: return "Sessions"
         case .monthGrid: return "Calendar"
+        }
+    }
+}
+
+/// Light, dark, or whatever the phone is set to.
+enum AppearanceMode: String, CaseIterable, Identifiable, Codable {
+    case system
+    case light
+    case dark
+
+    var id: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .system: return "System"
+        case .light: return "Light"
+        case .dark: return "Dark"
+        }
+    }
+
+    /// Nil means "don't pin it" — the phone's own setting wins.
+    var colorScheme: ColorScheme? {
+        switch self {
+        case .system: return nil
+        case .light: return .light
+        case .dark: return .dark
         }
     }
 }
@@ -44,6 +71,7 @@ struct AppSettings: Codable, Equatable {
 
     /// Which "Days Lit" visualization the Archive tab shows.
     var calendarStyle: CalendarStyle
+    var appearance: AppearanceMode
 
     /// Whether the post-onboarding paywall (shown once, after the seventh
     /// saved page) has already been presented. A persisted one-shot rather
@@ -65,6 +93,7 @@ struct AppSettings: Codable, Equatable {
         weeklySummaryNotificationsEnabled: Bool = false,
         weeklyCommitmentDaysPerWeek: Int? = nil,
         calendarStyle: CalendarStyle = .heatmap,
+        appearance: AppearanceMode = .system,
         hasSeenSessionPaywall: Bool = false
     ) {
         self.timerDuration = timerDuration
@@ -80,6 +109,7 @@ struct AppSettings: Codable, Equatable {
         self.weeklySummaryNotificationsEnabled = weeklySummaryNotificationsEnabled
         self.weeklyCommitmentDaysPerWeek = weeklyCommitmentDaysPerWeek
         self.calendarStyle = calendarStyle
+        self.appearance = appearance
         self.hasSeenSessionPaywall = hasSeenSessionPaywall
     }
 
@@ -101,6 +131,7 @@ struct AppSettings: Codable, Equatable {
         case weeklySummaryNotificationsEnabled
         case weeklyCommitmentDaysPerWeek
         case calendarStyle
+        case appearance
         case hasSeenSessionPaywall
     }
 
@@ -119,6 +150,7 @@ struct AppSettings: Codable, Equatable {
         weeklySummaryNotificationsEnabled = try container.decodeIfPresent(Bool.self, forKey: .weeklySummaryNotificationsEnabled) ?? false
         weeklyCommitmentDaysPerWeek = try container.decodeIfPresent(Int.self, forKey: .weeklyCommitmentDaysPerWeek)
         calendarStyle = try container.decodeIfPresent(CalendarStyle.self, forKey: .calendarStyle) ?? .heatmap
+        appearance = try container.decodeIfPresent(AppearanceMode.self, forKey: .appearance) ?? .system
         hasSeenSessionPaywall = try container.decodeIfPresent(Bool.self, forKey: .hasSeenSessionPaywall) ?? false
     }
 

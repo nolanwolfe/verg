@@ -644,6 +644,11 @@ final class StorageService: ObservableObject {
         saveSettings()
     }
 
+    func setAppearance(_ mode: AppearanceMode) {
+        settings.appearance = mode
+        saveSettings()
+    }
+
     func setHasSeenSessionPaywall(_ seen: Bool) {
         settings.hasSeenSessionPaywall = seen
         saveSettings()

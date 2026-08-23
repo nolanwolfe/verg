@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 // MARK: - Theme
 /// Global design system for the Ink app
@@ -6,11 +7,36 @@ import SwiftUI
 enum Theme {
 
     // MARK: - Colors
+    ///
+    /// Every token below is a *dynamic* colour: it resolves against whatever
+    /// interface style it is drawn in, so the light theme arrives without a
+    /// single call site changing. Setting the root's colour scheme is enough.
+    ///
+    /// This is also why the ritual screens can opt out cheaply — Verg, the
+    /// writing timer and the camera pin themselves to `.dark`, and the same
+    /// tokens then resolve dark there no matter what the rest of the app is
+    /// doing. Those screens dim the physical display on purpose; a white
+    /// candle screen would undo the point of them.
     enum Colors {
-        static let background = Color(hex: "000000")
-        static let cardBackground = Color(hex: "1C1C1E")
-        static let primaryText = Color(hex: "FFFFFF")
-        static let secondaryText = Color(hex: "8E8E93")
+        /// Resolves `dark` in dark mode, `light` otherwise.
+        static func adaptive(light: String, dark: String) -> Color {
+            Color(UIColor { traits in
+                UIColor(hex: traits.userInterfaceStyle == .dark ? dark : light)
+            })
+        }
+
+        static let background = adaptive(light: "FAF7F0", dark: "000000")
+        static let cardBackground = adaptive(light: "FFFFFF", dark: "1C1C1E")
+        static let primaryText = adaptive(light: "17140E", dark: "FFFFFF")
+        static let secondaryText = adaptive(light: "6E675C", dark: "8E8E93")
+        /// Section labels and the faintest supporting text. Was written as
+        /// `.white.opacity(0.4)` in a dozen places, which is invisible on
+        /// paper — hence a token.
+        static let tertiaryText = adaptive(light: "9A9187", dark: "6E6E73")
+        /// Separator lines and card outlines.
+        static let hairline = adaptive(light: "E3DCCE", dark: "2C2C2E")
+        /// The barely-there fill behind grouped rows and grid cells.
+        static let subtleFill = adaptive(light: "00000008", dark: "FFFFFF0A")
 
         /// Gold. Replaces the old `systemPurple`, which was Apple's stock
         /// value unmodified and sat cold against a candlelit app — every
@@ -21,12 +47,15 @@ enum Theme {
         ///
         /// Reads expensive as a line and cheap as a slab: keep it to icons,
         /// rules, small type, and thin strokes. Large fills stay cream.
-        static let accent = Color(hex: "D4AF37")
+        /// Darker in light mode: #D4AF37 on paper is about 2:1 against
+        /// white, which fails as text or as an icon. The deeper value keeps
+        /// the same hue and clears contrast on both grounds.
+        static let accent = adaptive(light: "8A6D1E", dark: "D4AF37")
         /// Lifted gold for text on the accent, and for the brighter stop of
         /// a gradient.
-        static let accentLight = Color(hex: "F2E3A6")
+        static let accentLight = adaptive(light: "B08F2E", dark: "F2E3A6")
         /// Recessed gold for gradient bottoms and pressed states.
-        static let accentDeep = Color(hex: "8A6D1E")
+        static let accentDeep = adaptive(light: "5E4A12", dark: "8A6D1E")
 
         /// Switches only. Deliberately Apple's system blue rather than the
         /// app accent: a toggle is a system affordance, and people read blue
@@ -34,14 +63,22 @@ enum Theme {
         /// decoration rather than state.
         static let toggleTint = Color.blue
 
+        /// The primary button's fill. Inverts with the theme: wax cream on
+        /// black, ink on paper. Left as cream in light mode it was a
+        /// cream button on a cream page — the most important control in the
+        /// app, invisible.
+        static let buttonFill = adaptive(light: "17140E", dark: "F7F1E2")
+        /// Text on `buttonFill`.
+        static let buttonLabel = adaptive(light: "FAF7F0", dark: "000000")
+
         static let accentGradient = LinearGradient(
-            colors: [Color(hex: "F7F1E2"), Color(hex: "F7F1E2")],
+            colors: [buttonFill, buttonFill],
             startPoint: .leading,
             endPoint: .trailing
         )
 
         static let accentGradientVertical = LinearGradient(
-            colors: [Color(hex: "F7F1E2"), Color(hex: "F7F1E2")],
+            colors: [buttonFill, buttonFill],
             startPoint: .top,
             endPoint: .bottom
         )
@@ -127,6 +164,36 @@ struct Shadow {
     let radius: CGFloat
     let x: CGFloat
     let y: CGFloat
+}
+
+// MARK: - UIColor Hex
+/// Backs `Theme.Colors.adaptive`. UIKit is the only route to a colour that
+/// resolves per trait collection, which is what lets one token serve both
+/// themes without touching call sites.
+extension UIColor {
+    convenience init(hex: String) {
+        let cleaned = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: cleaned).scanHexInt64(&int)
+        let a, r, g, b: UInt64
+        switch cleaned.count {
+        case 3:
+            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+        case 6:
+            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+        case 8:
+            // RRGGBBAA — alpha last, matching how the tokens above are written.
+            (r, g, b, a) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+        default:
+            (a, r, g, b) = (255, 0, 0, 0)
+        }
+        self.init(
+            red: CGFloat(r) / 255,
+            green: CGFloat(g) / 255,
+            blue: CGFloat(b) / 255,
+            alpha: CGFloat(a) / 255
+        )
+    }
 }
 
 // MARK: - Color Extension for Hex

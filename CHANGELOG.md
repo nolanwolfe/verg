@@ -12,6 +12,48 @@ pages. Journal becomes just the current journal. Books gain rename and
 cover-color customization. The tab bar hides on scroll-down and returns
 on scroll-up on the Library screen.
 
+### Added — Appearance: Light, Dark, System
+
+Settings → Guide → Appearance. Three-way, defaulting to System so the app
+follows the phone unless told otherwise.
+
+**How it works.** Every `Theme.Colors` token became a *dynamic* colour that
+resolves against the interface style it is drawn in, so the light theme
+arrived without a single call site changing — setting the window's scheme is
+enough. `Theme.Colors.adaptive(light:dark:)` is the whole mechanism.
+
+**The candle rooms stay dark.** Verg and Write are the same room the ritual
+happens in, and Write dims the physical screen the moment you start; a white
+candle screen would undo the point of them. They are pinned dark in every
+appearance, along with the writing timer and the fullscreen page viewer — a
+photo viewer is dark in every app there is.
+
+That decision is made at the *window*, in `ContentView`, not scoped inside
+the screens. A scoped `.environment(\.colorScheme,)` left the status bar
+black-on-black and a pale tab bar floating over a dark page, because both of
+those live outside any single screen.
+
+**The paywall is always the reverse of the app.** In a dark app it is the
+break of daylight, as before; in a light app it becomes the one dark room. It
+reads the setting rather than the environment, since it is usually presented
+from Write or Verg — inheriting *their* scheme would have made it light even
+with the app set to light.
+
+Colours that needed a second value rather than an inversion:
+
+- **The accent.** `#D4AF37` on paper is about 2:1 against white and fails as
+  text or as an icon. Light mode uses a deeper `#8A6D1E` — same hue, legible
+  ground.
+- **The primary button.** It was wax cream, which on a cream page made the
+  most important control in the app invisible. It is ink on paper now, cream
+  on black.
+- New `tertiaryText`, `hairline` and `subtleFill` tokens, replacing the two
+  dozen `.white.opacity(…)` literals in the Archive — all of which were
+  invisible on paper.
+- The heatmap's empty cell. The green ramp is untouched; only the ground it
+  sits on had to work on both.
+
+
 ### Fixed — tab bar sat on top of the keyboard
 
 Naming a journal on the finish-book prompt raised the keyboard and left the

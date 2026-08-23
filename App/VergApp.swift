@@ -27,7 +27,10 @@ struct VergApp: App {
             ContentView()
                 .environmentObject(storageService)
                 .environmentObject(purchaseService)
-                .preferredColorScheme(.dark)
+                // Appearance is resolved in ContentView, which knows which
+                // tab is on screen — the candle tabs are dark whatever the
+                // setting says, and that has to reach the window so the
+                // status bar and tab bar come with them.
         }
         // Screen brightness is the app's for as long as the app is in front,
         // and the user's again the moment it isn't. This is the *only* place

@@ -28,7 +28,11 @@ struct CustomTabBar: View {
                 .fill(.ultraThinMaterial)
                 .overlay(
                     RoundedRectangle(cornerRadius: 32, style: .continuous)
-                        .fill(Color.black.opacity(0.72))
+                        // 72% black on paper would be a slab dropped on the
+                        // page. Light mode keeps the same idea — a body dark
+                        // enough for the pane to slide over — at a weight
+                        // that still belongs on white.
+                        .fill(Theme.Colors.adaptive(light: "1E1B1400", dark: "000000B8"))
                 )
                 // Specular highlight — a brighter strip of light along the
                 // top edge, falling off fast.
@@ -37,8 +41,8 @@ struct CustomTabBar: View {
                         .fill(
                             LinearGradient(
                                 colors: [
-                                    Color.white.opacity(0.20),
-                                    Color.white.opacity(0.04),
+                                    Theme.Colors.adaptive(light: "FFFFFF00", dark: "FFFFFF33"),
+                                    Theme.Colors.adaptive(light: "FFFFFF00", dark: "FFFFFF0A"),
                                     Color.clear
                                 ],
                                 startPoint: .top,
@@ -52,7 +56,7 @@ struct CustomTabBar: View {
                     RoundedRectangle(cornerRadius: 32, style: .continuous)
                         .fill(
                             LinearGradient(
-                                colors: [Color.clear, Color.white.opacity(0.05)],
+                                colors: [Color.clear, Theme.Colors.adaptive(light: "FFFFFF00", dark: "FFFFFF0D")],
                                 startPoint: UnitPoint(x: 0.5, y: 0.7),
                                 endPoint: .bottom
                             )
@@ -64,9 +68,9 @@ struct CustomTabBar: View {
                         .strokeBorder(
                             LinearGradient(
                                 colors: [
-                                    Color.white.opacity(0.38),
-                                    Color.white.opacity(0.16),
-                                    Color.white.opacity(0.08)
+                                    Theme.Colors.adaptive(light: "17140E24", dark: "FFFFFF61"),
+                                    Theme.Colors.adaptive(light: "17140E14", dark: "FFFFFF29"),
+                                    Theme.Colors.adaptive(light: "17140E0A", dark: "FFFFFF14")
                                 ],
                                 startPoint: .top,
                                 endPoint: .bottom
@@ -112,8 +116,8 @@ struct CustomTabBar: View {
                         .fill(
                             LinearGradient(
                                 colors: [
-                                    Color.white.opacity(0.22),
-                                    Color.white.opacity(0.07),
+                                    Theme.Colors.adaptive(light: "FFFFFFCC", dark: "FFFFFF38"),
+                                    Theme.Colors.adaptive(light: "FFFFFF66", dark: "FFFFFF12"),
                                     Color.clear
                                 ],
                                 startPoint: .top,
@@ -126,8 +130,8 @@ struct CustomTabBar: View {
                         .strokeBorder(
                             LinearGradient(
                                 colors: [
-                                    Color.white.opacity(0.42),
-                                    Color.white.opacity(0.10)
+                                    Theme.Colors.adaptive(light: "17140E2E", dark: "FFFFFF6B"),
+                                    Theme.Colors.adaptive(light: "17140E0F", dark: "FFFFFF1A")
                                 ],
                                 startPoint: .top,
                                 endPoint: .bottom
@@ -162,7 +166,7 @@ struct CustomTabBar: View {
                         .font(.system(size: 19, weight: .medium))
                         .foregroundColor(selectedTab == tab
                             ? Theme.Colors.accent
-                            : Theme.Colors.secondaryText.opacity(0.45))
+                            : Theme.Colors.tertiaryText)
                         .scaleEffect(selectedTab == tab ? 1.05 : 1.0)
                 }
 
@@ -170,7 +174,7 @@ struct CustomTabBar: View {
                     .font(.system(size: 10, weight: selectedTab == tab ? .semibold : .regular))
                     .foregroundColor(selectedTab == tab
                         ? Theme.Colors.accent
-                        : Theme.Colors.secondaryText.opacity(0.45))
+                        : Theme.Colors.tertiaryText)
             }
             .offset(y: tab == .verg ? -3 : 0)
             .frame(maxWidth: .infinity)
@@ -194,7 +198,7 @@ struct CustomTabBar: View {
                     .font(.system(size: 10, weight: selectedTab == .write ? .semibold : .regular))
                     .foregroundColor(selectedTab == .write
                         ? Theme.Colors.accent
-                        : Theme.Colors.secondaryText.opacity(0.45))
+                        : Theme.Colors.tertiaryText)
             }
             .frame(maxWidth: .infinity)
             .frame(height: 56)
@@ -211,7 +215,7 @@ struct WriteTabIcon: View {
     let isSelected: Bool
 
     private var color: Color {
-        isSelected ? Theme.Colors.accent : Theme.Colors.secondaryText.opacity(0.45)
+        isSelected ? Theme.Colors.accent : Theme.Colors.tertiaryText
     }
 
     var body: some View {

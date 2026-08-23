@@ -20,7 +20,7 @@ struct LibraryView: View {
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            Theme.Colors.background.ignoresSafeArea()
 
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 32) {
@@ -57,7 +57,6 @@ struct LibraryView: View {
                 }
             )
         }
-        .preferredColorScheme(.dark)
         .sheet(item: $selectedBook) { book in
             BookDetailView(book: book, viewModel: viewModel)
                 .onDisappear {
@@ -81,11 +80,11 @@ struct LibraryView: View {
         VStack(alignment: .leading, spacing: 2) {
             Text("Archive")
                 .font(Theme.Typography.title)
-                .foregroundColor(.white)
+                .foregroundColor(Theme.Colors.primaryText)
 
             Text(headerSubtitle)
                 .font(Theme.Typography.subheadline)
-                .foregroundColor(.white.opacity(0.45))
+                .foregroundColor(Theme.Colors.secondaryText)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.top, Theme.Spacing.sm)
@@ -104,7 +103,7 @@ struct LibraryView: View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
             Text("ACHIEVEMENTS")
                 .font(.system(size: 11, weight: .semibold))
-                .foregroundColor(.white.opacity(0.4))
+                .foregroundColor(Theme.Colors.tertiaryText)
                 .padding(.horizontal, Theme.Spacing.xxs)
 
             if isStatsLocked {
@@ -119,7 +118,7 @@ struct LibraryView: View {
                         )
                     }
                 }
-                .background(Color.white.opacity(0.04))
+                .background(Theme.Colors.subtleFill)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
         }
@@ -133,13 +132,13 @@ struct LibraryView: View {
             HStack {
                 Text("DAYS LIT")
                     .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.4))
+                    .foregroundColor(Theme.Colors.tertiaryText)
 
                 Spacer()
 
                 Text(heatmapSummary)
                     .font(.system(size: 11))
-                    .foregroundColor(.white.opacity(0.35))
+                    .foregroundColor(Theme.Colors.tertiaryText)
             }
             .padding(.horizontal, Theme.Spacing.xxs)
 
@@ -155,7 +154,7 @@ struct LibraryView: View {
                     Spacer()
                     Text("Less")
                         .font(.system(size: 9))
-                        .foregroundColor(.white.opacity(0.35))
+                        .foregroundColor(Theme.Colors.tertiaryText)
                     ForEach(0..<5, id: \.self) { level in
                         RoundedRectangle(cornerRadius: 2)
                             .fill(HeatmapCell.fill(forLevel: level))
@@ -163,7 +162,7 @@ struct LibraryView: View {
                     }
                     Text("More")
                         .font(.system(size: 9))
-                        .foregroundColor(.white.opacity(0.35))
+                        .foregroundColor(Theme.Colors.tertiaryText)
                     Spacer()
                 }
 
@@ -192,7 +191,7 @@ struct LibraryView: View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
             Text("INSIGHTS")
                 .font(.system(size: 11, weight: .semibold))
-                .foregroundColor(.white.opacity(0.4))
+                .foregroundColor(Theme.Colors.tertiaryText)
                 .padding(.horizontal, Theme.Spacing.xxs)
 
             LazyVGrid(
@@ -265,7 +264,7 @@ struct LibraryView: View {
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                 Text("YEAR BY YEAR")
                     .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.4))
+                    .foregroundColor(Theme.Colors.tertiaryText)
                     .padding(.horizontal, Theme.Spacing.xxs)
 
                 VStack(spacing: 0) {
@@ -273,15 +272,15 @@ struct LibraryView: View {
                         HStack {
                             Text(String(entry.year))
                                 .font(.system(size: 15, design: .rounded).monospacedDigit())
-                                .foregroundColor(.white.opacity(0.6))
+                                .foregroundColor(Theme.Colors.secondaryText)
                             Spacer()
                             // Proportion bar — relative to the biggest year
                             GeometryReader { geo in
                                 ZStack(alignment: .leading) {
                                     RoundedRectangle(cornerRadius: 2)
-                                        .fill(Color.white.opacity(0.08))
+                                        .fill(Theme.Colors.hairline)
                                     RoundedRectangle(cornerRadius: 2)
-                                        .fill(Color.white.opacity(0.55))
+                                        .fill(Theme.Colors.accent)
                                         .frame(width: barWidth(maxPages: maxPages(years: years), pages: entry.pages, available: geo.size.width))
                                 }
                             }
@@ -289,7 +288,7 @@ struct LibraryView: View {
 
                             Text("\(entry.pages)")
                                 .font(.system(size: 15, weight: .semibold, design: .rounded).monospacedDigit())
-                                .foregroundColor(.white)
+                                .foregroundColor(Theme.Colors.primaryText)
                                 .frame(width: 52, alignment: .trailing)
                         }
                         .padding(.vertical, 10)
@@ -297,11 +296,11 @@ struct LibraryView: View {
 
                         if index < years.count - 1 {
                             Divider()
-                                .background(Color.white.opacity(0.06))
+                                .background(Theme.Colors.subtleFill)
                         }
                     }
                 }
-                .background(Color.white.opacity(0.04))
+                .background(Theme.Colors.subtleFill)
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             }
         }
@@ -322,11 +321,11 @@ struct LibraryView: View {
             HStack {
                 Text("LIBRARY")
                     .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.4))
+                    .foregroundColor(Theme.Colors.tertiaryText)
                 Spacer()
                 Text("\(viewModel.books.count)")
                     .font(.system(size: 11))
-                    .foregroundColor(.white.opacity(0.3))
+                    .foregroundColor(Theme.Colors.tertiaryText)
             }
             .padding(.horizontal, Theme.Spacing.xxs)
 
@@ -379,13 +378,13 @@ struct MilestoneRow: View {
         VStack(spacing: 0) {
             if !isFirst {
                 Divider()
-                    .background(Color.white.opacity(0.06))
+                    .background(Theme.Colors.subtleFill)
             }
 
             HStack(alignment: .firstTextBaseline) {
                 Text(milestone.title)
                     .font(.system(size: 17, weight: isEarned ? .bold : .regular, design: .rounded).monospacedDigit())
-                    .foregroundColor(isEarned ? .white : .white.opacity(0.35))
+                    .foregroundColor(isEarned ? Theme.Colors.primaryText : Theme.Colors.tertiaryText)
 
                 Spacer()
 
@@ -395,7 +394,7 @@ struct MilestoneRow: View {
                     }
                     Text(isEarned ? "earned" : remainingText)
                         .font(.system(size: 12, design: .rounded).monospacedDigit())
-                        .foregroundColor(isEarned ? .white.opacity(0.5) : .white.opacity(0.3))
+                        .foregroundColor(isEarned ? Theme.Colors.secondaryText : Theme.Colors.tertiaryText)
                 }
             }
             .padding(.horizontal, Theme.Spacing.md)
@@ -406,7 +405,7 @@ struct MilestoneRow: View {
                     Rectangle()
                         .fill(Color.clear)
                     Rectangle()
-                        .fill(isEarned ? Color.white.opacity(0.7) : Color.white.opacity(0.25))
+                        .fill(isEarned ? Theme.Colors.secondaryText : Theme.Colors.tertiaryText)
                         .frame(width: geo.size.width * progress)
                 }
             }
@@ -471,14 +470,14 @@ struct LockedMilestonesHint: View {
             HStack {
                 Text("Your place on the ladder, with The Golden Age.")
                     .font(Theme.Typography.subheadline)
-                    .foregroundColor(.white.opacity(0.5))
+                    .foregroundColor(Theme.Colors.secondaryText)
                 Spacer()
                 Image(systemName: "lock.fill")
                     .font(.system(size: 12))
-                    .foregroundColor(.white.opacity(0.35))
+                    .foregroundColor(Theme.Colors.tertiaryText)
             }
             .padding(Theme.Spacing.md)
-            .background(Color.white.opacity(0.04))
+            .background(Theme.Colors.subtleFill)
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
         .buttonStyle(.plain)
@@ -614,7 +613,7 @@ struct ContributionHeatmap: View {
                 let entry = labelledColumns[entryIndex]
                 Text(entry.label)
                     .font(.system(size: 8))
-                    .foregroundColor(.white.opacity(0.4))
+                    .foregroundColor(Theme.Colors.tertiaryText)
                     .fixedSize()
                     .offset(x: CGFloat(entry.column) * columnWidth)
             }
@@ -653,7 +652,7 @@ struct ContributionHeatmap: View {
             ForEach(letters.indices, id: \.self) { index in
                 Text(letters[index])
                     .font(.system(size: 9))
-                    .foregroundColor(.white.opacity(0.4))
+                    .foregroundColor(Theme.Colors.tertiaryText)
                     .lineLimit(1)
                     .fixedSize()
                     .frame(width: Self.gutterWidth, height: Self.cellSize, alignment: .leading)
@@ -671,7 +670,7 @@ struct HeatmapCell: View {
     /// GitHub's own contribution-graph greens, empty to brightest.
     static func fill(forLevel level: Int) -> Color {
         switch level {
-        case 0: return Color.white.opacity(0.07)
+        case 0: return Theme.Colors.adaptive(light: "E6E1D6", dark: "1A1A1A")
         case 1: return Color(hex: "0E4429")
         case 2: return Color(hex: "006D32")
         case 3: return Color(hex: "26A641")
@@ -714,7 +713,7 @@ struct StatTile: View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title.uppercased())
                 .font(.system(size: 10, weight: .semibold))
-                .foregroundColor(.white.opacity(0.4))
+                .foregroundColor(Theme.Colors.tertiaryText)
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
 
@@ -726,25 +725,25 @@ struct StatTile: View {
                 }
             }
             .font(.system(size: 28, weight: .bold, design: .rounded).monospacedDigit())
-            .foregroundColor(locked ? .white.opacity(0.3) : .white)
+            .foregroundColor(locked ? Theme.Colors.tertiaryText : Theme.Colors.primaryText)
             .lineLimit(1)
             .minimumScaleFactor(0.55)
 
             Text(caption)
                 .font(.system(size: 10))
-                .foregroundColor(.white.opacity(0.35))
+                .foregroundColor(Theme.Colors.tertiaryText)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
         }
         .frame(maxWidth: .infinity, minHeight: 86, alignment: .topLeading)
         .padding(Theme.Spacing.sm)
-        .background(Color.white.opacity(0.04))
+        .background(Theme.Colors.subtleFill)
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay(alignment: .topTrailing) {
             if locked {
                 Image(systemName: "lock.fill")
                     .font(.system(size: 10))
-                    .foregroundColor(.white.opacity(0.3))
+                    .foregroundColor(Theme.Colors.tertiaryText)
                     .padding(6)
             }
         }

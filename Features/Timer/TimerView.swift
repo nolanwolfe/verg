@@ -192,6 +192,8 @@ struct TimerView: View {
             UIApplication.shared.isIdleTimerDisabled = false
         }
         .statusBar(hidden: true)
+        // The writing ritual stays dark whatever the app is set to.
+        .preferredColorScheme(.dark)
     }
 
     // MARK: - Controls Overlay

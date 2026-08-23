@@ -74,6 +74,11 @@ struct ContentView: View {
             onboardingRunID += 1
             showOnboarding = true
         }
+        // Window-level, not scoped: the status bar and the floating tab bar
+        // both live outside any single screen, and a dark screen under a
+        // light status bar is black text on black. Setting it here takes the
+        // whole window with the tab that is showing.
+        .preferredColorScheme(resolvedColorScheme)
         .onReceive(
             NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)
         ) { _ in
@@ -173,6 +178,19 @@ struct ContentView: View {
 
     @State private var tabBarVisibility: TabBarVisibility = .visible
     @State private var keyboardVisible = false
+
+    /// The candle tabs are dark in every appearance — they are the room the
+    /// ritual happens in, and Write dims the screen the moment you start.
+    /// Everything else follows the Appearance setting, and `nil` there means
+    /// the phone's own.
+    private var resolvedColorScheme: ColorScheme? {
+        switch selectedTab {
+        case .write, .verg:
+            return .dark
+        case .journal, .library, .settings:
+            return storageService.settings.appearance.colorScheme
+        }
+    }
 
     @ViewBuilder
     private var currentTabContent: some View {

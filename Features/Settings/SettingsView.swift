@@ -68,6 +68,9 @@ struct SettingsView: View {
         .sheet(isPresented: $viewModel.showCalendarStylePicker) {
             calendarStylePickerSheet
         }
+        .sheet(isPresented: $viewModel.showAppearancePicker) {
+            appearancePickerSheet
+        }
         .sheet(isPresented: $showPromptLibrary) {
             PromptLibraryView()
                 .environmentObject(storageService)
@@ -280,6 +283,19 @@ struct SettingsView: View {
                     viewModel.showCalendarStylePicker = true
                 }
             )
+
+            settingsDivider
+
+            SettingsRow(
+                icon: "circle.lefthalf.filled",
+                iconColor: Theme.Colors.accent,
+                title: "Appearance",
+                value: viewModel.appearance.displayName,
+                action: {
+                    AudioService.shared.playUITick()
+                    viewModel.showAppearancePicker = true
+                }
+            )
         }
     }
 
@@ -429,6 +445,58 @@ struct SettingsView: View {
                         viewModel.showRedeemSheet = false
                     }
                     .foregroundColor(Theme.Colors.accent)
+                }
+            }
+        }
+        .presentationDetents([.medium])
+    }
+
+    // MARK: - Appearance Picker Sheet
+    private var appearancePickerSheet: some View {
+        NavigationView {
+            ZStack {
+                Theme.Colors.background.ignoresSafeArea()
+
+                VStack(spacing: Theme.Spacing.sm) {
+                    ForEach(AppearanceMode.allCases) { mode in
+                        Button {
+                            AudioService.shared.playUITick()
+                            viewModel.appearance = mode
+                            viewModel.showAppearancePicker = false
+                        } label: {
+                            HStack {
+                                Text(mode.displayName)
+                                    .font(Theme.Typography.body)
+                                    .foregroundColor(Theme.Colors.primaryText)
+                                Spacer()
+                                if viewModel.appearance == mode {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(Theme.Colors.accent)
+                                }
+                            }
+                            .padding(Theme.Spacing.md)
+                            .background(Theme.Colors.cardBackground)
+                            .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small, style: .continuous))
+                        }
+                    }
+
+                    Text("The candle screens stay dark either way — they dim your screen on purpose.")
+                        .font(Theme.Typography.footnote)
+                        .foregroundColor(Theme.Colors.secondaryText)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, Theme.Spacing.md)
+                        .padding(.top, Theme.Spacing.xs)
+
+                    Spacer()
+                }
+                .padding(Theme.Spacing.md)
+            }
+            .navigationTitle("Appearance")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") { viewModel.showAppearancePicker = false }
+                        .foregroundColor(Theme.Colors.accent)
                 }
             }
         }

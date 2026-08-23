@@ -294,6 +294,9 @@ struct FullScreenImageView: View {
             }
             .opacity(1 - dismissDragProgress)
         }
+        // A photo viewer is dark everywhere — Photos, Files, Messages. The
+        // page is the only thing meant to be lit here, in either appearance.
+        .preferredColorScheme(.dark)
         .confirmationDialog(
             "Delete this page?",
             isPresented: $showDeleteConfirmation,
