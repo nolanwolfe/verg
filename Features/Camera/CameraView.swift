@@ -185,9 +185,21 @@ struct CameraView: View {
                 }
             }
 
+            zoomSelector
+
             Spacer()
 
-            captureButton
+            HStack {
+                Spacer()
+                captureButton
+                    .overlay(alignment: .trailing) {
+                        if viewModel.hasFlash {
+                            torchButton
+                                .offset(x: 76)
+                        }
+                    }
+                Spacer()
+            }
 
             // Library picker
             Button {
@@ -201,6 +213,64 @@ struct CameraView: View {
             Spacer()
                 .frame(height: Theme.Spacing.xxl)
         }
+    }
+
+    // MARK: - Zoom Selector
+    /// Only shown when there is a real choice to make. On a device whose back
+    /// camera is a single wide lens there is nothing to switch to, and an
+    /// inert "1x" pill would just be furniture.
+    @ViewBuilder
+    private var zoomSelector: some View {
+        if viewModel.zoomOptions.count > 1 {
+            HStack(spacing: Theme.Spacing.xxs) {
+                ForEach(viewModel.zoomOptions, id: \.self) { factor in
+                    let isSelected = abs(viewModel.zoomFactor - factor) < 0.05
+                    Button {
+                        AudioService.shared.playUITick()
+                        viewModel.setZoom(factor)
+                    } label: {
+                        Text(zoomLabel(factor))
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(isSelected ? Theme.Colors.background : Theme.Colors.primaryText)
+                            .frame(width: 44, height: 32)
+                            .background(
+                                Capsule().fill(
+                                    isSelected
+                                        ? Theme.Colors.primaryText
+                                        : Theme.Colors.cardBackground
+                                )
+                            )
+                    }
+                }
+            }
+        }
+    }
+
+    /// Widest lens reads as "0.5x" the way the system camera labels it, since
+    /// that is the one people reach for to get close to the page.
+    private func zoomLabel(_ factor: CGFloat) -> String {
+        guard let wideSwitch = viewModel.zoomOptions.dropFirst().first,
+              viewModel.supportsMacro else {
+            return factor == 1 ? "1x" : String(format: "%gx", factor)
+        }
+        let relative = factor / wideSwitch
+        return relative < 1
+            ? String(format: "%.1gx", relative)
+            : String(format: "%gx", relative)
+    }
+
+    // MARK: - Torch
+    private var torchButton: some View {
+        Button {
+            AudioService.shared.playUITick()
+            viewModel.toggleTorch()
+        } label: {
+            Image(systemName: viewModel.isTorchOn ? "bolt.fill" : "bolt.slash")
+                .font(.system(size: 18, weight: .medium))
+                .foregroundColor(viewModel.isTorchOn ? Theme.Colors.flameOuter : Theme.Colors.secondaryText)
+                .frame(width: 44, height: 44)
+        }
+        .accessibilityLabel(viewModel.isTorchOn ? "Turn light off" : "Turn light on")
     }
 
     private func showFocusRing(at point: CGPoint) {

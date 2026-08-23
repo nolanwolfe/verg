@@ -355,13 +355,18 @@ private struct FullScreenPageView: View {
                     image = full
                     hasFullRes = true
                 }
-            } else {
+            } else if image == nil {
                 // Just outside the sharp window but still in the swipe
-                // window: keep a thumbnail so the page never flashes empty
-                // as it slides in.
-                if hasFullRes || image == nil {
-                    image = await loadThumbnail(session) ?? image
-                    hasFullRes = false
+                // window: make sure there is *something* to show so the page
+                // never slides in empty. A page that already decoded its
+                // full-res image keeps it — this used to overwrite it with a
+                // thumbnail the moment it fell out of the near window, so
+                // swiping back and forth visibly dropped each page to blurry
+                // and then popped it sharp again.
+                if let cached = peekThumbnail(session) {
+                    image = cached
+                } else {
+                    image = await loadThumbnail(session)
                 }
             }
         }

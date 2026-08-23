@@ -12,6 +12,54 @@ pages. Journal becomes just the current journal. Books gain rename and
 cover-color customization. The tab bar hides on scroll-down and returns
 on scroll-up on the Library screen.
 
+### Fixed — journal swiping, close-up capture, and a background-thread write
+
+**Swiping between journal pages.** The fullscreen viewer layers a
+swipe-down-to-dismiss recogniser over the pager's own horizontal gesture,
+and it was configured to recognise simultaneously with *everything*. So a
+sideways swipe between entries also ran the dismiss handler: any downward
+drift in the swipe slid the photo around inside its page and faded the
+chrome out mid-transition. The dismiss pan now only begins on a
+predominantly-downward drag, and only shares touches with its own scroll
+view's recognisers.
+
+- A `.cancelled` gesture no longer counts as a dismissal. It shared a branch
+  with `.ended`, so a drag the system took away could close the viewer on the
+  user's behalf.
+- Pages no longer downgrade a decoded full-resolution image back to a
+  thumbnail when they leave the sharp window — swiping back and forth
+  visibly dropped each page to blurry, then popped it sharp again.
+- The full-image cache ceiling (64 MB / 8 objects) sat exactly on top of the
+  viewer's own ±2 page window, so every swipe evicted a page that was about
+  to be needed. Raised to 112 MB / 12.
+
+**Close-up photos of a page.** The camera asked for
+`.builtInWideAngleCamera` directly. That lens cannot focus nearer than about
+10 cm — closer than that and the page fills the frame but never comes sharp,
+which is exactly the shot this app exists to take. iOS reaches macro by
+switching to the *ultra-wide* lens, and only offers that when the session is
+given a virtual multi-camera device. Now prefers triple → dual-wide → dual →
+wide, and opts in to automatic lens switching.
+
+- Opens on the wide lens. On a virtual device zoom factor 1.0 selects the
+  ultra-wide, so the default would have been a distorted, far-too-wide frame
+  labelled "1x".
+- Added a 0.5x/1x/2x selector (shown only when the device has a real choice)
+  and a torch toggle, since this is an app about writing in a dim room.
+- Session configuration moved off the main thread, and both early-return
+  paths now balance `beginConfiguration()` — they returned without
+  committing, leaving the session wedged mid-configuration.
+- The torch is extinguished when the camera closes.
+
+**Other**
+
+- Saving a page mutated `@Published` state from a background queue,
+  publishing into SwiftUI off-main. The encode and disk write stay
+  backgrounded; the state change is now on the main actor.
+- Tapping a locked page in the Journal tab did nothing at all: it set the
+  date the paywall would explain but never presented it.
+
+
 ### Added — Library
 - New **Library** tab (replaces Stats in the tab order: Verg · Journal ·
   Write · Library · Settings). Black-and-white archive aesthetic — the

@@ -159,19 +159,29 @@ struct ZoomableImageView: UIViewRepresentable {
                 let dragged = rubberBanded(translation.y, dimension: scrollView.bounds.height)
                 imageView.transform = CGAffineTransform(translationX: translation.x * 0.25, y: dragged)
                 parent.onDragProgressChanged(min(1, dragged / parent.dismissDistance))
-            case .ended, .cancelled:
+            case .ended:
                 let velocity = gesture.velocity(in: scrollView)
                 if translation.y > parent.dismissDistance || velocity.y > parent.dismissVelocity {
                     parent.onDismiss()
                 } else {
-                    UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseOut) {
-                        imageView.transform = .identity
-                    }
-                    parent.onDragProgressChanged(0)
+                    resetDrag(imageView)
                 }
+            case .cancelled, .failed:
+                // A cancelled gesture is not a decision. This used to share a
+                // branch with `.ended`, so a drag the system took away — the
+                // pager claiming the touch, a phone call — could dismiss the
+                // viewer on the user's behalf.
+                resetDrag(imageView)
             default:
                 break
             }
+        }
+
+        private func resetDrag(_ imageView: UIImageView) {
+            UIView.animate(withDuration: 0.25, delay: 0, options: .curveEaseOut) {
+                imageView.transform = .identity
+            }
+            parent.onDragProgressChanged(0)
         }
 
         /// Standard iOS rubber-band curve — diminishing returns past the
@@ -182,11 +192,29 @@ struct ZoomableImageView: UIViewRepresentable {
             return (1 - (1 / ((delta * c / dimension) + 1))) * dimension
         }
 
+        /// The dismiss pan may only claim a *downward* drag. Without this it
+        /// began on every touch, including the horizontal ones belonging to
+        /// the pager: swiping between pages ran `handleDismissPan` too, so any
+        /// downward drift in the swipe slid the photo inside its own page and
+        /// faded the chrome out — the flicker/jump seen when moving from one
+        /// entry to the next. Direction is judged from velocity at the moment
+        /// the gesture would begin, which is how UIKit itself disambiguates.
+        func gestureRecognizerShouldBegin(_ gestureRecognizer: UIGestureRecognizer) -> Bool {
+            guard let pan = gestureRecognizer as? UIPanGestureRecognizer,
+                  let scrollView else { return true }
+            guard scrollView.zoomScale <= scrollView.minimumZoomScale + 0.01 else { return false }
+            let velocity = pan.velocity(in: scrollView)
+            return velocity.y > abs(velocity.x)
+        }
+
         func gestureRecognizer(
             _ gestureRecognizer: UIGestureRecognizer,
             shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer
         ) -> Bool {
-            true
+            // Only share touches with this scroll view's own recognizers (its
+            // pan and pinch). Returning `true` unconditionally also opted in
+            // the pager's gesture, letting both drive the same drag.
+            otherGestureRecognizer.view === scrollView
         }
     }
 }

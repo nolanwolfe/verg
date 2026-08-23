@@ -37,8 +37,14 @@ final class StorageService: ObservableObject {
 
     // MARK: - Initialization
     private init() {
-        imageCache.countLimit = 8
-        imageCache.totalCostLimit = 64 * 1024 * 1024
+        // The fullscreen viewer keeps a ±2 swipe window of full-resolution
+        // pages alive. At the 2048px storage cap each decodes to ~12 MB, so
+        // the old 64 MB / 8-object ceiling sat exactly on top of that window:
+        // every swipe evicted a page that was about to be needed again, and
+        // swiping back re-decoded it in front of the user. Enough headroom
+        // that the window plus a couple of neighbours stays resident.
+        imageCache.countLimit = 12
+        imageCache.totalCostLimit = 112 * 1024 * 1024
         thumbnailCache.countLimit = 400
         thumbnailCache.totalCostLimit = 48 * 1024 * 1024
         loadAllData()
@@ -225,31 +231,50 @@ final class StorageService: ObservableObject {
     }
 
     // MARK: - Session Management
-    /// Save a new session with the captured image
+    /// Save a new session with the captured image.
+    ///
+    /// Two phases on purpose. Encoding a 12 MP capture and writing it to disk
+    /// takes long enough to drop frames, so it happens off the main thread —
+    /// but `sessions` and `stats` are `@Published`, and mutating those from a
+    /// background queue is what the caller used to do. That publishes into
+    /// SwiftUI off-main, which is undefined behaviour: the journal could miss
+    /// the new page, or tear down mid-update. The write is backgrounded and
+    /// the state change is not.
+    @MainActor
     @discardableResult
-    func saveSession(image: UIImage, duration: TimeInterval, activeDuration: TimeInterval? = nil, prompt: String? = nil) -> Session? {
-        // Generate unique filename
+    func saveSession(
+        image: UIImage,
+        duration: TimeInterval,
+        activeDuration: TimeInterval? = nil,
+        prompt: String? = nil
+    ) async -> Session? {
         let filename = "\(UUID().uuidString).jpg"
         let imageURL = imagesDirectory.appendingPathComponent(filename)
 
-        // Downsize + normalize orientation, then compress and save
-        let normalized = normalizeForStorage(image)
-        guard let imageData = normalized.jpegData(compressionQuality: 0.8) else {
-            return nil
+        let wrote = await withCheckedContinuation { continuation in
+            imageIOQueue.async {
+                // Downsize + normalize orientation, then compress and save
+                let normalized = Self.normalizeForStorage(image)
+                guard let imageData = normalized.jpegData(compressionQuality: 0.8) else {
+                    continuation.resume(returning: false)
+                    return
+                }
+                do {
+                    // Encrypted at rest while the device is locked — capture
+                    // only happens in the foreground, so .complete is safe
+                    try imageData.write(to: imageURL, options: [.atomic, .completeFileProtection])
+                    continuation.resume(returning: true)
+                } catch {
+                    #if DEBUG
+                    print("Error saving image: \(error)")
+                    #endif
+                    continuation.resume(returning: false)
+                }
+            }
         }
 
-        do {
-            // Encrypted at rest while the device is locked — capture only
-            // happens with the app in the foreground, so .complete is safe
-            try imageData.write(to: imageURL, options: [.atomic, .completeFileProtection])
-        } catch {
-            #if DEBUG
-            print("Error saving image: \(error)")
-            #endif
-            return nil
-        }
+        guard wrote else { return nil }
 
-        // Create session
         let session = Session(
             date: Date(),
             duration: duration,
@@ -259,11 +284,9 @@ final class StorageService: ObservableObject {
             createdAt: Date()
         )
 
-        // Update sessions array
         sessions.insert(session, at: 0)
         saveSessions()
 
-        // Update stats
         stats.recordSession()
         saveStats()
 
@@ -403,7 +426,9 @@ final class StorageService: ObservableObject {
 
     /// Cap stored photos at maxDimension px on the long edge and bake orientation
     /// into the pixels so every later decode is cheap and upright.
-    private func normalizeForStorage(_ image: UIImage, maxDimension: CGFloat = 2048) -> UIImage {
+    /// Static: touches no instance state, so the save path can call it from a
+    /// background queue without capturing the (non-Sendable) service.
+    private static func normalizeForStorage(_ image: UIImage, maxDimension: CGFloat = 2048) -> UIImage {
         let pixelWidth = image.size.width * image.scale
         let pixelHeight = image.size.height * image.scale
         let longEdge = max(pixelWidth, pixelHeight)

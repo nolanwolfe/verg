@@ -15,10 +15,23 @@ final class CameraViewModel: NSObject, ObservableObject {
     @Published var isSaving: Bool = false
     @Published var showPhotoPicker: Bool = false
 
+    // MARK: - Capture Controls
+    /// True when the device can reach macro range by switching to its
+    /// ultra-wide lens — i.e. when close-ups of a page will actually focus.
+    @Published private(set) var supportsMacro: Bool = false
+    @Published private(set) var zoomOptions: [CGFloat] = [1]
+    @Published private(set) var zoomFactor: CGFloat = 1
+    @Published private(set) var hasFlash: Bool = false
+    @Published private(set) var isTorchOn: Bool = false
+
     // MARK: - Camera Properties
     let session = AVCaptureSession()
     private var photoOutput = AVCapturePhotoOutput()
     private var currentDevice: AVCaptureDevice?
+    /// All session and device configuration happens here. AVCaptureSession is
+    /// not thread-safe and its configuration calls block; keeping them off the
+    /// main thread is what stops the camera screen hitching as it opens.
+    private let sessionQueue = DispatchQueue(label: "verg.camera.session")
 
     // MARK: - Dependencies
     private let storageService: StorageService
@@ -71,21 +84,128 @@ final class CameraViewModel: NSObject, ObservableObject {
         }
     }
 
-    private func configureSession() {
-        session.beginConfiguration()
-        session.sessionPreset = .photo
+    /// The back camera to shoot pages with, best first.
+    ///
+    /// This is the whole close-up story. The wide lens alone cannot focus
+    /// nearer than roughly 10 cm, which is further than anyone holds a phone
+    /// over their own handwriting — the page fills the frame but never comes
+    /// sharp. iOS gets macro by *switching to the ultra-wide lens*, and it
+    /// will only do that when the session is fed one of the virtual
+    /// multi-camera devices below. Asking for `.builtInWideAngleCamera`
+    /// directly, as this did, opts out of macro entirely.
+    private func bestAvailableCamera() -> AVCaptureDevice? {
+        let preferred: [AVCaptureDevice.DeviceType] = [
+            .builtInTripleCamera,      // Pro: wide + ultra-wide + tele
+            .builtInDualWideCamera,    // non-Pro modern: wide + ultra-wide
+            .builtInDualCamera,        // older: wide + tele, no macro
+            .builtInWideAngleCamera    // last resort, every device has one
+        ]
+        for type in preferred {
+            if let device = AVCaptureDevice.default(type, for: .video, position: .back) {
+                return device
+            }
+        }
+        return nil
+    }
 
-        guard let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back) else {
-            errorMessage = "Unable to access camera"
-            showError = true
+    private func configureSession() {
+        sessionQueue.async { [weak self] in
+            guard let self else { return }
+            self.configureSessionOnQueue()
+        }
+    }
+
+    /// Always runs on `sessionQueue`. AVCaptureSession configuration blocks
+    /// its caller for a noticeable beat — this used to run on the main thread,
+    /// stalling the UI between the timer ending and the camera appearing.
+    private func configureSessionOnQueue() {
+        guard let camera = bestAvailableCamera() else {
+            DispatchQueue.main.async { [weak self] in
+                self?.errorMessage = "Unable to access camera"
+                self?.showError = true
+            }
             return
         }
 
         currentDevice = camera
 
-        // Configure for natural light: continuous white balance and auto exposure
+        session.beginConfiguration()
+        // Every exit from here on must balance this, or the session is left
+        // mid-configuration and silently never starts. The two early returns
+        // below used to do exactly that.
+        defer { session.commitConfiguration() }
+
+        session.sessionPreset = .photo
+
+        do {
+            let input = try AVCaptureDeviceInput(device: camera)
+            guard session.canAddInput(input) else {
+                DispatchQueue.main.async { [weak self] in
+                    self?.errorMessage = "Unable to configure camera"
+                    self?.showError = true
+                }
+                return
+            }
+            session.addInput(input)
+        } catch {
+            DispatchQueue.main.async { [weak self] in
+                self?.errorMessage = "Unable to configure camera: \(error.localizedDescription)"
+                self?.showError = true
+            }
+            return
+        }
+
+        if session.canAddOutput(photoOutput) {
+            session.addOutput(photoOutput)
+            photoOutput.maxPhotoQualityPrioritization = .quality
+            if let maxDimensions = camera.activeFormat.supportedMaxPhotoDimensions
+                .max(by: { $0.width * $0.height < $1.width * $1.height }) {
+                photoOutput.maxPhotoDimensions = maxDimensions
+            }
+        }
+
+        configureDevice(camera)
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(subjectAreaDidChange),
+            name: .AVCaptureDeviceSubjectAreaDidChange,
+            object: camera
+        )
+
+        let hasMacro = camera.constituentDevices.contains { $0.deviceType == .builtInUltraWideCamera }
+        let zooms = zoomOptions(for: camera)
+
+        // Open on the wide lens, not the ultra-wide. On a virtual device a
+        // zoom factor of 1.0 selects the *ultra-wide*, so leaving the default
+        // alone would greet the user with a distorted, far-too-wide frame and
+        // call it 1x. The wide lens sits at the first switch-over factor.
+        let initialZoom = hasMacro ? (zooms.dropFirst().first ?? 1) : 1
+        if initialZoom != 1 {
+            try? camera.lockForConfiguration()
+            camera.videoZoomFactor = initialZoom
+            camera.unlockForConfiguration()
+        }
+
+        DispatchQueue.main.async { [weak self] in
+            self?.supportsMacro = hasMacro
+            self?.zoomOptions = zooms
+            self?.zoomFactor = initialZoom
+            self?.hasFlash = camera.hasTorch
+        }
+
+        session.startRunning()
+        DispatchQueue.main.async { [weak self] in
+            self?.isCameraReady = true
+        }
+    }
+
+    /// Focus/exposure/white-balance tuned for a sheet of paper at arm's reach.
+    private func configureDevice(_ camera: AVCaptureDevice) {
         do {
             try camera.lockForConfiguration()
+            defer { camera.unlockForConfiguration() }
+
             if camera.isWhiteBalanceModeSupported(.continuousAutoWhiteBalance) {
                 camera.whiteBalanceMode = .continuousAutoWhiteBalance
             }
@@ -99,45 +219,67 @@ final class CameraViewModel: NSObject, ObservableObject {
             if camera.isAutoFocusRangeRestrictionSupported {
                 camera.autoFocusRangeRestriction = .near
             }
+            // Let the system drop to the ultra-wide when the page gets close.
+            // Without this a virtual device stays on whichever lens it starts
+            // on, so picking the triple camera above would buy nothing.
+            if #available(iOS 16.0, *), camera.isVirtualDevice {
+                camera.setPrimaryConstituentDeviceSwitchingBehavior(.auto, restrictedSwitchingBehaviorConditions: [])
+            }
             camera.isSubjectAreaChangeMonitoringEnabled = true
-            camera.unlockForConfiguration()
         } catch {
             // Continue with defaults if configuration fails
         }
+    }
 
-        NotificationCenter.default.addObserver(
-            self,
-            selector: #selector(subjectAreaDidChange),
-            name: .AVCaptureDeviceSubjectAreaDidChange,
-            object: camera
-        )
-
-        do {
-            let input = try AVCaptureDeviceInput(device: camera)
-            if session.canAddInput(input) {
-                session.addInput(input)
-            }
-        } catch {
-            errorMessage = "Unable to configure camera: \(error.localizedDescription)"
-            showError = true
-            return
-        }
-
-        if session.canAddOutput(photoOutput) {
-            session.addOutput(photoOutput)
-            photoOutput.maxPhotoQualityPrioritization = .quality
-            if let maxDimensions = currentDevice?.activeFormat.supportedMaxPhotoDimensions
-                .max(by: { $0.width * $0.height < $1.width * $1.height }) {
-                photoOutput.maxPhotoDimensions = maxDimensions
+    /// The zoom factors worth offering: ultra-wide (if present), 1x, and 2x
+    /// when the hardware can reach it without visible upscaling.
+    private func zoomOptions(for camera: AVCaptureDevice) -> [CGFloat] {
+        var options: [CGFloat] = [1]
+        if camera.constituentDevices.contains(where: { $0.deviceType == .builtInUltraWideCamera }) {
+            // On a virtual device 1.0 is the ultra-wide, and the wide sits at
+            // the first switch-over factor (2.0 on current hardware).
+            options = [1]
+            if let wideSwitch = camera.virtualDeviceSwitchOverVideoZoomFactors.first {
+                options.append(CGFloat(truncating: wideSwitch))
             }
         }
+        if let last = options.last, camera.maxAvailableVideoZoomFactor >= last * 2 {
+            options.append(last * 2)
+        }
+        return options
+    }
 
-        session.commitConfiguration()
+    /// Set the optical/digital zoom. On a virtual device this is also what
+    /// moves between lenses, so it doubles as the macro control.
+    func setZoom(_ factor: CGFloat) {
+        sessionQueue.async { [weak self] in
+            guard let self, let camera = self.currentDevice else { return }
+            let clamped = max(camera.minAvailableVideoZoomFactor,
+                              min(factor, camera.maxAvailableVideoZoomFactor))
+            do {
+                try camera.lockForConfiguration()
+                camera.videoZoomFactor = clamped
+                camera.unlockForConfiguration()
+                DispatchQueue.main.async { self.zoomFactor = clamped }
+            } catch {
+                // Best-effort
+            }
+        }
+    }
 
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            self?.session.startRunning()
-            DispatchQueue.main.async {
-                self?.isCameraReady = true
+    /// Candle-lit rooms are dark. The torch (not a strobe) gives even light on
+    /// a page without blowing out the middle the way a flash does at 20 cm.
+    func toggleTorch() {
+        sessionQueue.async { [weak self] in
+            guard let self, let camera = self.currentDevice, camera.hasTorch else { return }
+            let turningOn = !camera.isTorchActive
+            do {
+                try camera.lockForConfiguration()
+                camera.torchMode = turningOn ? .on : .off
+                camera.unlockForConfiguration()
+                DispatchQueue.main.async { self.isTorchOn = turningOn }
+            } catch {
+                // Best-effort
             }
         }
     }
@@ -167,23 +309,23 @@ final class CameraViewModel: NSObject, ObservableObject {
         // or saving them.
         isSaving = true
 
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            guard let self = self else { return }
-            let session = self.storageService.saveSession(
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            // saveSession backgrounds the encode/write itself and mutates its
+            // published state on the main actor, so this stays on main.
+            let session = await self.storageService.saveSession(
                 image: image,
                 duration: self.sessionDuration,
                 activeDuration: self.sessionActiveDuration,
                 prompt: self.sessionPrompt
             )
-            DispatchQueue.main.async {
-                self.isSaving = false
-                if let session {
-                    self.audioService.playHaptic(.success)
-                    self.onPhotoSaved?(session)
-                } else {
-                    self.errorMessage = "Failed to save photo. Please try again."
-                    self.showError = true
-                }
+            self.isSaving = false
+            if let session {
+                self.audioService.playHaptic(.success)
+                self.onPhotoSaved?(session)
+            } else {
+                self.errorMessage = "Failed to save photo. Please try again."
+                self.showError = true
             }
         }
     }
@@ -199,8 +341,16 @@ final class CameraViewModel: NSObject, ObservableObject {
             name: .AVCaptureDeviceSubjectAreaDidChange,
             object: currentDevice
         )
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            self?.session.stopRunning()
+        sessionQueue.async { [weak self] in
+            guard let self else { return }
+            // Leaving the torch burning would keep it lit behind the app.
+            if let camera = self.currentDevice, camera.hasTorch, camera.isTorchActive {
+                try? camera.lockForConfiguration()
+                camera.torchMode = .off
+                camera.unlockForConfiguration()
+            }
+            self.session.stopRunning()
+            DispatchQueue.main.async { self.isTorchOn = false }
         }
     }
 
@@ -208,46 +358,50 @@ final class CameraViewModel: NSObject, ObservableObject {
 
     /// Tap-to-focus at a point in capture-device coordinates (0...1)
     func focus(at devicePoint: CGPoint) {
-        guard let camera = currentDevice else { return }
-        do {
-            try camera.lockForConfiguration()
-            if camera.isFocusPointOfInterestSupported, camera.isFocusModeSupported(.autoFocus) {
-                camera.focusPointOfInterest = devicePoint
-                camera.focusMode = .autoFocus
+        sessionQueue.async { [weak self] in
+            guard let camera = self?.currentDevice else { return }
+            do {
+                try camera.lockForConfiguration()
+                defer { camera.unlockForConfiguration() }
+                if camera.isFocusPointOfInterestSupported, camera.isFocusModeSupported(.autoFocus) {
+                    camera.focusPointOfInterest = devicePoint
+                    camera.focusMode = .autoFocus
+                }
+                if camera.isExposurePointOfInterestSupported, camera.isExposureModeSupported(.autoExpose) {
+                    camera.exposurePointOfInterest = devicePoint
+                    camera.exposureMode = .autoExpose
+                }
+                // Keep monitoring so continuous focus resumes when the scene changes
+                camera.isSubjectAreaChangeMonitoringEnabled = true
+            } catch {
+                // Focus is best-effort; ignore configuration failures
             }
-            if camera.isExposurePointOfInterestSupported, camera.isExposureModeSupported(.autoExpose) {
-                camera.exposurePointOfInterest = devicePoint
-                camera.exposureMode = .autoExpose
-            }
-            // Keep monitoring so continuous focus resumes when the scene changes
-            camera.isSubjectAreaChangeMonitoringEnabled = true
-            camera.unlockForConfiguration()
-        } catch {
-            // Focus is best-effort; ignore configuration failures
         }
     }
 
     /// Scene changed after a tap-to-focus — return to continuous auto focus/exposure
     @objc private func subjectAreaDidChange() {
-        guard let camera = currentDevice else { return }
-        do {
-            try camera.lockForConfiguration()
-            let center = CGPoint(x: 0.5, y: 0.5)
-            if camera.isFocusPointOfInterestSupported {
-                camera.focusPointOfInterest = center
+        sessionQueue.async { [weak self] in
+            guard let camera = self?.currentDevice else { return }
+            do {
+                try camera.lockForConfiguration()
+                defer { camera.unlockForConfiguration() }
+                let center = CGPoint(x: 0.5, y: 0.5)
+                if camera.isFocusPointOfInterestSupported {
+                    camera.focusPointOfInterest = center
+                }
+                if camera.isFocusModeSupported(.continuousAutoFocus) {
+                    camera.focusMode = .continuousAutoFocus
+                }
+                if camera.isExposurePointOfInterestSupported {
+                    camera.exposurePointOfInterest = center
+                }
+                if camera.isExposureModeSupported(.continuousAutoExposure) {
+                    camera.exposureMode = .continuousAutoExposure
+                }
+            } catch {
+                // Best-effort
             }
-            if camera.isFocusModeSupported(.continuousAutoFocus) {
-                camera.focusMode = .continuousAutoFocus
-            }
-            if camera.isExposurePointOfInterestSupported {
-                camera.exposurePointOfInterest = center
-            }
-            if camera.isExposureModeSupported(.continuousAutoExposure) {
-                camera.exposureMode = .continuousAutoExposure
-            }
-            camera.unlockForConfiguration()
-        } catch {
-            // Best-effort
         }
     }
 }

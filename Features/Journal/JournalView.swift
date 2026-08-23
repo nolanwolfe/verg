@@ -27,7 +27,14 @@ struct JournalView: View {
                     peekThumbnail: { viewModel.cachedThumbnail(for: $0) },
                     onSelect: { viewModel.selectSession($0, in: viewModel.currentSessions) },
                     isLocked: { !gatingService.canViewPage(dated: $0.date) },
-                    onLockedTap: { session in paywallContext = session.date },
+                    onLockedTap: { session in
+                        // Both, always: `paywallContext` alone set the date
+                        // the paywall would explain and never presented it,
+                        // so tapping a locked page in the journal did nothing
+                        // at all.
+                        paywallContext = session.date
+                        showPaywall = true
+                    },
                     emptyStateMessage: viewModel.books.isEmpty
                         ? "Complete a writing session to capture your first page"
                         : "Fresh journal — complete a session to add your first page"
