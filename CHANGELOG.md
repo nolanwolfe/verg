@@ -12,6 +12,28 @@ pages. Journal becomes just the current journal. Books gain rename and
 cover-color customization. The tab bar hides on scroll-down and returns
 on scroll-up on the Library screen.
 
+### Added — app icon appearances; scripts can be edited
+
+**Icon.** The catalog carried one image, so iOS derived the dark and tinted
+variants itself — and its tinted derivation flattens a dark square with a
+small bright flame into a block, losing the flame, which is the whole mark.
+All three appearances are declared now. `appstore-dark.png` is the existing
+mark, which is already a dark-ground icon; `appstore-tinted.png` is a proper
+greyscale conversion where luminance alone carries the candle, which is what
+iOS tints. Both are reasonable defaults meant to be replaced — see the
+appiconset's README.
+
+**Scripts could not be edited.** Once written, the only way to change one was
+to delete it and start over. Rows open the editor now, by tap or from the
+context menu, and `PromptEditorView` serves both cases — the fields, folder
+picker and validation are identical, only the title and what Save does
+differ.
+
+**One word for the thing.** The library called itself "Your scripts" and then
+headed its own list "YOUR PROMPTS". Everything user-facing says *script* now,
+the paywall's feature line included.
+
+
 ### Changed — light is the default
 
 Appearance now defaults to Light rather than System, including for installs

@@ -106,6 +106,9 @@ struct PromptLibraryView: View {
     @State private var showAddPrompt = false
     @State private var showAddFolder = false
     @State private var newFolderName = ""
+    /// The script being edited. Presented with `item:` so the row that was
+    /// tapped travels with the sheet.
+    @State private var editingPrompt: WritingPrompt?
 
     var body: some View {
         NavigationView {
@@ -132,7 +135,7 @@ struct PromptLibraryView: View {
                                     promptRow(prompt)
                                 }
                             } header: {
-                                Text(storageService.promptFolders.isEmpty ? "YOUR PROMPTS" : "NO FOLDER")
+                                Text(storageService.promptFolders.isEmpty ? "YOUR SCRIPTS" : "NO FOLDER")
                                     .foregroundColor(Theme.Colors.secondaryText)
                             }
                         }
@@ -171,6 +174,10 @@ struct PromptLibraryView: View {
                 PromptEditorView()
                     .environmentObject(storageService)
             }
+            .sheet(item: $editingPrompt) { prompt in
+                PromptEditorView(editing: prompt)
+                    .environmentObject(storageService)
+            }
             .alert("New folder", isPresented: $showAddFolder) {
                 TextField("Name", text: $newFolderName)
                 Button("Create") { storageService.addPromptFolder(newFolderName) }
@@ -204,9 +211,24 @@ struct PromptLibraryView: View {
     }
 
     private func promptRow(_ prompt: WritingPrompt) -> some View {
-        Text(prompt.text)
-            .font(Theme.Typography.body)
-            .foregroundColor(Theme.Colors.primaryText)
+        // Tapping opens the editor. There was previously no way at all to
+        // change a script once written — only delete it and start again.
+        Button {
+            editingPrompt = prompt
+        } label: {
+            HStack {
+                Text(prompt.text)
+                    .font(Theme.Typography.body)
+                    .foregroundColor(Theme.Colors.primaryText)
+                    .multilineTextAlignment(.leading)
+                Spacer(minLength: Theme.Spacing.xs)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(Theme.Colors.secondaryText.opacity(0.5))
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
             .listRowBackground(Theme.Colors.cardBackground)
             .swipeActions(edge: .trailing) {
                 Button(role: .destructive) {
@@ -216,6 +238,11 @@ struct PromptLibraryView: View {
                 }
             }
             .contextMenu {
+                Button {
+                    editingPrompt = prompt
+                } label: {
+                    Label("Edit", systemImage: "pencil")
+                }
                 Menu("Move to") {
                     Button("No folder") {
                         storageService.moveCustomPrompt(id: prompt.id, toFolder: nil)
@@ -255,6 +282,11 @@ struct PromptLibraryView: View {
 
 // MARK: - Prompt Editor
 struct PromptEditorView: View {
+    /// The script being changed, or nil when writing a new one. One screen
+    /// for both — the fields, the folder picker and the validation are
+    /// identical, and only the title and what Save does differ.
+    var editing: WritingPrompt?
+
     @EnvironmentObject private var storageService: StorageService
     @Environment(\.dismiss) private var dismiss
 
@@ -302,7 +334,12 @@ struct PromptEditorView: View {
                 }
                 .padding(Theme.Spacing.md)
             }
-            .navigationTitle("New script")
+            .onAppear {
+                guard let editing else { return }
+                text = editing.text
+                folderID = editing.folderID
+            }
+            .navigationTitle(editing == nil ? "New script" : "Edit script")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -311,7 +348,12 @@ struct PromptEditorView: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
-                        storageService.addCustomPrompt(text, folderID: folderID)
+                        if let editing {
+                            storageService.updateCustomPrompt(id: editing.id, text: text)
+                            storageService.moveCustomPrompt(id: editing.id, toFolder: folderID)
+                        } else {
+                            storageService.addCustomPrompt(text, folderID: folderID)
+                        }
                         dismiss()
                     }
                     .foregroundColor(Theme.Colors.accent)
