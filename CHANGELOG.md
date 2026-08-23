@@ -3,6 +3,109 @@
 All notable changes to Verg are logged here as they're made. Dates are
 when the change was written, not necessarily released.
 
+## [Unreleased] — build 18 (voice, terraces, and volumes — part one)
+
+A defined narrative voice across the app's copy, a revised days-lit
+milestone system with no visible tier names, a candle that visually
+accumulates instead of naming a status, and a Stats page rebuilt to one
+non-scrolling screen. The Volume/PDF-binding feature described in this
+brief (bind the archive into a book at 150 days lit) was explicitly
+deferred by the user for a later pass — nothing in this build changes
+the Book/Journal data model, adds PDF export, or touches
+`finishCurrentJournal`. Page-count milestone badges and weekly-goal
+milestone tiers were also explicitly left untouched this pass.
+
+### Added — voice
+- All user-facing copy reviewed against four rules: imperative and
+  direct, no praise for showing up (acknowledge only, no exclamation
+  marks), short declaratives with no direct questions, never "I"/"we".
+  Touched onboarding, the candle screen, the bell, empty states,
+  milestones, missed days, the paywall, settings, and error messages.
+- New real estate for the "candle went out" reference copy: the Home
+  screen's zero-days-lit state now distinguishes a genuinely new user
+  ("Light your candle.") from one whose candle lapsed ("The candle went
+  out. Light it again."), using `longestDaysLit` — previously
+  indistinguishable, both showed the same generic exclamation.
+- Consolidated three independent, drifting copies of the days-lit
+  status text (`CandleService`, `HomeViewModel`, `UserStats`, plus dead
+  constants in `AppStrings`) into one shared
+  `AppStrings.Home.daysLitText(daysLit:longestDaysLit:)`.
+- Destructive-action confirmations ("Delete this page?", "Delete this
+  book?", "Finish this journal?") were deliberately kept as questions —
+  the idiomatic, safest iOS phrasing for something the user must
+  explicitly decide — rather than forced into declaratives that could
+  read as already-done.
+
+### Changed — milestones
+- Days-lit thresholds changed from 7/14/30/60/100/200/365 to
+  7/14/30/50/75/100/150. Tier names ("The first terrace," … "The
+  summit") replaced with plain stated numbers ("Seven days lit," …
+  "One hundred and fifty days lit.") — no vocabulary the user has to
+  learn. Surfaced the same way as before: a marked calendar day and one
+  quiet line after the bell, no badges.
+
+### Added — the candle changes, not a label
+- `CandleDaysLitState` (`CandleView.swift`): four discrete visual states
+  keyed to days lit (fresh 0–6, settling 7–29, established 30–74, deep
+  75+) — wax height shrinks, wax visibly pools at the base, wax and
+  flame color warm, and the flame flickers less erratically at higher
+  states. Wired on the Home screen's candle only (the in-session timer
+  candle keeps its existing burn-down-only behavior — `progress` and
+  `daysLit` are independent dimensions). Fully procedural SwiftUI, no
+  new art assets. A fifth "reset with a marker" state for after a volume
+  is bound is intentionally not modeled yet — a candle past 150 days
+  currently holds at the richest state rather than resetting, since
+  binding isn't built.
+
+### Changed — Stats page
+- Rebuilt to a single non-scrolling screen (same `GeometryReader`-driven
+  discipline as the paywall redesign), replacing the previous
+  `ScrollView`. On a compact screen the This Week / locked-feature card
+  is the first thing cut — the stat carousel and calendar are the core
+  display and always show in full.
+- **Fixed a real alignment bug**: `lockableCard`'s wrapper was adding a
+  second, identical 28pt bottom padding on top of the one already baked
+  into every card (`BigStatCard`/`weeklyGoalCard`/`milestoneCard`) for
+  page-dot clearance — every locked card (i.e. most cards, for every
+  free user) rendered at 56pt instead of 28pt, visibly misaligned
+  against the always-unlocked Days Lit card. Now single-padded
+  everywhere.
+- **Fixed a second, separate rendering bug**: the calendar's weekday
+  header (`ForEach(weekdays, id: \.self)`) silently dropped Thursday's
+  and the second Saturday's labels, since `weekdays` contains duplicate
+  string values ("S" and "T" each appear twice) and SwiftUI can't give
+  duplicate-value views unique identity. Switched to index-based
+  identity — all seven weekday letters now render.
+- `CalendarView` gained a `compact` mode (smaller cells, tighter
+  spacing) used automatically on short screens.
+- Corners standardized to 12pt continuous across every Stats card,
+  matching the paywall redesign's language (previously 16pt circular).
+- Removed the last two exclamation marks in Stats ("All goal milestones
+  unlocked!", "All milestones unlocked!") and shortened the locked-card
+  overlay copy from "Unlock with The Ascent" to "Unlock to view."
+
+### Changed — paywall
+- Renamed "The Ascent" to **"On the Verg of Becoming"** everywhere
+  (paywall title, Settings upgrade row, Stats locked-card copy).
+- Replaced the animated candle-flame header mark (added in the previous
+  paywall redesign) with the real Verg app icon, shown static as a
+  small rounded-square icon — its own dark backdrop is contained within
+  its own frame, so it reads cleanly against the paywall's light
+  background. Static rather than animated since it's raster artwork,
+  not a procedural flame.
+- Benefit copy tightened to the new voice ("Your full archive, not just
+  the last 7 days" / "Every stat. Pages, longest run, time reclaimed").
+
+### Tests
+- `TerraceTests.swift` (new): firing at each of the seven thresholds,
+  boundary behavior one day early, plain-number titles with no tier
+  names or exclamation marks, and passing 150 without a binding feature
+  present (holds at the last milestone, doesn't crash or invent one).
+- `CandleDaysLitStateTests.swift` (new): visual-state selection at
+  every boundary (6→7, 29→30, 74→75), monotonic height/pool/flame
+  progression, and holding at the richest state well past 150 rather
+  than resetting (binding isn't built).
+
 ## [Unreleased] — build 17 (paywall redesign)
 
 Full visual rebuild of the paywall ("The Ascent"), one screen, no

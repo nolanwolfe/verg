@@ -90,22 +90,12 @@ final class CandleService: ObservableObject {
 
     /// Get days-lit text for display
     var daysLitText: String {
-        if daysLit == 0 {
-            return "Light your candle!"
-        } else if daysLit == 1 {
-            return "1 day lit"
-        } else {
-            return "\(daysLit) days lit"
-        }
+        AppStrings.Home.daysLitText(daysLit: daysLit, longestDaysLit: longestDaysLit)
     }
 
     /// Get formatted days-lit text (pair with CandleFlameIcon in the UI)
     var daysLitDisplayText: String {
-        if daysLit == 0 {
-            return "Light your candle today!"
-        } else {
-            return daysLitText
-        }
+        daysLitText
     }
 
     /// Check if the candle is at risk of going out tomorrow

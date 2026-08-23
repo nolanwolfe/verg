@@ -150,11 +150,12 @@ struct NativePaywallView: View {
     // MARK: - Header
     private var header: some View {
         VStack(spacing: Theme.Spacing.xxs) {
-            PaywallCandleLogo()
+            PaywallIcon()
 
-            Text("The Ascent")
+            Text(AppStrings.Paywall.title)
                 .font(Theme.Typography.title)
                 .foregroundColor(AscentPalette.primaryText)
+                .multilineTextAlignment(.center)
 
             Text("Your full archive. Your stats. Your pace.")
                 .font(Theme.Typography.subheadline)
@@ -345,50 +346,22 @@ struct PlanCard: View {
     }
 }
 
-// MARK: - Paywall Candle Logo
-/// A small, calm, live flame — not the full CandleView (too large/energetic
-/// for a header mark), but the same FlameShape/gradient language at a
-/// slower, gentler loop. Only the flame moves; the mark as a whole never
-/// bounces or scales. Respects Reduce Motion.
-struct PaywallCandleLogo: View {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var flicker = false
-
+// MARK: - Paywall Icon
+/// The real Verg app icon — its own dark backdrop is contained within its
+/// own rounded frame, so it reads cleanly against the light paywall
+/// background. Static: it's raster artwork, not a procedural flame, so it
+/// doesn't animate here (contrast with the in-session candle).
+struct PaywallIcon: View {
     var body: some View {
-        ZStack {
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [AscentPalette.flameTop.opacity(0.4), Color.clear],
-                        center: .center, startRadius: 2, endRadius: 26
-                    )
-                )
-                .frame(width: 52, height: 52)
-                .offset(y: -6)
-
-            VStack(spacing: 0) {
-                FlameShape()
-                    .fill(AscentPalette.flameGradient)
-                    .frame(width: 14, height: 22)
-                    .scaleEffect(x: flicker ? 1.05 : 0.95, y: flicker ? 0.96 : 1.05, anchor: .bottom)
-                    .offset(x: flicker ? 0.5 : -0.5)
-
-                Rectangle()
-                    .fill(Color(hex: "2C2C2E"))
-                    .frame(width: 2.5, height: 8)
-
-                RoundedRectangle(cornerRadius: 4, style: .continuous)
-                    .fill(AscentPalette.waxColor)
-                    .frame(width: 30, height: 20)
-            }
-        }
-        .frame(height: 48)
-        .onAppear {
-            guard !reduceMotion else { return }
-            withAnimation(.easeInOut(duration: 2.6).repeatForever(autoreverses: true)) {
-                flicker = true
-            }
-        }
+        Image("VergIcon")
+            .resizable()
+            .aspectRatio(contentMode: .fill)
+            .frame(width: 56, height: 56)
+            .clipShape(RoundedRectangle(cornerRadius: AscentPalette.cornerRadius, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: AscentPalette.cornerRadius, style: .continuous)
+                    .stroke(AscentPalette.cardBorder, lineWidth: 1)
+            )
     }
 }
 

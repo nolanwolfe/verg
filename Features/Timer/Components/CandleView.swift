@@ -1,9 +1,17 @@
 import SwiftUI
 
-/// Animated candle view that burns down over time
+/// Animated candle view that burns down over time.
+///
+/// `daysLit` is a second, independent dimension from `progress` — progress
+/// is the in-session burn-down (resets every session), daysLit is how much
+/// the candle has accumulated over time (resets only when a volume is
+/// bound, a feature not yet built). A candle at day 80 still burns down
+/// normally within a session; it just starts from a shorter, more-melted
+/// resting height than a fresh candle would.
 struct CandleView: View {
     let progress: Double
     var isBurning: Bool = true
+    var daysLit: Int = 0
 
     // Flicker animation state
     @State private var flameOffset: CGFloat = 0
@@ -16,9 +24,10 @@ struct CandleView: View {
     @State private var emberOpacity: Double = 0.0
 
     private let candleWidth: CGFloat = 80
-    private let maxCandleHeight: CGFloat = 200
     private let wickLength: CGFloat = 15
 
+    private var daysLitState: CandleDaysLitState { .forDaysLit(daysLit) }
+    private var maxCandleHeight: CGFloat { daysLitState.maxHeight }
     private var candleHeight: CGFloat { maxCandleHeight * progress }
     private var wickHeight: CGFloat { max(8, wickLength * progress) }
 
@@ -54,12 +63,15 @@ struct CandleView: View {
 
     @MainActor
     private func runFlickerLoop() async {
+        // A flame that's been burning longer (higher days-lit state)
+        // flickers less — steadier, not more energetic.
+        let steadiness = daysLitState.jitterMultiplier
         while !Task.isCancelled {
             let duration = Double.random(in: 0.08...0.18)
             withAnimation(.easeInOut(duration: duration)) {
-                flameOffset = CGFloat.random(in: -2...2)
-                flameScale = CGFloat.random(in: 0.93...1.07)
-                innerFlameOffset = CGFloat.random(in: -1.5...1.5)
+                flameOffset = CGFloat.random(in: -2...2) * steadiness
+                flameScale = 1.0 + (CGFloat.random(in: -0.07...0.07) * steadiness)
+                innerFlameOffset = CGFloat.random(in: -1.5...1.5) * steadiness
                 glowOpacity = Double.random(in: 0.28...0.45)
             }
             try? await Task.sleep(nanoseconds: UInt64(duration * 0.75 * 1_000_000_000))
@@ -120,16 +132,17 @@ struct CandleView: View {
     // MARK: - Flame View
 
     private var flameView: some View {
-        ZStack {
+        let flameGrowth = daysLitState.flameSizeMultiplier
+        return ZStack {
             // Outer flame
             FlameShape()
                 .fill(
                     LinearGradient(
-                        colors: [Theme.Colors.flameOuter, Theme.Colors.flameOuter.opacity(0.8)],
+                        colors: [daysLitState.flameOuterColor, daysLitState.flameOuterColor.opacity(0.8)],
                         startPoint: .bottom, endPoint: .top
                     )
                 )
-                .frame(width: 30, height: 50)
+                .frame(width: 30 * flameGrowth, height: 50 * flameGrowth)
                 .scaleEffect(x: flameScale, y: flameScale * 1.1)
                 .offset(x: flameOffset)
 
@@ -141,7 +154,7 @@ struct CandleView: View {
                         startPoint: .bottom, endPoint: .top
                     )
                 )
-                .frame(width: 18, height: 35)
+                .frame(width: 18 * flameGrowth, height: 35 * flameGrowth)
                 .scaleEffect(x: flameScale * 0.9, y: flameScale)
                 .offset(x: innerFlameOffset, y: 5)
 
@@ -190,7 +203,7 @@ struct CandleView: View {
             RoundedRectangle(cornerRadius: 8)
                 .fill(
                     LinearGradient(
-                        colors: [Theme.Colors.candleWax, Theme.Colors.candleWaxDark, Theme.Colors.candleWax],
+                        colors: [daysLitState.waxColor, daysLitState.waxColorDark, daysLitState.waxColor],
                         startPoint: .leading, endPoint: .trailing
                     )
                 )
@@ -209,15 +222,132 @@ struct CandleView: View {
                 Ellipse()
                     .fill(
                         RadialGradient(
-                            colors: [Theme.Colors.candleWaxDark.opacity(0.3), Color.clear],
+                            colors: [daysLitState.waxColorDark.opacity(0.3), Color.clear],
                             center: .center, startRadius: 5, endRadius: candleWidth / 2
                         )
                     )
                     .frame(width: candleWidth - 10, height: 20)
                     .offset(y: 5)
             }
+
+            // Melted wax pooled at the base — grows with days-lit state,
+            // never with in-session progress.
+            if daysLitState.poolWidth > 0 {
+                waxPool
+                    .offset(y: candleHeight - 4)
+            }
         }
         .animation(.easeInOut(duration: 0.5), value: candleHeight)
+    }
+
+    private var waxPool: some View {
+        Ellipse()
+            .fill(
+                LinearGradient(
+                    colors: [daysLitState.waxColor, daysLitState.waxColorDark],
+                    startPoint: .top, endPoint: .bottom
+                )
+            )
+            .frame(width: candleWidth + daysLitState.poolWidth, height: daysLitState.poolHeight)
+    }
+}
+
+// MARK: - Candle Days-Lit Visual State
+
+/// How the candle's appearance carries the sense of accumulation — the
+/// object changes instead of a tier label being shown. Four discrete
+/// states, not a continuous simulation (same idea as an app icon having a
+/// handful of fixed looks). A fifth "post-volume, reset with a marker"
+/// state is intentionally not modeled yet — binding isn't built, so a
+/// candle past 150 days just holds at the richest state rather than
+/// resetting.
+enum CandleDaysLitState: Equatable {
+    case fresh        // 0–6: a fresh candle, full height, plain wax, small flame
+    case settling     // 7–29: wax has begun to melt down one side, flame slightly steadier/larger
+    case established  // 30–74: noticeably shorter, more wax pooled, warmer/richer flame
+    case deep         // 75+: low, wax pooled deep, flame at its fullest and steadiest
+
+    static func forDaysLit(_ daysLit: Int) -> CandleDaysLitState {
+        switch daysLit {
+        case ..<7: return .fresh
+        case 7..<30: return .settling
+        case 30..<75: return .established
+        default: return .deep
+        }
+    }
+
+    var maxHeight: CGFloat {
+        switch self {
+        case .fresh: return 200
+        case .settling: return 186
+        case .established: return 168
+        case .deep: return 150
+        }
+    }
+
+    var poolWidth: CGFloat {
+        switch self {
+        case .fresh: return 0
+        case .settling: return 8
+        case .established: return 16
+        case .deep: return 24
+        }
+    }
+
+    var poolHeight: CGFloat {
+        switch self {
+        case .fresh: return 0
+        case .settling: return 7
+        case .established: return 11
+        case .deep: return 15
+        }
+    }
+
+    var waxColor: Color {
+        switch self {
+        case .fresh: return Theme.Colors.candleWax
+        case .settling: return Theme.Colors.candleWax
+        case .established: return Color(hex: "F5E6C8")
+        case .deep: return Color(hex: "F0DBA8")
+        }
+    }
+
+    var waxColorDark: Color {
+        switch self {
+        case .fresh: return Theme.Colors.candleWaxDark
+        case .settling: return Theme.Colors.candleWaxDark
+        case .established: return Color(hex: "D8B888")
+        case .deep: return Color(hex: "C9A268")
+        }
+    }
+
+    /// Flame size grows slightly with days lit — "slightly steadier/
+    /// larger" at settling, "fullest" at deep.
+    var flameSizeMultiplier: CGFloat {
+        switch self {
+        case .fresh: return 1.0
+        case .settling: return 1.06
+        case .established: return 1.1
+        case .deep: return 1.16
+        }
+    }
+
+    /// Multiplies the flicker loop's random jitter — lower means steadier.
+    var jitterMultiplier: CGFloat {
+        switch self {
+        case .fresh: return 1.0
+        case .settling: return 0.85
+        case .established: return 0.65
+        case .deep: return 0.5
+        }
+    }
+
+    var flameOuterColor: Color {
+        switch self {
+        case .fresh, .settling: return Theme.Colors.flameOuter
+        case .established: return Color(hex: "FF8000")
+        case .deep: return Color(hex: "FF7000")
+        }
     }
 }
 

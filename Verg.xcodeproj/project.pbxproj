@@ -72,7 +72,9 @@
 		A10000010000000000000053 /* CandleRelight.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000053 /* CandleRelight.swift */; };
 		A10000010000000000000054 /* Terrace.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000054 /* Terrace.swift */; };
 		B149AD1EF9111F56CF2898BD /* MilestoneLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3F6D131429DF832DEC156D /* MilestoneLogicTests.swift */; };
+		B8D3EDEFD64E0B0FFDB2309A /* CandleDaysLitStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85EC2041E044532B57A5617A /* CandleDaysLitStateTests.swift */; };
 		DBF85CC00BAB63176ADB9C70 /* ProductIdentifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D95EF34BEA0EECAB4880F8D /* ProductIdentifiers.swift */; };
+		EBE50F474E89A8361C62810C /* TerraceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACC785888D739156328E98A1 /* TerraceTests.swift */; };
 		F481BCFEB8A889E1905AEDA2 /* TimeReclaimedCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 898AD9244BCD3A4014BB05AC /* TimeReclaimedCardView.swift */; };
 		FDA2A4020948DF89A7806BE7 /* BookLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04EC071F00E1D30084A3F7A3 /* BookLogicTests.swift */; };
 /* End PBXBuildFile section */
@@ -95,6 +97,7 @@
 		5A3B42F81731303223482210 /* CandleRelightTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CandleRelightTests.swift; sourceTree = "<group>"; };
 		6D95EF34BEA0EECAB4880F8D /* ProductIdentifiers.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProductIdentifiers.swift; path = Core/Constants/ProductIdentifiers.swift; sourceTree = "<group>"; };
 		7AEEAEB60B010E7D6255DEF1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		85EC2041E044532B57A5617A /* CandleDaysLitStateTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CandleDaysLitStateTests.swift; sourceTree = "<group>"; };
 		898AD9244BCD3A4014BB05AC /* TimeReclaimedCardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TimeReclaimedCardView.swift; sourceTree = "<group>"; };
 		955D4E492F1F42A100D1B2E4 /* VergProducts.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = VergProducts.storekit; sourceTree = "<group>"; };
 		95F6805B2F1D205D00B93C28 /* 27421__kerri__zenbell_1.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = 27421__kerri__zenbell_1.mp3; sourceTree = "<group>"; };
@@ -155,6 +158,7 @@
 		A20000010000000000000052 /* OnboardingStepViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingStepViews.swift; sourceTree = "<group>"; };
 		A20000010000000000000053 /* CandleRelight.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandleRelight.swift; sourceTree = "<group>"; };
 		A20000010000000000000054 /* Terrace.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Terrace.swift; sourceTree = "<group>"; };
+		ACC785888D739156328E98A1 /* TerraceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TerraceTests.swift; sourceTree = "<group>"; };
 		BA85F0D61ED1E6AE8A4E80C4 /* VergTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VergTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0E9AAF30597470AE40B5615 /* SessionGatingService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionGatingService.swift; path = Core/Services/SessionGatingService.swift; sourceTree = "<group>"; };
 		F363E01CA80309C00CBFA394 /* SessionGatingServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionGatingServiceTests.swift; path = SessionGatingServiceTests.swift; sourceTree = "<group>"; };
@@ -485,6 +489,8 @@
 				2B3EA26F8AEF44C05BFDF756 /* TimeReclaimedTests.swift */,
 				A0EB2EA2468FDCFA22B69538 /* OnboardingProjectionTests.swift */,
 				5A3B42F81731303223482210 /* CandleRelightTests.swift */,
+				ACC785888D739156328E98A1 /* TerraceTests.swift */,
+				85EC2041E044532B57A5617A /* CandleDaysLitStateTests.swift */,
 			);
 			name = Tests;
 			path = Tests;
@@ -607,6 +613,8 @@
 				58611D7A7DD6C853B6F15217 /* TimeReclaimedTests.swift in Sources */,
 				37EA337057ECBB624B85FDF6 /* OnboardingProjectionTests.swift in Sources */,
 				48E41DC190311552932A2598 /* CandleRelightTests.swift in Sources */,
+				EBE50F474E89A8361C62810C /* TerraceTests.swift in Sources */,
+				B8D3EDEFD64E0B0FFDB2309A /* CandleDaysLitStateTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -828,7 +836,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 18;
 				DEVELOPMENT_TEAM = 9GHNQ3ZYX9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -865,7 +873,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 17;
+				CURRENT_PROJECT_VERSION = 18;
 				DEVELOPMENT_TEAM = 9GHNQ3ZYX9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;

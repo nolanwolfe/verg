@@ -47,8 +47,8 @@ final class PaywallViewModel: ObservableObject {
     // two get their own hero-sized cards; everything else is a smaller
     // supporting row underneath.
     let heroFeatures: [Feature] = [
-        Feature(icon: "books.vertical.fill", text: "Your full archive, beyond the last 7 days"),
-        Feature(icon: "chart.bar.fill", text: "Every stat: pages, longest run, time reclaimed")
+        Feature(icon: "books.vertical.fill", text: "Your full archive, not just the last 7 days"),
+        Feature(icon: "chart.bar.fill", text: "Every stat. Pages, longest run, time reclaimed")
     ]
 
     let supportingFeatures: [Feature] = [

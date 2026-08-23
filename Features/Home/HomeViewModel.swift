@@ -16,13 +16,7 @@ final class HomeViewModel: ObservableObject {
 
     // MARK: - Computed Properties
     var daysLitText: String {
-        if daysLit == 0 {
-            return "Light your candle today!"
-        } else if daysLit == 1 {
-            return "1 day lit"
-        } else {
-            return "\(daysLit) days lit"
-        }
+        AppStrings.Home.daysLitText(daysLit: daysLit, longestDaysLit: candleService.longestDaysLit)
     }
 
     var daysLitDisplayText: String {
@@ -30,13 +24,7 @@ final class HomeViewModel: ObservableObject {
     }
 
     var sessionsTodayText: String {
-        if sessionsToday == 0 {
-            return "Start your first session today!"
-        } else if sessionsToday == 1 {
-            return "1 session today"
-        } else {
-            return "\(sessionsToday) sessions today"
-        }
+        AppStrings.Home.sessionsTodayText(sessionsToday)
     }
 
     var buttonText: String {

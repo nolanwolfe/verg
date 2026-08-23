@@ -207,7 +207,7 @@ final class SettingsViewModel: ObservableObject {
         content.title = "Begin Writing"
         let mins = Int(timerDuration / 60)
         let durationLabel = mins > 0 ? "\(mins) minutes" : "\(Int(timerDuration)) seconds"
-        content.body = "Take \(durationLabel) to journal your thoughts."
+        content.body = "Take \(durationLabel) to write."
         content.sound = .default
 
         // Create trigger for daily notification
@@ -260,7 +260,7 @@ final class SettingsViewModel: ObservableObject {
 
         let content = UNMutableNotificationContent()
         content.title = "Your Week in Verg"
-        content.body = "See how much time you reclaimed this week."
+        content.body = "Time reclaimed this week."
         content.sound = .default
 
         // Sunday evening — a natural weekly-recap moment
@@ -284,8 +284,8 @@ final class SettingsViewModel: ObservableObject {
         Task { @MainActor in
             let success = purchaseService.redeemAccessCode(code)
             redeemResultMessage = success
-                ? "Access granted! You now have unlimited access to Verg."
-                : "Invalid code. Please double-check and try again."
+                ? "Access granted. Unlimited access to Verg."
+                : "Invalid code. Check it and try again."
             redeemCodeText = ""
             showRedeemSheet = false
             showRedeemResult = true
@@ -298,7 +298,7 @@ final class SettingsViewModel: ObservableObject {
             let success = await purchaseService.restorePurchases()
             await MainActor.run {
                 restoreMessage = success
-                    ? "Purchases restored successfully!"
+                    ? "Purchases restored."
                     : "No purchases found to restore."
                 showRestoreAlert = true
             }

@@ -20,41 +20,49 @@ struct StatsView: View {
     private var isStatsLocked: Bool { !gatingService.isPremium }
 
     var body: some View {
-        ZStack {
-            Theme.Colors.background
-                .ignoresSafeArea()
+        GeometryReader { geo in
+            // One screen, no scroll. If everything doesn't fit, the This
+            // Week / locked-feature card is the first thing cut — the
+            // stat carousel and calendar are the core display and always
+            // show in full.
+            let isCompact = geo.size.height < 700
 
-            ambientGlow
+            ZStack {
+                Theme.Colors.background
+                    .ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                headerSection
+                ambientGlow
 
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: Theme.Spacing.md) {
-                        statCarousel
+                VStack(spacing: Theme.Spacing.xs) {
+                    headerSection
 
+                    statCarousel
+
+                    if !isCompact {
                         if isStatsLocked {
                             LockedFeatureCard(
                                 icon: "chart.bar.fill",
                                 title: "Time Reclaimed & more",
-                                message: "See your writing time, weekly pace, and milestones with The Ascent.",
+                                message: "Writing time, weekly pace, and milestones.",
                                 onTap: { showPaywall = true }
                             )
                         } else {
                             timeReclaimedWeekCard
                         }
-
-                        CalendarView(
-                            currentMonth: $viewModel.currentMonth,
-                            sessionCountsByDate: viewModel.sessionCountsByDate,
-                            relitDates: viewModel.relitDates,
-                            onPreviousMonth: { viewModel.previousMonth() },
-                            onNextMonth: { viewModel.nextMonth() }
-                        )
                     }
-                    .padding(.horizontal, Theme.Spacing.md)
-                    .padding(.vertical, Theme.Spacing.sm)
+
+                    CalendarView(
+                        currentMonth: $viewModel.currentMonth,
+                        sessionCountsByDate: viewModel.sessionCountsByDate,
+                        relitDates: viewModel.relitDates,
+                        onPreviousMonth: { viewModel.previousMonth() },
+                        onNextMonth: { viewModel.nextMonth() },
+                        compact: isCompact
+                    )
+
+                    Spacer(minLength: 0)
                 }
+                .padding(.horizontal, Theme.Spacing.md)
             }
         }
         .fullScreenCover(isPresented: $showPaywall) {
@@ -101,9 +109,7 @@ struct StatsView: View {
                 .foregroundColor(Theme.Colors.secondaryText)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, Theme.Spacing.md)
         .padding(.top, Theme.Spacing.sm)
-        .padding(.bottom, Theme.Spacing.md)
     }
 
     /// Neutral and factual either way — never a nag on a quiet stretch.
@@ -168,9 +174,16 @@ struct StatsView: View {
         }
     }
 
-    /// Wraps a carousel card with the Ascent lock overlay when stats are
-    /// locked — the card's shape/size still reserves its place in the
-    /// swipe sequence, it just can't be read or interacted with.
+    /// Wraps a carousel card with the lock overlay when stats are locked —
+    /// the card's shape/size still reserves its place in the swipe
+    /// sequence, it just can't be read or interacted with.
+    ///
+    /// The wrapped content (BigStatCard/weeklyGoalCard/milestoneCard)
+    /// already carries its own bottom padding for the page-dot indicator
+    /// below the TabView frame — this used to add a second, identical
+    /// padding on top of it, doubling to 56pt and visibly misaligning
+    /// every locked card against the always-unlocked Days Lit card. Fixed:
+    /// this wrapper adds none of its own.
     @ViewBuilder
     private func lockableCard<Content: View>(tag: Int, @ViewBuilder content: () -> Content) -> some View {
         if isStatsLocked {
@@ -182,17 +195,16 @@ struct StatsView: View {
                             Image(systemName: "lock.fill")
                                 .font(.system(size: 20))
                                 .foregroundColor(Theme.Colors.primaryText)
-                            Text("Unlock with The Ascent")
+                            Text("Unlock to view.")
                                 .font(Theme.Typography.caption)
                                 .foregroundColor(Theme.Colors.primaryText)
                         }
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
                         .background(Theme.Colors.background.opacity(0.75))
-                        .cornerRadius(Theme.CornerRadius.medium)
+                        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small, style: .continuous))
                     }
                     .buttonStyle(.plain)
                 )
-                .padding(.bottom, 28)
                 .tag(tag)
         } else {
             content()
@@ -243,7 +255,7 @@ struct StatsView: View {
                             .foregroundColor(Theme.Colors.secondaryText)
                     }
                 } else {
-                    Text("All goal milestones unlocked!")
+                    Text("All goal milestones unlocked.")
                         .font(.system(size: 26, weight: .bold, design: .rounded))
                         .foregroundColor(Theme.Colors.primaryText)
                 }
@@ -251,7 +263,7 @@ struct StatsView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(Theme.Spacing.lg)
             .background(Theme.Colors.cardBackground)
-            .cornerRadius(Theme.CornerRadius.medium)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small, style: .continuous))
             .padding(.bottom, 28) // room for page dots
         }
         .buttonStyle(.plain)
@@ -291,7 +303,7 @@ struct StatsView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(Theme.Spacing.lg)
         .background(Theme.Colors.cardBackground)
-        .cornerRadius(Theme.CornerRadius.medium)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small, style: .continuous))
     }
 
     /// Factual, neutral phrasing — never editorializes on a down week.
@@ -349,7 +361,7 @@ struct StatsView: View {
                         .font(Theme.Typography.caption)
                         .foregroundColor(Theme.Colors.secondaryText)
                 } else {
-                    Text("All milestones unlocked!")
+                    Text("All milestones unlocked.")
                         .font(.system(size: 28, weight: .bold, design: .rounded))
                         .foregroundColor(Theme.Colors.primaryText)
                 }
@@ -357,7 +369,7 @@ struct StatsView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(Theme.Spacing.lg)
             .background(Theme.Colors.cardBackground)
-            .cornerRadius(Theme.CornerRadius.medium)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small, style: .continuous))
             .padding(.bottom, 28) // room for page dots
         }
         .buttonStyle(.plain)
@@ -395,7 +407,7 @@ struct BigStatCard<Icon: View>: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(Theme.Spacing.lg)
         .background(Theme.Colors.cardBackground)
-        .cornerRadius(Theme.CornerRadius.medium)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small, style: .continuous))
         .padding(.bottom, 28) // room for page dots
     }
 }
@@ -403,7 +415,7 @@ struct BigStatCard<Icon: View>: View {
 // MARK: - Locked Feature Card
 /// Shared "here's what this is, upgrade to unlock" card — never a blank
 /// screen or silent no-op for a gated feature. Reused wherever a whole
-/// section (not just a stray tap) is behind Ascent.
+/// section (not just a stray tap) is behind a subscription.
 struct LockedFeatureCard: View {
     let icon: String
     let title: String
@@ -432,6 +444,8 @@ struct LockedFeatureCard: View {
                         .font(Theme.Typography.caption)
                         .foregroundColor(Theme.Colors.secondaryText)
                         .multilineTextAlignment(.leading)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
                 Spacer()
@@ -442,7 +456,7 @@ struct LockedFeatureCard: View {
             }
             .padding(Theme.Spacing.md)
             .background(Theme.Colors.cardBackground)
-            .cornerRadius(Theme.CornerRadius.medium)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small, style: .continuous))
         }
         .buttonStyle(.plain)
     }

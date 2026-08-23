@@ -238,7 +238,7 @@ final class TimerService: ObservableObject {
 
         let content = UNMutableNotificationContent()
         content.title = "Session Complete"
-        content.body = "Your writing session is done. Capture your page!"
+        content.body = "Capture your page."
         content.sound = UNNotificationSound(named: UNNotificationSoundName("185822__lloydevans09__single-chime.wav"))
         content.interruptionLevel = .timeSensitive
 

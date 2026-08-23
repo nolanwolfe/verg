@@ -219,7 +219,46 @@ sandbox tester or the RevenueCat offering above actually configured.
   this pass. Worth a spot-check against a sandbox account on each
   existing SKU after the ASC changes land, but not expected to break.
 
+## Voice, Terraces, and Volumes — part one (build 18)
+
+**App Store Connect / RevenueCat manual actions needed for this pass:
+none.** Voice rewrite, milestone threshold/copy changes, candle visual
+states, the Stats rebuild, and the paywall rename+icon swap are all
+client-side — no pricing, product, entitlement, or offering change.
+The Volume/PDF-binding feature described in the brief that prompted this
+pass (bind the archive at 150 days lit) was explicitly deferred to a
+later build at the user's direction — nothing here changes the
+Book/Journal data model or adds a premium-gated action beyond what
+already existed.
+
+Additional QA items for this build:
+- [ ] Voice spot-check: no exclamation marks anywhere in the app (the
+      one intentional exception is the share-sheet text in Settings,
+      which is addressed to a third party, not the app's own user, and
+      was left as-is), no direct questions except the three destructive
+      confirmations ("Delete this page?", "Delete this book?", "Finish
+      this journal?"), which are deliberately kept as questions
+- [ ] Home screen: a brand-new user with 0 days lit sees "Light your
+      candle." — a user whose candle previously reached at least 1 day
+      and is now back at 0 sees "The candle went out. Light it again."
+      instead
+- [ ] Milestones: days-lit thresholds fire at 7/14/30/50/75/100/150 with
+      plain-number text ("Seven days lit." etc.), no "terrace" language
+      anywhere user-visible
+- [ ] Candle visual states: Home screen candle looks visibly different
+      at 0, 10, 40, and 80+ days lit (shorter, more pooled wax, warmer
+      color, steadier flame) — the in-session timer candle during an
+      active session is unaffected by days lit, only by session progress
+- [ ] Stats tab: fits on one screen with no scrolling on iPhone SE
+      (This Week / locked-feature card hidden) and on a standard-size
+      iPhone (card shown, calendar unabridged) — all seven weekday
+      letters (S M T W T F S) render in the calendar header, locked and
+      unlocked carousel cards align identically against the page dots
+- [ ] Paywall: title reads "On the Verg of Becoming," header shows the
+      real Verg app icon (static, not animated), benefit copy matches
+      the new voice
+
 ## Version
 
 - Marketing version: 2.2
-- Build: 17
+- Build: 18

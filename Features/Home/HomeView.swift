@@ -25,7 +25,7 @@ struct HomeView: View {
 
             // Candle — anchored to top, respects status bar
             VStack(spacing: 0) {
-                CandleView(progress: 1.0, isBurning: true)
+                CandleView(progress: 1.0, isBurning: true, daysLit: viewModel.daysLit)
                     .frame(maxWidth: .infinity)
                     .frame(height: 320)
                     .shadow(color: Color(hex: "FF9500").opacity(0.4), radius: 30)

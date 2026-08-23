@@ -84,12 +84,6 @@ struct UserStats: Codable, Equatable {
 
     /// Formatted "days lit" text
     var daysLitText: String {
-        if daysLit == 0 {
-            return "Light your candle"
-        } else if daysLit == 1 {
-            return "1 day lit"
-        } else {
-            return "\(daysLit) days lit"
-        }
+        AppStrings.Home.daysLitText(daysLit: daysLit, longestDaysLit: longestDaysLit)
     }
 }

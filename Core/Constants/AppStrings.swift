@@ -19,8 +19,8 @@ enum AppStrings {
         ]
 
         // Step 3 — commitment
-        static let commitmentTitle = "How many days a week?"
-        static let commitmentSubtitle = "Pick a pace you can actually keep."
+        static let commitmentTitle = "Choose your pace."
+        static let commitmentSubtitle = "Pick a number you can keep."
         static let commitmentOptions: [Int] = [3, 5, 7]
 
         // Step 4 — projection
@@ -28,7 +28,7 @@ enum AppStrings {
 
         // Step 5 — rating prompt
         static let ratingPromptTitle = "One more thing"
-        static let ratingPromptBody = "If Verg's for you, a rating helps other people find it."
+        static let ratingPromptBody = "A rating helps others find Verg."
 
         static let skipButton = "Skip"
         static let continueButton = "Continue"
@@ -55,12 +55,29 @@ enum AppStrings {
     // MARK: - Home
     enum Home {
         static let beginWriting = "Begin Writing"
-        static let startDaysLit = "Light your candle today!"
-        static let dayLit = "day lit"
-        static let daysLit = "days lit"
-        static let sessionToday = "1 session today"
-        static let sessionsToday = "sessions today"
-        static let startFirstSession = "Start your first session today!"
+
+        /// Shown when the candle isn't lit today. Distinguishes a
+        /// returning user whose candle lapsed from someone who has never
+        /// lit one — same zero, different history.
+        static let lightCandle = "Light your candle."
+        static let candleWentOut = "The candle went out. Light it again."
+        static let startFirstSession = "Start your first session."
+
+        static func daysLitText(daysLit: Int, longestDaysLit: Int) -> String {
+            switch daysLit {
+            case 0: return longestDaysLit > 0 ? candleWentOut : lightCandle
+            case 1: return "1 day lit"
+            default: return "\(daysLit) days lit"
+            }
+        }
+
+        static func sessionsTodayText(_ count: Int) -> String {
+            switch count {
+            case 0: return startFirstSession
+            case 1: return "1 session today"
+            default: return "\(count) sessions today"
+            }
+        }
     }
 
     // MARK: - Timer
@@ -75,15 +92,15 @@ enum AppStrings {
         static let retake = "Retake"
         static let usePhoto = "Use Photo"
         static let cancel = "Cancel"
-        static let cameraAccessRequired = "Camera access is required to capture your journal page."
-        static let enableInSettings = "Camera access is required. Please enable it in Settings."
+        static let cameraAccessRequired = "Camera access is required to capture a page."
+        static let enableInSettings = "Camera access is required. Enable it in Settings."
         static let unableToAccess = "Unable to access camera"
-        static let failedToSave = "Failed to save photo. Please try again."
+        static let failedToSave = "Failed to save photo. Try again."
     }
 
     // MARK: - Paywall
     enum Paywall {
-        static let title = "Unlock Verg"
+        static let title = "On the Verg of Becoming"
         static let restorePurchases = "Restore Purchases"
     }
 
@@ -110,7 +127,7 @@ enum AppStrings {
     // MARK: - Notifications
     enum Notifications {
         static let reminderTitle = "Time to Write"
-        static let reminderBody = "Take 10 minutes to journal your thoughts."
+        static let reminderBody = "Take 10 minutes to write."
     }
 
     // MARK: - Session Gating
