@@ -188,19 +188,24 @@ struct HomeView: View {
 
     // MARK: - Sound Pill
     private var soundPill: some View {
+        // The same switch as Settings → Candle → Sound, in the place you
+        // actually want it: one setting, two doorways. It used to toggle
+        // *ambience* while wearing the word "Sound", so flipping it here left
+        // the Sound row in Settings unchanged and the two looked broken.
+        //
         // The icon carries the state: crossed out when off, open when on.
         // Nothing changes colour — all three pills stay the same weight so
         // the candle is still the only thing lit on this screen.
         pill(
-            icon: storageService.settings.ambientSoundEnabled ? "speaker.wave.2" : "speaker.slash",
+            icon: storageService.settings.soundEnabled ? "speaker.wave.2" : "speaker.slash",
             title: "Sound"
         ) {
-            guard gatingService.isPremium else {
-                showPaywall = true
-                return
-            }
+            let turningOn = !storageService.settings.soundEnabled
+            storageService.setSoundEnabled(turningOn)
+            AudioService.shared.setSoundEnabled(turningOn)
+            // Tick after the change, so switching on is audible and switching
+            // off is silent — the same rule the Settings toggle follows.
             AudioService.shared.playUITick()
-            storageService.setAmbientSoundEnabled(!storageService.settings.ambientSoundEnabled)
         }
     }
 

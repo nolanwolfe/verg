@@ -6,6 +6,11 @@ import SwiftUI
 struct LibraryView: View {
     @StateObject private var viewModel = StatsViewModel()
     @EnvironmentObject private var purchaseService: PurchaseService
+    /// Settings → Guide → History chooses between the two renderings below.
+    /// Observed rather than read once, so flipping the setting redraws this
+    /// screen — previously nothing here consulted it at all and the picker
+    /// changed only its own label.
+    @EnvironmentObject private var storageService: StorageService
 
     @State private var selectedBook: Book?
     @State private var showPaywall = false
@@ -138,26 +143,39 @@ struct LibraryView: View {
             }
             .padding(.horizontal, Theme.Spacing.xxs)
 
-            ContributionHeatmap(
-                countsByDay: viewModel.sessionCountsByDate,
-                relitDates: viewModel.relitDates
-            )
-            .frame(maxWidth: .infinity)
+            switch storageService.settings.calendarStyle {
+            case .heatmap:
+                ContributionHeatmap(
+                    countsByDay: viewModel.sessionCountsByDate,
+                    relitDates: viewModel.relitDates
+                )
+                .frame(maxWidth: .infinity)
 
-            HStack(spacing: 4) {
-                Spacer()
-                Text("Less")
-                    .font(.system(size: 9))
-                    .foregroundColor(.white.opacity(0.35))
-                ForEach(0..<5, id: \.self) { level in
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(HeatmapCell.fill(forLevel: level))
-                        .frame(width: 9, height: 9)
+                HStack(spacing: 4) {
+                    Spacer()
+                    Text("Less")
+                        .font(.system(size: 9))
+                        .foregroundColor(.white.opacity(0.35))
+                    ForEach(0..<5, id: \.self) { level in
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(HeatmapCell.fill(forLevel: level))
+                            .frame(width: 9, height: 9)
+                    }
+                    Text("More")
+                        .font(.system(size: 9))
+                        .foregroundColor(.white.opacity(0.35))
+                    Spacer()
                 }
-                Text("More")
-                    .font(.system(size: 9))
-                    .foregroundColor(.white.opacity(0.35))
-                Spacer()
+
+            case .monthGrid:
+                CalendarView(
+                    currentMonth: $viewModel.currentMonth,
+                    sessionCountsByDate: viewModel.sessionCountsByDate,
+                    relitDates: viewModel.relitDates,
+                    onPreviousMonth: { viewModel.previousMonth() },
+                    onNextMonth: { viewModel.nextMonth() },
+                    compact: true
+                )
             }
         }
     }
@@ -736,5 +754,6 @@ struct StatTile: View {
 // MARK: - Preview
 #Preview {
     LibraryView()
+        .environmentObject(StorageService.shared)
         .environmentObject(PurchaseService.shared)
 }

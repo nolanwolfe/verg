@@ -37,8 +37,16 @@ struct VergApp: App {
             switch phase {
             case .active:
                 BrightnessService.shared.reapplyAfterForeground()
-            case .inactive, .background:
+            case .background:
+                // `.background` only. `.inactive` also fires for a pulled-down
+                // Control Center, a notification banner, or a glance at the
+                // app switcher — handing brightness back on any of those made
+                // the screen jump while the app was still on screen, which is
+                // exactly the reset this service exists to prevent.
                 BrightnessService.shared.relinquish()
+            case .inactive:
+                // Momentary — the app is still on screen. Leave brightness be.
+                break
             @unknown default:
                 break
             }

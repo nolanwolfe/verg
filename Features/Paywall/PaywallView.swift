@@ -231,7 +231,9 @@ struct NativePaywallView: View {
                 .font(Theme.Typography.footnote)
                 .foregroundColor(GoldenPalette.secondaryText)
                 .multilineTextAlignment(.center)
+                // Three commands, one size, wrapping to at most two lines.
                 .lineLimit(2)
+                .minimumScaleFactor(0.85)
                 // Without this the line gets offered a single-line width by
                 // the surrounding stack and truncates mid-sentence instead
                 // of wrapping to the second line it's allowed.
@@ -242,7 +244,7 @@ struct NativePaywallView: View {
                 .font(Theme.Typography.title2)
                 .foregroundColor(GoldenPalette.primaryText)
                 .multilineTextAlignment(.center)
-                .lineLimit(3)
+                .lineLimit(2)
                 .minimumScaleFactor(0.8)
                 .fixedSize(horizontal: false, vertical: true)
                 .padding(.horizontal, Theme.Spacing.xs)

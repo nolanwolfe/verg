@@ -19,14 +19,18 @@ struct CustomTabBar: View {
         .padding(.horizontal, 8)
         .background(
             RoundedRectangle(cornerRadius: 32, style: .continuous)
-                // Blur base
-                .fill(.ultraThinMaterial)
-                // Tint — lighter than it was, because at 0.72 the black
-                // swallowed the material underneath and the glass read as a
-                // flat dark pill. The blur needs to show through to be glass.
+                // Blur base. `.regularMaterial` over `.ultraThin` because
+                // ultra-thin on a black app is almost pure blur with no body
+                // to it, and the pill needs to read as a pane of something.
+                .fill(.regularMaterial)
+                // Only a whisper of tint. This was a 0.55 black plate, which
+                // is not translucency at all — it is an opaque dark pill with
+                // a blur wasted behind it. At 0.12 the candle's glow and the
+                // page thumbnails genuinely pass through, which is the whole
+                // point of glass.
                 .overlay(
                     RoundedRectangle(cornerRadius: 32, style: .continuous)
-                        .fill(Color.black.opacity(0.55))
+                        .fill(Color.black.opacity(0.12))
                 )
                 // Specular highlight — a brighter strip of light along the
                 // top edge, falling off fast.

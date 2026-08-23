@@ -134,7 +134,7 @@ struct SettingsView: View {
 
             SettingsRow(
                 icon: "music.note",
-                iconColor: Theme.Colors.accent,
+                iconColor: .blue,
                 title: isPremium ? "Ambience" : "Ambience  🔒",
                 value: viewModel.ambienceLabel,
                 action: {
@@ -173,7 +173,7 @@ struct SettingsView: View {
 
                 SettingsRow(
                     icon: "clock",
-                    iconColor: Theme.Colors.accent,
+                    iconColor: .blue,
                     title: "Reminder Time",
                     value: viewModel.formattedNotificationTime,
                     action: { viewModel.showTimePicker = true }
@@ -219,8 +219,8 @@ struct SettingsView: View {
 
             SettingsButtonRow(
                 icon: "arrow.clockwise",
-                iconColor: Theme.Colors.accent,
-                title: "Restore Purchases",
+                iconColor: .blue,
+                title: "Restore",
                 action: {
                     AudioService.shared.playUITick()
                     viewModel.restorePurchases()
@@ -260,7 +260,7 @@ struct SettingsView: View {
 
             SettingsButtonRow(
                 icon: "text.quote",
-                iconColor: Theme.Colors.accent,
+                iconColor: .blue,
                 title: "The Oracle",
                 action: {
                     AudioService.shared.playUITick()

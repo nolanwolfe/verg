@@ -12,6 +12,35 @@ pages. Journal becomes just the current journal. Books gain rename and
 cover-color customization. The tab bar hides on scroll-down and returns
 on scroll-up on the Library screen.
 
+### Fixed — History picker did nothing; brightness reset on a glance
+
+- **Settings → Guide → History changed only its own label.** Nothing on the
+  Archive screen ever read `calendarStyle`, so picking "Calendar" left the
+  heatmap exactly where it was. The days-lit section now renders either the
+  contribution graph or the month grid, and switching redraws it.
+- **Brightness was handed back on `.inactive`.** That phase fires for a
+  pulled-down Control Center, a notification banner, a glance at the app
+  switcher — all moments when the app is still on screen. The screen jumped
+  every time. Only `.background` relinquishes now, which is what the service
+  was for.
+
+### Changed — one Sound switch, real glass, header order
+
+- **The Sound pill on Write is now the Sound switch from Settings.** It used
+  to toggle *ambience* while wearing the word "Sound", so flipping it left
+  the Settings row unchanged and the pair looked broken. One setting, two
+  doorways. Ambience keeps its own row in Settings.
+- **The tab bar is translucent for real.** It was `.ultraThinMaterial` under
+  a 55% black plate — an opaque dark pill with a blur wasted behind it. Now
+  `.regularMaterial` under a 12% tint, so the candle's glow and the page
+  thumbnails genuinely pass through it.
+- Paywall header: the three commands sit together in one size, with the title
+  landing under them. "Put the phone down. Light the candle. Write what you
+  are." / **"On the Verg 🕯️ of ______"**
+- Settings: Ambience, The Oracle, Reminder Time and Restore are blue; the
+  rest are gold. "Restore Purchases" is just **Restore**.
+
+
 ### Changed — paywall header is one sentence; trial plumbing fixed
 
 The header now reads as a single thought broken across two weights: the
