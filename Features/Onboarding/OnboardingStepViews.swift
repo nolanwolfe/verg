@@ -195,9 +195,12 @@ struct OnboardingProjectionView: View {
                 )
             }
 
+            // White, unlike the grey intro above it: this is the payoff of
+            // the whole screen — the numbers are the argument, this is the
+            // point — and in grey it read as another caption.
             Text(projection.closingLine)
-                .font(Theme.Typography.body)
-                .foregroundColor(Theme.Colors.secondaryText)
+                .font(Theme.Typography.headline)
+                .foregroundColor(Theme.Colors.primaryText)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, Theme.Spacing.lg)
 
@@ -248,13 +251,15 @@ struct OnboardingRatingPromptView: View {
                     .lineLimit(2)
                     .minimumScaleFactor(0.8)
 
-                // One line, app name and candle together.
+                // Two sentences now, so it is allowed a second line — pinned
+                // to one it would have shrunk itself into the floor.
                 Text(AppStrings.Onboarding.ratingPromptBody)
                     .font(Theme.Typography.body)
                     .foregroundColor(Theme.Colors.secondaryText)
                     .multilineTextAlignment(.center)
-                    .lineLimit(1)
+                    .lineLimit(2)
                     .minimumScaleFactor(0.8)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             .padding(.horizontal, Theme.Spacing.lg)
 

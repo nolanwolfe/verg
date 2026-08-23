@@ -74,6 +74,16 @@ struct ContentView: View {
             onboardingRunID += 1
             showOnboarding = true
         }
+        .onReceive(
+            NotificationCenter.default.publisher(for: UIResponder.keyboardWillShowNotification)
+        ) { _ in
+            keyboardVisible = true
+        }
+        .onReceive(
+            NotificationCenter.default.publisher(for: UIResponder.keyboardWillHideNotification)
+        ) { _ in
+            keyboardVisible = false
+        }
         .onAppear {
             checkSubscriptionStatus()
         }
@@ -150,7 +160,11 @@ struct ContentView: View {
     }
 
     private var tabBarHidden: Bool {
-        tabBarVisibility == .hidden
+        // The keyboard owns the bottom of the screen while it is up. Naming
+        // a journal on the finish-book prompt raised the keyboard *and* left
+        // the tab bar sitting on top of it — two pieces of chrome stacked in
+        // the same place, with the bar unreachable behind the keyboard.
+        tabBarVisibility == .hidden || keyboardVisible
     }
 
     private var tabBarOpacity: Double {
@@ -158,6 +172,7 @@ struct ContentView: View {
     }
 
     @State private var tabBarVisibility: TabBarVisibility = .visible
+    @State private var keyboardVisible = false
 
     @ViewBuilder
     private var currentTabContent: some View {

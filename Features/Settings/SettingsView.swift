@@ -260,7 +260,7 @@ struct SettingsView: View {
 
             SettingsButtonRow(
                 icon: "text.quote",
-                iconColor: .blue,
+                iconColor: Theme.Colors.accent,
                 title: "The Oracle",
                 action: {
                     AudioService.shared.playUITick()
@@ -272,7 +272,7 @@ struct SettingsView: View {
 
             SettingsRow(
                 icon: "calendar",
-                iconColor: Theme.Colors.accent,
+                iconColor: .blue,
                 title: "History",
                 value: viewModel.calendarStyle.displayName,
                 action: {

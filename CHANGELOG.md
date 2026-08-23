@@ -12,6 +12,29 @@ pages. Journal becomes just the current journal. Books gain rename and
 cover-color customization. The tab bar hides on scroll-down and returns
 on scroll-up on the Library screen.
 
+### Fixed — tab bar sat on top of the keyboard
+
+Naming a journal on the finish-book prompt raised the keyboard and left the
+tab bar stacked on top of it — two pieces of chrome in the same place, the
+bar unreachable behind the keyboard. The bar now steps aside whenever the
+keyboard is up, anywhere in the app.
+
+### Changed — tab bar back to the 2.1 look; onboarding copy
+
+- **The bar is dark again**, as it was in 2.1: blurred, then taken down into
+  black at 72%. Lightening it to a 12% tint made the whole thing hazy *and*
+  killed the slider, because a pane of glass needs something dark to sit on
+  to read as glass. The translucency belongs to the pane that slides across
+  the five tabs, not to the bar — so the pane is clear now, and brighter at
+  its rim.
+- Settings: History is blue, The Oracle is gold.
+- Onboarding projection closes on "…pages you can **touch**", set in white
+  rather than grey. The numbers above are the argument; this line is the
+  point, and in grey it read as one more caption.
+- Closing note is now "One more thing." over "Ratings light the way. They
+  help others find Verg 🕯️", allowed two lines.
+
+
 ### Fixed — History picker did nothing; brightness reset on a glance
 
 - **Settings → Guide → History changed only its own label.** Nothing on the

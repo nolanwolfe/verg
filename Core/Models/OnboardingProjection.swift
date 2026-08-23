@@ -19,7 +19,7 @@ enum OnboardingProjection {
             return "\(rounded) \(rounded == 1 ? "hour" : "hours")"
         }
 
-        /// The closing line, e.g. "Two hundred sixty pages you can hold."
+        /// The closing line, e.g. "Two hundred sixty pages you can touch."
         /// Spelled out rather than repeating the numeral already shown
         /// above it, and computed from the chosen pace — 3 days a week is
         /// not 260 pages, so this can't be a fixed string.
@@ -28,7 +28,7 @@ enum OnboardingProjection {
             formatter.numberStyle = .spellOut
             let words = formatter.string(from: NSNumber(value: pages)) ?? "\(pages)"
             let capitalised = words.prefix(1).uppercased() + words.dropFirst()
-            return "\(capitalised) \(pages == 1 ? "page" : "pages") you can hold."
+            return "\(capitalised) \(pages == 1 ? "page" : "pages") you can touch."
         }
     }
 

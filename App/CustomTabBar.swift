@@ -19,18 +19,16 @@ struct CustomTabBar: View {
         .padding(.horizontal, 8)
         .background(
             RoundedRectangle(cornerRadius: 32, style: .continuous)
-                // Blur base. `.regularMaterial` over `.ultraThin` because
-                // ultra-thin on a black app is almost pure blur with no body
-                // to it, and the pill needs to read as a pane of something.
-                .fill(.regularMaterial)
-                // Only a whisper of tint. This was a 0.55 black plate, which
-                // is not translucency at all — it is an opaque dark pill with
-                // a blur wasted behind it. At 0.12 the candle's glow and the
-                // page thumbnails genuinely pass through, which is the whole
-                // point of glass.
+                // The 2.1 bar: blurred, then taken well down into black. The
+                // bar itself is the dark, unbroken body spanning all five
+                // tabs — the translucency people notice is the pane that
+                // slides across it, not the bar. Lightening this to 12% made
+                // the whole thing hazy and the slider stopped reading as
+                // glass, because there was nothing dark for it to sit on.
+                .fill(.ultraThinMaterial)
                 .overlay(
                     RoundedRectangle(cornerRadius: 32, style: .continuous)
-                        .fill(Color.black.opacity(0.12))
+                        .fill(Color.black.opacity(0.72))
                 )
                 // Specular highlight — a brighter strip of light along the
                 // top edge, falling off fast.
@@ -105,14 +103,17 @@ struct CustomTabBar: View {
     private func hover(for tab: ContentView.Tab) -> some View {
         if selectedTab == tab {
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(.ultraThinMaterial)
+                // Clear, not tinted: the pane lifts the dark bar beneath it
+                // rather than painting over it, which is what makes it read
+                // as glass sliding across rather than a highlight fading in.
+                .fill(.regularMaterial)
                 .overlay(
                     RoundedRectangle(cornerRadius: 18, style: .continuous)
                         .fill(
                             LinearGradient(
                                 colors: [
-                                    Color.white.opacity(0.16),
-                                    Color.white.opacity(0.05),
+                                    Color.white.opacity(0.22),
+                                    Color.white.opacity(0.07),
                                     Color.clear
                                 ],
                                 startPoint: .top,
@@ -125,13 +126,13 @@ struct CustomTabBar: View {
                         .strokeBorder(
                             LinearGradient(
                                 colors: [
-                                    Color.white.opacity(0.30),
-                                    Color.white.opacity(0.08)
+                                    Color.white.opacity(0.42),
+                                    Color.white.opacity(0.10)
                                 ],
                                 startPoint: .top,
                                 endPoint: .bottom
                             ),
-                            lineWidth: 0.7
+                            lineWidth: 0.8
                         )
                 )
                 // Warm underglow, so the lit tab belongs to the candle
