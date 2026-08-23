@@ -12,6 +12,22 @@ pages. Journal becomes just the current journal. Books gain rename and
 cover-color customization. The tab bar hides on scroll-down and returns
 on scroll-up on the Library screen.
 
+### Changed — pages are landscape
+
+The page format goes from portrait 3:4 to landscape **3:2**. A notebook open
+on a desk is wider than it is tall; the portrait frame threw away the sides
+of a spread and kept dead desk above and below it.
+
+3:2 rather than 16:9 — 16:9 is a cinema crop and would slice the top and
+bottom lines off a page. 3:2 is the 35mm frame: landscape enough to hold a
+spread, shallow enough to keep the whole page.
+
+The viewfinder is masked to the same shape, so what gets cropped was never
+shown as part of the shot. A camera capture is now cropped like everything
+else, where before it passed through untouched: a phone held upright gives a
+3:4 portrait frame, and the page lives in the band across its middle.
+
+
 ### Added — app icon appearances; scripts can be edited
 
 **Icon.** The catalog carried one image, so iOS derived the dark and tinted

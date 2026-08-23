@@ -121,7 +121,7 @@ struct CameraView: View {
             ZStack {
                 RoundedRectangle(cornerRadius: Theme.CornerRadius.medium, style: .continuous)
                     .fill(Theme.Colors.cardBackground)
-                    .aspectRatio(3/4, contentMode: .fit)
+                    .aspectRatio(PageCapture.aspectRatio, contentMode: .fit)
                     .padding(.horizontal, Theme.Spacing.md)
 
                 VStack(spacing: Theme.Spacing.md) {

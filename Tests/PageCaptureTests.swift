@@ -34,20 +34,37 @@ final class PageCaptureTests: XCTestCase {
         )
     }
 
-    func testPortraitThreeByFourIsLeftAlone() {
-        // What the camera itself produces — must pass through untouched, not
-        // get re-rendered on every capture.
-        let source = image(1536, 2048)
+    func testAlreadyLandscapeThreeByTwoIsLeftAlone() {
+        // The page format itself — must pass through untouched rather than
+        // being re-rendered for nothing.
+        let source = image(3000, 2000)
         let result = PageCapture.normalized(source)
         XCTAssertEqual(result.size, source.size)
     }
 
-    func testLandscapePhotoIsCroppedToPageShape() {
+    func testCameraCaptureIsCroppedToLandscape() {
+        // A phone held upright over a notebook gives a 3:4 portrait frame.
+        // The page lives in the band across its middle.
+        let result = PageCapture.normalized(image(1536, 2048))
+        assertIsPageShaped(result, "A portrait capture should come out page-shaped")
+        XCTAssertEqual(result.size.width, 1536, accuracy: 1)
+        XCTAssertEqual(result.size.height, 1536 / PageCapture.aspectRatio, accuracy: 1)
+    }
+
+    func testFourByThreeLandscapeIsCroppedToPageShape() {
+        // 4:3 is wider than tall but still squarer than 3:2, so height goes.
         let result = PageCapture.normalized(image(4032, 3024))
-        assertIsPageShaped(result, "A landscape photo should come out page-shaped")
-        // Full height retained; width is the slice taken from the middle.
-        XCTAssertEqual(result.size.height, 3024, accuracy: 1)
-        XCTAssertEqual(result.size.width, 3024 * PageCapture.aspectRatio, accuracy: 1)
+        assertIsPageShaped(result, "A 4:3 photo should come out page-shaped")
+        XCTAssertEqual(result.size.width, 4032, accuracy: 1)
+        XCTAssertEqual(result.size.height, 4032 / PageCapture.aspectRatio, accuracy: 1)
+    }
+
+    func testSixteenByNineIsCroppedToPageShape() {
+        // Wider than the page format — this one loses width, not height.
+        let result = PageCapture.normalized(image(1920, 1080))
+        assertIsPageShaped(result, "A 16:9 photo should come out page-shaped")
+        XCTAssertEqual(result.size.height, 1080, accuracy: 1)
+        XCTAssertEqual(result.size.width, 1080 * PageCapture.aspectRatio, accuracy: 1)
     }
 
     func testTallScreenshotIsCroppedToPageShape() {
@@ -62,9 +79,9 @@ final class PageCaptureTests: XCTestCase {
     func testSquareIsCroppedToPageShape() {
         let result = PageCapture.normalized(image(2000, 2000))
         assertIsPageShaped(result, "A square photo should come out page-shaped")
-        // A square is *wider* than 3:4, so height is kept and width narrows.
-        XCTAssertEqual(result.size.height, 2000, accuracy: 1)
-        XCTAssertEqual(result.size.width, 1500, accuracy: 1)
+        // A square is *taller* than 3:2, so width is kept and height narrows.
+        XCTAssertEqual(result.size.width, 2000, accuracy: 1)
+        XCTAssertEqual(result.size.height, 2000 / PageCapture.aspectRatio, accuracy: 1)
     }
 
     func testPanoramaIsCroppedToPageShape() {
@@ -83,7 +100,7 @@ final class PageCaptureTests: XCTestCase {
 
     func testEveryShapeAgreesOnOneFormat() {
         // The actual promise: whatever went in, the journal holds one shape.
-        let ratios = [(4032.0, 3024.0), (1179.0, 2556.0), (2000.0, 2000.0), (1536.0, 2048.0)]
+        let ratios = [(4032.0, 3024.0), (1179.0, 2556.0), (2000.0, 2000.0), (1920.0, 1080.0)]
             .map { ratio(PageCapture.normalized(image(CGFloat($0.0), CGFloat($0.1)))) }
         for r in ratios {
             XCTAssertEqual(r, PageCapture.aspectRatio, accuracy: 0.01)
