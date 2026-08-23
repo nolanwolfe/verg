@@ -12,6 +12,23 @@ pages. Journal becomes just the current journal. Books gain rename and
 cover-color customization. The tab bar hides on scroll-down and returns
 on scroll-up on the Library screen.
 
+### Changed — Settings goes gold; the trial moves onto the plan title
+
+- **Settings icons are gold**, replacing the iOS multicolour set tried in the
+  previous build. Three exceptions, each for a reason: Share Verg stays blue
+  because sharing is a system action opening Apple's own sheet, and Privacy
+  Policy and Terms of Service stay plain white — gilding a privacy policy is
+  the wrong tone, and they are the only rows that leave the app. Switches
+  remain system blue.
+- **The free trial sits beside "Yearly" now**, not under it: a gold capsule
+  with the sheen still travelling across the lettering, so it is the first
+  thing read on the row rather than a footnote. The post-trial price stays
+  underneath, quiet.
+- Subtitle: "Put the phone down. Light the candle. Write what you are."
+- Feature row 2 drops "paper": "Real progress of who you're becoming, and
+  insights to prove it."
+
+
 ### Changed — paywall headline, feature marks, and the trial
 
 - The headline is now **"On the Verg 🕯️ of ______"**. "Becoming" answered the

@@ -421,7 +421,23 @@ struct PlanCard: View {
                             .font(Theme.Typography.headline)
                             .foregroundColor(GoldenPalette.primaryText)
 
-                        if let badge {
+                        // The trial sits on the title line, immediately after
+                        // the plan name — the first thing read on the row
+                        // rather than a footnote under it.
+                        if let trialHeadline {
+                            ShinyGoldText(trialHeadline)
+                                .padding(.horizontal, 7)
+                                .padding(.vertical, 3)
+                                .background(
+                                    Capsule().fill(GoldenPalette.flameBottom.opacity(0.14))
+                                )
+                                .overlay(
+                                    Capsule().strokeBorder(
+                                        GoldenPalette.flameBottom.opacity(0.45), lineWidth: 0.8
+                                    )
+                                )
+                                .fixedSize()
+                        } else if let badge {
                             Text(badge)
                                 .font(.system(size: 10, weight: .semibold))
                                 .padding(.horizontal, Theme.Spacing.xxs)
@@ -432,18 +448,13 @@ struct PlanCard: View {
                         }
                     }
 
-                    HStack(spacing: 5) {
-                        if let trialHeadline {
-                            ShinyGoldText(trialHeadline)
-                        }
-                        if let subtitle {
-                            Text(subtitle)
-                                .font(Theme.Typography.caption)
-                                .foregroundColor(GoldenPalette.secondaryText)
-                        }
+                    if let subtitle {
+                        Text(subtitle)
+                            .font(Theme.Typography.caption)
+                            .foregroundColor(GoldenPalette.secondaryText)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.85)
                     }
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
                 }
 
                 Spacer()

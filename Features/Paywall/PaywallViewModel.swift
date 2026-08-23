@@ -54,7 +54,7 @@ final class PaywallViewModel: ObservableObject {
         // the row read as three unrelated marks; outlined, they read as a set
         // and the eye goes to the words instead of the icons.
         Feature(icon: "books.vertical", text: "A full collection of your journals. Every page and every book, kept private to you."),
-        Feature(icon: "doc.text", text: "Real paper progress of who you're becoming, and insights to prove it."),
+        Feature(icon: "doc.text", text: "Real progress of who you're becoming, and insights to prove it."),
         Feature(icon: "slider.horizontal.3", text: "Customization, ambience, prompts, candle wicks, session length, year-by-year facts.")
     ]
 
@@ -120,7 +120,7 @@ final class PaywallViewModel: ObservableObject {
     /// shown a free trial they'd be refused at the till.
     var yearlyTrialHeadline: String? {
         guard yearlyTrialAvailable, let offer = yearlyIntroOffer else { return nil }
-        return "\(offer) free"
+        return "\(offer) free trial"
     }
 
     /// What they will actually be charged, and when.

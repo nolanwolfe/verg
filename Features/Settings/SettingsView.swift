@@ -112,7 +112,7 @@ struct SettingsView: View {
         SettingsSection(title: "Candle") {
             SettingsRow(
                 icon: "clock",
-                iconColor: .blue,
+                iconColor: Theme.Colors.accent,
                 title: "Duration",
                 value: viewModel.formattedDuration,
                 action: {
@@ -125,7 +125,7 @@ struct SettingsView: View {
 
             SettingsToggleRow(
                 icon: "speaker.wave.2",
-                iconColor: .orange,
+                iconColor: Theme.Colors.accent,
                 title: "Sound",
                 isOn: $viewModel.soundEnabled
             )
@@ -134,7 +134,7 @@ struct SettingsView: View {
 
             SettingsRow(
                 icon: "music.note",
-                iconColor: .pink,
+                iconColor: Theme.Colors.accent,
                 title: isPremium ? "Ambience" : "Ambience  🔒",
                 value: viewModel.ambienceLabel,
                 action: {
@@ -162,7 +162,7 @@ struct SettingsView: View {
         SettingsSection(title: "Notifications") {
             SettingsToggleRow(
                 icon: "bell",
-                iconColor: .red,
+                iconColor: Theme.Colors.accent,
                 title: "Daily Reminder",
                 isOn: $viewModel.notificationsEnabled
             )
@@ -173,7 +173,7 @@ struct SettingsView: View {
 
                 SettingsRow(
                     icon: "clock",
-                    iconColor: .blue,
+                    iconColor: Theme.Colors.accent,
                     title: "Reminder Time",
                     value: viewModel.formattedNotificationTime,
                     action: { viewModel.showTimePicker = true }
@@ -185,7 +185,7 @@ struct SettingsView: View {
 
             SettingsToggleRow(
                 icon: "hourglass",
-                iconColor: .indigo,
+                iconColor: Theme.Colors.accent,
                 title: "Weekly Recap",
                 isOn: $viewModel.weeklySummaryNotificationsEnabled
             )
@@ -219,7 +219,7 @@ struct SettingsView: View {
 
             SettingsButtonRow(
                 icon: "arrow.clockwise",
-                iconColor: .green,
+                iconColor: Theme.Colors.accent,
                 title: "Restore Purchases",
                 action: {
                     AudioService.shared.playUITick()
@@ -231,7 +231,7 @@ struct SettingsView: View {
 
             SettingsButtonRow(
                 icon: "gift",
-                iconColor: .pink,
+                iconColor: Theme.Colors.accent,
                 title: purchaseService.isFriendsAndFamily ? "Friends & Family Access Active" : "Redeem Access Code",
                 action: {
                     guard !purchaseService.isFriendsAndFamily else { return }
@@ -248,7 +248,7 @@ struct SettingsView: View {
         SettingsSection(title: "Guide") {
             SettingsButtonRow(
                 icon: "book",
-                iconColor: .indigo,
+                iconColor: Theme.Colors.accent,
                 title: "How to write with Verg 🕯️",
                 action: {
                     AudioService.shared.playUITick()
@@ -260,7 +260,7 @@ struct SettingsView: View {
 
             SettingsButtonRow(
                 icon: "text.quote",
-                iconColor: .teal,
+                iconColor: Theme.Colors.accent,
                 title: "The Oracle",
                 action: {
                     AudioService.shared.playUITick()
@@ -272,7 +272,7 @@ struct SettingsView: View {
 
             SettingsRow(
                 icon: "calendar",
-                iconColor: .blue,
+                iconColor: Theme.Colors.accent,
                 title: "History",
                 value: viewModel.calendarStyle.displayName,
                 action: {
@@ -288,7 +288,7 @@ struct SettingsView: View {
         SettingsSection(title: "About") {
             SettingsButtonRow(
                 icon: "star",
-                iconColor: .yellow,
+                iconColor: Theme.Colors.accent,
                 title: "Rate Verg",
                 action: { viewModel.rateApp() }
             )
@@ -298,6 +298,8 @@ struct SettingsView: View {
 
             SettingsButtonRow(
                 icon: "square.and.arrow.up",
+                // Blue: sharing is a system action, and the share sheet it
+                // opens is Apple's, not ours.
                 iconColor: .blue,
                 title: "Share Verg",
                 action: { viewModel.shareApp() }
@@ -308,7 +310,10 @@ struct SettingsView: View {
 
             SettingsLinkRow(
                 icon: "lock.shield",
-                iconColor: .gray,
+                // The two legal rows stay plain white — gilding a privacy
+                // policy is the wrong tone, and they are the only rows here
+                // that leave the app.
+                iconColor: .white,
                 title: "Privacy Policy",
                 url: URL(string: "https://nolanwolfe.github.io/verg/privacy")!
             )
@@ -318,7 +323,7 @@ struct SettingsView: View {
 
             SettingsLinkRow(
                 icon: "doc.text",
-                iconColor: .gray,
+                iconColor: .white,
                 title: "Terms of Service",
                 url: URL(string: "https://nolanwolfe.github.io/verg/terms")!
             )
@@ -331,7 +336,7 @@ struct SettingsView: View {
         SettingsSection(title: "Debug") {
             SettingsButtonRow(
                 icon: "creditcard",
-                iconColor: .indigo,
+                iconColor: Theme.Colors.accent,
                 title: "Test Paywall",
                 action: { viewModel.showPaywall = true }
             )
@@ -341,7 +346,7 @@ struct SettingsView: View {
 
             SettingsButtonRow(
                 icon: "arrow.counterclockwise",
-                iconColor: .red,
+                iconColor: Theme.Colors.accent,
                 title: "Reset Onboarding",
                 action: { StorageService.shared.setHasSeenOnboarding(false) }
             )
@@ -351,7 +356,7 @@ struct SettingsView: View {
 
             SettingsButtonRow(
                 icon: "trash",
-                iconColor: .orange,
+                iconColor: Theme.Colors.accent,
                 title: "Reset Free Session Count",
                 action: {
                     StorageService.shared.resetForTesting()
