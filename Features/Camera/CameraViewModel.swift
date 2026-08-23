@@ -27,6 +27,9 @@ final class CameraViewModel: NSObject, ObservableObject {
     // MARK: - Session Info
     var sessionDuration: TimeInterval = 10
     var sessionActiveDuration: TimeInterval = 10
+    /// Carried from the Write screen so the saved page remembers what it
+    /// was written to. Nil when the user chose no prompt.
+    var sessionPrompt: String?
 
     // MARK: - Callbacks
     var onPhotoSaved: ((Session) -> Void)?
@@ -169,7 +172,8 @@ final class CameraViewModel: NSObject, ObservableObject {
             let session = self.storageService.saveSession(
                 image: image,
                 duration: self.sessionDuration,
-                activeDuration: self.sessionActiveDuration
+                activeDuration: self.sessionActiveDuration,
+                prompt: self.sessionPrompt
             )
             DispatchQueue.main.async {
                 self.isSaving = false

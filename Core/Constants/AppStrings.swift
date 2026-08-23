@@ -15,7 +15,7 @@ enum AppStrings {
         static let epigraphAttribution = "Dante to Virgil, in the dark wood."
 
         // Step 1 — what this is
-        static let pitchHeadline = "A journal without typing."
+        static let pitchHeadline = "A journal you write by hand."
         static let pitchSubline = "Pen, paper, ten minutes."
 
         // Step 2 — the ritual
@@ -40,7 +40,7 @@ enum AppStrings {
         // Step 5 — the closing note. Mentions the rating; deliberately does
         // NOT trigger the system prompt, which fires on the third saved page.
         static let ratingPromptTitle = "One rating lights the way."
-        static let ratingPromptBody = "It helps others find\nVerg 🕯️"
+        static let ratingPromptBody = "It helps others find Verg 🕯️"
 
         static let skipButton = "Skip"
         static let continueButton = "Continue"
@@ -66,7 +66,7 @@ enum AppStrings {
 
     // MARK: - Home
     enum Home {
-        static let beginWriting = "Light Candle & Begin Writing"
+        static let beginWriting = "Begin Writing"
 
         /// Shown when the candle isn't lit today. Distinguishes a
         /// returning user whose candle lapsed from someone who has never
@@ -128,13 +128,17 @@ enum AppStrings {
         /// dead poet, neither of whom owns a phone, both writing like
         /// present-day teenagers.
         ///
-        /// The attributions are bare first names, which read perfectly well
-        /// as usernames — so `reviewsAreFictionNote` below is the only thing
-        /// on the screen marking these as invented. It is load-bearing and
-        /// must render wherever the reviews do. Without it, two five-star
-        /// testimonials from people who don't exist sit next to a Buy
-        /// button, which is a fake review under App Store Review Guideline
-        /// 2.3.1 and the FTC's 2024 consumer-review rule.
+        /// Deliberately unlabelled: the owner's call is that "Sibylla" and
+        /// "Dante" read as the joke they are, given an app named for Virgil
+        /// that opens on a Dante epigraph. An explicit "Not real reviews."
+        /// line was tried here and cut as redundant.
+        ///
+        /// Recorded because it's a judgement call with a downside: these are
+        /// invented five-star testimonials beside a Buy button. If App
+        /// Review ever reads them as genuine (Guideline 2.3.1, or the FTC's
+        /// 2024 consumer-review rule), the one-line fix is to put the
+        /// epithets back — "Sibylla of Cumae", "Dante, c. 1320" — or to
+        /// restore a short disclosure under the cards.
         ///
         /// They also stay clear of health claims. Nothing here promises a
         /// therapeutic outcome, which a paywall has no business doing.
@@ -159,9 +163,6 @@ enum AppStrings {
 
         static let laurelBadge = "Anti-phone App"
 
-        /// Three words, directly under the review pair. See the note on
-        /// `reviews` — this is the whole disclosure.
-        static let reviewsAreFictionNote = "Not real reviews."
     }
 
     // MARK: - Settings

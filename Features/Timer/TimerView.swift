@@ -6,6 +6,9 @@ struct TimerView: View {
     @StateObject private var viewModel = TimerViewModel()
     @Environment(\.dismiss) private var dismiss
 
+    /// The prompt chosen on the Write screen, carried through to the saved
+    /// page. Nil when the user chose no prompt.
+    var prompt: String?
     var onComplete: ((Session?) -> Void)?
 
     @State private var showControls: Bool = true
@@ -31,8 +34,14 @@ struct TimerView: View {
             // Candle — smaller, more centered in the screen
             GeometryReader { geo in
                 CandleView(
+                    // Deliberately not `viewModel.isRunning`: CandleView drops
+                    // its flame and glow out of the layout entirely when not
+                    // burning, which shrinks its rendered height — and since
+                    // it's centred here with `.position()`, that made the whole
+                    // candle jump on pause. Pausing isn't blowing the candle
+                    // out; only real completion is.
                     progress: viewModel.progress,
-                    isBurning: viewModel.isRunning
+                    isBurning: !viewModel.isComplete
                 )
                 .scaleEffect(1.3)
                 .shadow(
@@ -149,6 +158,7 @@ struct TimerView: View {
             CameraView(
                 duration: viewModel.totalDuration,
                 activeDuration: viewModel.activeDuration,
+                prompt: prompt,
                 onPhotoSaved: { session in viewModel.onPhotoSaved(session) },
                 onCancel: {
                     viewModel.showCamera = false

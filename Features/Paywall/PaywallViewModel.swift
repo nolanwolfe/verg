@@ -54,8 +54,8 @@ final class PaywallViewModel: ObservableObject {
     // The relight row states the mechanic without gamified framing.
     let heroFeatures: [Feature] = [
         Feature(icon: "books.vertical.fill", text: "A full collection of your journals. Every page and every book, kept private to you."),
-        Feature(icon: "flame.fill", usesCandleMark: true, text: "Insights alongside your entire progress on paper of who you're becoming."),
-        Feature(icon: "slider.horizontal.3", text: "Customization, ambience, prompts, candle wicks, session length, year-by-year history.")
+        Feature(icon: "flame.fill", usesCandleMark: true, text: "Real paper progress of who you're becoming, and insights to prove it."),
+        Feature(icon: "slider.horizontal.3", text: "Customization, ambience, prompts, candle wicks, session length, year-by-year facts.")
     ]
 
     // MARK: - Dependencies

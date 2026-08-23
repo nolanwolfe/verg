@@ -5,6 +5,9 @@ import RevenueCatUI
 struct SettingsView: View {
     @StateObject private var viewModel = SettingsViewModel()
     @EnvironmentObject private var purchaseService: PurchaseService
+    @EnvironmentObject private var storageService: StorageService
+
+    @State private var showPromptLibrary = false
 
     var body: some View {
         ZStack {
@@ -17,20 +20,17 @@ struct SettingsView: View {
                     // Header
                     headerSection
 
-                    // Timer settings
-                    timerSection
+                    // Candle — how a session runs
+                    candleSection
 
-                    // Archive
-                    archiveSection
+                    // Guide — how it's taught, drawn from, and shown back
+                    guideSection
 
                     // Notifications
                     notificationsSection
 
                     // Account
                     accountSection
-
-                    // Guide — replay the onboarding sequence
-                    guideSection
 
                     // About
                     aboutSection
@@ -68,6 +68,10 @@ struct SettingsView: View {
         .sheet(isPresented: $viewModel.showCalendarStylePicker) {
             calendarStylePickerSheet
         }
+        .sheet(isPresented: $showPromptLibrary) {
+            PromptLibraryView()
+                .environmentObject(storageService)
+        }
         .alert("Restore Purchases", isPresented: $viewModel.showRestoreAlert) {
             Button("OK", role: .cancel) { }
         } message: {
@@ -101,19 +105,23 @@ struct SettingsView: View {
             .padding(.top, Theme.Spacing.sm)
     }
 
-    // MARK: - Timer Section
-    private var timerSection: some View {
-        SettingsSection(title: "Timer") {
+    // MARK: - Candle Section
+    /// Duration, sound and ambience — everything about how a session runs.
+    /// What it records lives under Guide.
+    private var candleSection: some View {
+        SettingsSection(title: "Candle") {
             SettingsRow(
                 icon: "clock",
                 iconColor: Theme.Colors.accent,
                 title: "Duration",
                 value: viewModel.formattedDuration,
-                action: { viewModel.showDurationPicker = true }
+                action: {
+                    AudioService.shared.playUITick()
+                    viewModel.showDurationPicker = true
+                }
             )
 
-            Divider()
-                .background(Theme.Colors.secondaryText.opacity(0.2))
+            settingsDivider
 
             SettingsToggleRow(
                 icon: "speaker.wave.2",
@@ -122,8 +130,7 @@ struct SettingsView: View {
                 isOn: $viewModel.soundEnabled
             )
 
-            Divider()
-                .background(Theme.Colors.secondaryText.opacity(0.2))
+            settingsDivider
 
             SettingsRow(
                 icon: "music.note",
@@ -131,6 +138,7 @@ struct SettingsView: View {
                 title: isPremium ? "Ambience" : "Ambience  🔒",
                 value: viewModel.ambienceLabel,
                 action: {
+                    AudioService.shared.playUITick()
                     if isPremium {
                         viewModel.showAmbiencePicker = true
                     } else {
@@ -141,21 +149,12 @@ struct SettingsView: View {
         }
     }
 
-    private var isPremium: Bool {
-        purchaseService.isSubscribed || purchaseService.isFriendsAndFamily
+    private var settingsDivider: some View {
+        Divider().background(Theme.Colors.secondaryText.opacity(0.2))
     }
 
-    // MARK: - Archive Section
-    private var archiveSection: some View {
-        SettingsSection(title: "Archive") {
-            SettingsRow(
-                icon: "calendar",
-                iconColor: .blue,
-                title: "Calendar Style",
-                value: viewModel.calendarStyle.displayName,
-                action: { viewModel.showCalendarStylePicker = true }
-            )
-        }
+    private var isPremium: Bool {
+        purchaseService.isSubscribed || purchaseService.isFriendsAndFamily
     }
 
     // MARK: - Notifications Section
@@ -196,75 +195,89 @@ struct SettingsView: View {
     // MARK: - Account Section
     private var accountSection: some View {
         SettingsSection(title: "Account") {
-            if !purchaseService.isSubscribed {
-                SettingsButtonRow(
-                    icon: "sparkles",
-                    iconColor: Theme.Colors.accent,
-                    title: "The Golden Age",
-                    action: { viewModel.showPaywall = true }
-                )
+            // One row whether subscribed or not — it reports its own state
+            // instead of appearing and disappearing, so the section keeps a
+            // stable three rows.
+            SettingsSwitchButtonRow(
+                // Closest thing SF Symbols has to a single wheat stalk, and
+                // it echoes the laurel on the paywall.
+                icon: "laurel.leading",
+                iconColor: Theme.Colors.accent,
+                title: "The Golden Age",
+                isOn: isPremium,
+                action: {
+                    AudioService.shared.playUITick()
+                    if purchaseService.isSubscribed {
+                        viewModel.manageSubscription()
+                    } else {
+                        viewModel.showPaywall = true
+                    }
+                }
+            )
 
-                Divider()
-                    .background(Theme.Colors.secondaryText.opacity(0.2))
-            }
+            settingsDivider
 
             SettingsButtonRow(
                 icon: "arrow.clockwise",
                 iconColor: .green,
                 title: "Restore Purchases",
-                action: { viewModel.restorePurchases() }
+                action: {
+                    AudioService.shared.playUITick()
+                    viewModel.restorePurchases()
+                }
             )
 
-            Divider()
-                .background(Theme.Colors.secondaryText.opacity(0.2))
+            settingsDivider
 
             SettingsButtonRow(
                 icon: "gift",
                 iconColor: .purple,
                 title: purchaseService.isFriendsAndFamily ? "Friends & Family Access Active" : "Redeem Access Code",
                 action: {
-                    if !purchaseService.isFriendsAndFamily {
-                        viewModel.showRedeemSheet = true
-                    }
+                    guard !purchaseService.isFriendsAndFamily else { return }
+                    AudioService.shared.playUITick()
+                    viewModel.showRedeemSheet = true
                 }
-            )
-
-            if purchaseService.isSubscribed {
-                Divider()
-                    .background(Theme.Colors.secondaryText.opacity(0.2))
-
-                SettingsButtonRow(
-                    icon: "creditcard",
-                    iconColor: Theme.Colors.accent,
-                    title: "Manage Subscription",
-                    action: { viewModel.manageSubscription() }
-                )
-            }
-
-            Divider()
-                .background(Theme.Colors.secondaryText.opacity(0.2))
-
-            SettingsButtonRow(
-                icon: "cart",
-                iconColor: .yellow,
-                title: "View Subscription Options",
-                action: { viewModel.showPaywall = true }
             )
         }
     }
 
     // MARK: - Guide Section
-    /// Replays the onboarding sequence — the epigraph, the candle, the
-    /// ritual — for anyone who wants to see the guide again. Clears the
-    /// has-seen flag; ContentView's overlay picks it up on next launch.
+    /// How the ritual is taught, what it draws from, and how it's shown back.
     private var guideSection: some View {
         SettingsSection(title: "Guide") {
             SettingsButtonRow(
                 icon: "book",
                 iconColor: Theme.Colors.accent,
-                title: "See the Guide again",
+                title: "How to write with Verg 🕯️",
                 action: {
+                    AudioService.shared.playUITick()
                     NotificationCenter.default.post(name: .onboardingReplayRequested, object: nil)
+                }
+            )
+
+            settingsDivider
+
+            SettingsButtonRow(
+                icon: "text.quote",
+                iconColor: Theme.Colors.accent,
+                title: "The Oracle",
+                action: {
+                    AudioService.shared.playUITick()
+                    showPromptLibrary = true
+                }
+            )
+
+            settingsDivider
+
+            SettingsRow(
+                icon: "calendar",
+                iconColor: .blue,
+                title: "History",
+                value: viewModel.calendarStyle.displayName,
+                action: {
+                    AudioService.shared.playUITick()
+                    viewModel.showCalendarStylePicker = true
                 }
             )
         }
@@ -656,8 +669,58 @@ struct SettingsToggleRow: View {
 
             Toggle("", isOn: $isOn)
                 .tint(Theme.Colors.accent)
+                // Every switch ticks. Haptic always; the sound follows the
+                // Sound setting, which this row may itself be flipping — so
+                // turning sound off is silent and turning it on is not.
+                .onChange(of: isOn) { _, _ in
+                    AudioService.shared.playUITick()
+                }
         }
         .padding(.vertical, Theme.Spacing.xxs)
+    }
+}
+
+// MARK: - Settings Switch Button Row
+/// Looks exactly like `SettingsToggleRow` — icon, title, switch — but the
+/// switch is a static indicator, not a live `Toggle`. For rows whose state
+/// isn't a local bool to flip in place (subscription status): tapping
+/// anywhere routes to the real flow (paywall / manage subscription) instead
+/// of optimistically flipping and snapping back.
+struct SettingsSwitchButtonRow: View {
+    let icon: String
+    let iconColor: Color
+    let title: String
+    let isOn: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: Theme.Spacing.sm) {
+                Image(systemName: icon)
+                    .font(.system(size: 18))
+                    .foregroundColor(iconColor)
+                    .frame(width: 28, height: 28)
+
+                Text(title)
+                    .font(Theme.Typography.body)
+                    .foregroundColor(Theme.Colors.primaryText)
+
+                Spacer()
+
+                Capsule()
+                    .fill(isOn ? Theme.Colors.accent : Color(.systemGray5))
+                    .frame(width: 51, height: 31)
+                    .overlay(
+                        Circle()
+                            .fill(.white)
+                            .frame(width: 27, height: 27)
+                            .shadow(color: .black.opacity(0.15), radius: 1, y: 1)
+                            .padding(2),
+                        alignment: isOn ? .trailing : .leading
+                    )
+            }
+            .padding(.vertical, Theme.Spacing.xxs)
+        }
     }
 }
 

@@ -409,12 +409,18 @@ struct MilestoneRow: View {
 /// A super-small gold star beside "earned" — flickers gently, the same
 /// jittery-loop language as the candle flame in the tab bar.
 struct AchievementStarIcon: View {
+    var size: CGFloat = 9
+    /// Seconds to wait before starting the shimmer. A row of stars started
+    /// together pulses in lockstep, which reads mechanical; staggering them
+    /// makes the row glimmer instead.
+    var phase: Double = 0
+
     @State private var opacity: Double = 0.75
     @State private var scale: CGFloat = 1.0
 
     var body: some View {
         Image(systemName: "star.fill")
-            .font(.system(size: 9))
+            .font(.system(size: size))
             .foregroundStyle(
                 LinearGradient(
                     colors: [Color(hex: "FFE066"), Color(hex: "D4A017")],
@@ -425,10 +431,10 @@ struct AchievementStarIcon: View {
             .opacity(opacity)
             .scaleEffect(scale)
             .onAppear {
-                withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
+                withAnimation(.easeInOut(duration: 0.9).delay(phase).repeatForever(autoreverses: true)) {
                     opacity = 1.0
                 }
-                withAnimation(.easeInOut(duration: 1.3).repeatForever(autoreverses: true)) {
+                withAnimation(.easeInOut(duration: 1.3).delay(phase).repeatForever(autoreverses: true)) {
                     scale = 1.15
                 }
             }
@@ -445,7 +451,7 @@ struct LockedMilestonesHint: View {
             onTap()
         }) {
             HStack {
-                Text("Your place on the ladder, with The Ascent.")
+                Text("Your place on the ladder, with The Golden Age.")
                     .font(Theme.Typography.subheadline)
                     .foregroundColor(.white.opacity(0.5))
                 Spacer()

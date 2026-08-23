@@ -17,22 +17,38 @@ struct CustomTabBar: View {
             RoundedRectangle(cornerRadius: 32, style: .continuous)
                 // Blur base
                 .fill(.ultraThinMaterial)
-                // Black tint — makes it dark liquid glass not grey
+                // Tint — lighter than it was, because at 0.72 the black
+                // swallowed the material underneath and the glass read as a
+                // flat dark pill. The blur needs to show through to be glass.
                 .overlay(
                     RoundedRectangle(cornerRadius: 32, style: .continuous)
-                        .fill(Color.black.opacity(0.72))
+                        .fill(Color.black.opacity(0.55))
                 )
-                // Specular highlight — thin strip of light at the very top
+                // Specular highlight — a brighter strip of light along the
+                // top edge, falling off fast.
                 .overlay(
                     RoundedRectangle(cornerRadius: 32, style: .continuous)
                         .fill(
                             LinearGradient(
                                 colors: [
-                                    Color.white.opacity(0.10),
+                                    Color.white.opacity(0.20),
+                                    Color.white.opacity(0.04),
                                     Color.clear
                                 ],
                                 startPoint: .top,
-                                endPoint: UnitPoint(x: 0.5, y: 0.35)
+                                endPoint: UnitPoint(x: 0.5, y: 0.45)
+                            )
+                        )
+                )
+                // A faint counter-light along the bottom, so the pill reads
+                // as a rounded body of glass rather than a lit top edge.
+                .overlay(
+                    RoundedRectangle(cornerRadius: 32, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.clear, Color.white.opacity(0.05)],
+                                startPoint: UnitPoint(x: 0.5, y: 0.7),
+                                endPoint: .bottom
                             )
                         )
                 )
@@ -42,13 +58,14 @@ struct CustomTabBar: View {
                         .strokeBorder(
                             LinearGradient(
                                 colors: [
-                                    Color.white.opacity(0.22),
-                                    Color.white.opacity(0.05)
+                                    Color.white.opacity(0.38),
+                                    Color.white.opacity(0.16),
+                                    Color.white.opacity(0.08)
                                 ],
                                 startPoint: .top,
                                 endPoint: .bottom
                             ),
-                            lineWidth: 0.6
+                            lineWidth: 0.8
                         )
                 )
         )
@@ -61,10 +78,18 @@ struct CustomTabBar: View {
         .padding(.bottom, 14)
     }
 
+    /// Every tab change ticks. Haptic always; the sound rides on the Sound
+    /// setting, via AudioService.
+    private func select(_ tab: ContentView.Tab) {
+        guard tab != selectedTab else { return }
+        AudioService.shared.playUITick()
+        selectedTab = tab
+    }
+
     // MARK: - Standard Tab Item
 
     private func standardItem(tab: ContentView.Tab, icon: String?, label: String) -> some View {
-        Button { selectedTab = tab } label: {
+        Button { select(tab) } label: {
             VStack(spacing: 4) {
                 if tab == .verg {
                     CandleTabIcon(isSelected: selectedTab == .verg)
@@ -101,7 +126,7 @@ struct CustomTabBar: View {
     // MARK: - Write Tab
 
     private var writeItem: some View {
-        Button { selectedTab = .write } label: {
+        Button { select(.write) } label: {
             VStack(spacing: 4) {
                 WriteTabIcon(isSelected: selectedTab == .write)
                     .frame(width: 22, height: 22)

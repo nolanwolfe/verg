@@ -65,6 +65,143 @@ on scroll-up on the Library screen.
 - Presets are now 5 / 10 / 15 minutes ahead of the custom MM:SS field
   (20-minute preset removed). Default remains 10 minutes.
 
+### Changed — paywall fits one screen; onboarding closing screen
+- The paywall is now two regions: a scrolling upper half (header, features,
+  reviews, laurel) and a **fixed block from Yearly down** — plans, button,
+  assurance and links never move. Spacing and the laurel were tightened
+  until the whole thing fits without scrolling on a normal iPhone; on an SE
+  the upper half scrolls behind a soft bottom fade, and the second review
+  is what falls below the line.
+- Feature row 3 ends "year-by-year facts."
+- Onboarding's closing screen: the title dropped from `largeTitle` to
+  `title` — at 34pt it wrapped to two lines and pushed the screen past the
+  bottom on an SE — and "It helps others find Verg 🕯️" is back on one line.
+
+### Changed — paywall close affordance, pricing display, copy
+- Feature row 2: "Real paper progress of who you're becoming, and insights
+  to prove it."
+- The close X is **hidden until its corner is touched**. The 44x44 target is
+  always live: first tap reveals the glyph, second dismisses, and it fades
+  back out after three seconds so the screen stays uninterrupted.
+- Yearly's "/mo" figure now **floors to the cent instead of rounding**:
+  $59.99 ÷ 12 is $4.9992, which was rendering as $5.00. That both overstated
+  the price and undercut the comparison against $7.99 monthly. Flooring can
+  never claim the plan is cheaper than it actually is.
+- Settings' "How to write with Verg" carries the Verg candle rather than a
+  book glyph — `SettingsButtonRow` gained an opt-in `usesCandleMark`.
+
+### Changed — the Oracle, interface feedback, Settings groups of three
+- Prompts are now **the Oracle**, and a prompt is a **script**. The sheet
+  draws one at a time ("Draw another"), holds your own under "Your
+  scripts", and "No script" is still an explicit choice.
+- The 20 built-in prompts replaced with **24 written to be thought-provoking
+  but plain** — "Name the thing you keep almost doing.", "What you are
+  protecting by staying busy.", "What silence usually interrupts." Still
+  under the 60-character ceiling the tests enforce.
+- Write screen pills no longer change colour at all; state is carried by
+  the label or the icon, so the candle stays the only lit thing there.
+  The Oracle pill reads "No script" / "Script set"; the Sound pill keeps
+  the speaker icon and crosses it out when off.
+- **Sound and haptics across the interface.** `AudioService.playUITick()`
+  fires on tab switches, Settings rows and every toggle. The haptic is
+  always there; the sound follows the Sound setting, so that one switch
+  governs the whole interface rather than just the bells. AudioService now
+  also reads that setting at launch — it previously assumed sound was on
+  until Settings was opened.
+- **Settings in groups of three.** Candle (duration, sound, ambience),
+  Guide (how to write with Verg, the Oracle, history style), Notifications,
+  Account. The Golden Age is one row that reports On/Off rather than
+  appearing and disappearing with subscription state, which keeps Account
+  at a stable three.
+- Tab bar glass strengthened: the black tint dropped 0.72 → 0.55 so the
+  material actually shows through, the specular highlight brightened, a
+  counter-light added along the bottom edge, and the rim doubled in
+  contrast. At the old values the blur was entirely swallowed and the pill
+  read as flat.
+
+### Changed — Settings regrouped, pill labels, paywall spacing
+- Settings' Timer, Prompts and Archive sections merged into one **Candle**
+  group: Duration, Sound, Ambience, Prompts, Calendar Style. They were
+  three sections all describing the same thing — how a session is set up
+  and recorded.
+- The Golden Age row's icon is `laurel.leading`, the closest thing SF
+  Symbols has to a single wheat stalk, echoing the paywall's laurel.
+- Write screen: the Music pill is always the plain music note. The
+  crossed-out speaker read as an error state rather than an off state —
+  on/off is carried by the border, same as the other two pills.
+- The Prompt pill now reads **"No prompt"** when none is set and "Prompt"
+  when one is, so the row states which of the two it's in. Still two fixed
+  labels rather than the prompt text, which would change the pill's width
+  on every shuffle.
+- Paywall spacing opened back up — section gaps 12→24pt, feature rows and
+  review cards given their padding back. It no longer forces itself onto
+  one screen; the upper half scrolls to be read, and the plans, button and
+  links stay fixed, so nothing needed for buying is ever out of reach.
+
+### Changed — onboarding closing screen mark
+- Five gold stars replace the flickering candle, reusing the achievements'
+  `AchievementStarIcon` so it's literally the same star an earned row
+  carries. The component gained `size` and `phase` parameters; the five are
+  staggered by 0.12s each, since starting them together made the row blink
+  in lockstep rather than glimmer.
+
+### Fixed — candle jump on pause (again)
+- `TimerView` was back to `isBurning: viewModel.isRunning`; the earlier fix
+  was lost when files were being edited from two places at once. Restored
+  to `!viewModel.isComplete`. CandleView drops its glow and flame out of
+  the layout when not burning, shrinking its rendered height by ~210pt —
+  and since the candle is centred with `.position()`, that made the whole
+  thing jump on pause. Pausing isn't blowing the candle out.
+
+### Fixed — page viewer flashing while swiping a book
+- The fullscreen viewer swapped each page between `FullScreenPageView` and
+  a plain `Color.black` as the ±2 window slid. That changes the page's view
+  identity on every swipe, so SwiftUI tore the page down and rebuilt it —
+  discarding the already-decoded image held in its `@State` and flashing a
+  placeholder mid-swipe.
+- The window is now a parameter (`isWindowed`) rather than a branch, so
+  identity is stable and only the content changes. Memory is still bounded:
+  a page outside the window releases its image explicitly.
+
+### Added — prompts on the page, and a third pill
+- The chosen prompt is now saved with the page (`Session.prompt`, tolerant
+  decode so older pages simply have none) and shown in the fullscreen
+  viewer's metadata beneath the date and duration.
+- **No prompt** is a real choice, not just an absence: a button in the
+  prompt sheet, and the sheet no longer auto-shuffles on open — it used to
+  silently undo that choice every time it was reopened.
+- The Prompt pill always reads "Prompt". Showing the chosen prompt in it
+  made the pill change width on every shuffle, shoving the whole row
+  around. Its border brightens instead when a prompt is set.
+- **Music** pill added beside it, toggling ambience directly (paywalled
+  like the Settings row). All three pills now share one shape and split the
+  row evenly.
+- Settings gains a **Prompts** section opening the same library.
+
+### Added — writing prompts
+- A **Prompt** pill on the Write screen, beside the timer pill and built
+  from the same capsule, border and type. It shows the current prompt
+  truncated to one line — the pill is the reminder, the sheet is where a
+  prompt is actually read.
+- Tapping opens a sheet with the prompt set large and two buttons:
+  **New prompt** shuffles, **Your prompts** opens the collection.
+- 20 built-in prompts (`WritingPrompt.builtInTexts`), deliberately short —
+  a prompt is a door, not a paragraph. No questions the app answers for
+  you, no therapy framing. Pinned by tests: every built-in stays under 60
+  characters and carries no exclamation mark.
+- **Your own prompts, in folders.** Add, edit, delete, and move prompts
+  between folders (or leave them loose). Deleting a folder keeps its
+  prompts rather than destroying them — the button says so.
+- Persisted in UserDefaults alongside sessions and books
+  (`verg.customPrompts`, `verg.promptFolders`). Built-ins are never
+  persisted; they're a fixed set that the shuffle always draws from.
+- `WritingPrompt.next(from:after:)` is pure so the shuffle is testable
+  without a view: it never repeats the current prompt unless the pool
+  holds exactly one.
+- New files `Core/Models/WritingPrompt.swift` and
+  `Features/Prompts/PromptsView.swift`, registered in project.pbxproj via
+  the xcodeproj gem (this project uses manual PBX entries).
+
 ### Changed — paywall reviews, laurel placement
 - Attributions cut to bare "— Sibylla" and "— Dante". Both read fine as
   usernames, so the disclosure moved to a three-word line directly under

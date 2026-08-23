@@ -14,6 +14,7 @@ struct CameraView: View {
 
     var duration: TimeInterval = 10
     var activeDuration: TimeInterval = 10
+    var prompt: String?
     var onPhotoSaved: ((Session) -> Void)?
     var onCancel: (() -> Void)?
 
@@ -56,6 +57,7 @@ struct CameraView: View {
         .onAppear {
             viewModel.sessionDuration = duration
             viewModel.sessionActiveDuration = activeDuration
+            viewModel.sessionPrompt = prompt
             viewModel.onPhotoSaved = { session in
                 onPhotoSaved?(session)
             }

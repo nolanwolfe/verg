@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		37BC8986C09C76DD05F7410C /* PromptsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52019627854D25B472BACF07 /* PromptsView.swift */; };
 		37EA337057ECBB624B85FDF6 /* OnboardingProjectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0EB2EA2468FDCFA22B69538 /* OnboardingProjectionTests.swift */; };
 		40A9B4E8536EC83BCC001F96 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7AEEAEB60B010E7D6255DEF1 /* Foundation.framework */; };
 		41720B928E05C6F67AA0E2E8 /* SessionGatingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E0E9AAF30597470AE40B5615 /* SessionGatingService.swift */; };
@@ -79,6 +80,7 @@
 		A10000010000000000000055 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000055 /* LibraryView.swift */; };
 		A10000010000000000000057 /* TabBarAutoHide.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000057 /* TabBarAutoHide.swift */; };
 		B149AD1EF9111F56CF2898BD /* MilestoneLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3F6D131429DF832DEC156D /* MilestoneLogicTests.swift */; };
+		B581A0CAD6F8EC9F16246805 /* WritingPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FEA8350AEF2EA9FB71E7A9F /* WritingPrompt.swift */; };
 		B8D3EDEFD64E0B0FFDB2309A /* CandleDaysLitStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85EC2041E044532B57A5617A /* CandleDaysLitStateTests.swift */; };
 		C9F37734AEC8C334F08C503F /* ambient_motion.m4a in Resources */ = {isa = PBXBuildFile; fileRef = D66B0478F0B1B87D3C18A0C6 /* ambient_motion.m4a */; };
 		D7B1C5FD6D6E734DD931B22A /* ambient_floating.m4a in Resources */ = {isa = PBXBuildFile; fileRef = FF7A7749761A40116B7282BF /* ambient_floating.m4a */; };
@@ -106,8 +108,10 @@
 		2B3EA26F8AEF44C05BFDF756 /* TimeReclaimedTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TimeReclaimedTests.swift; path = TimeReclaimedTests.swift; sourceTree = "<group>"; };
 		2FB0870FBFDAE6781C712AC6 /* ambient_storm.m4a */ = {isa = PBXFileReference; includeInIndex = 1; name = ambient_storm.m4a; path = Sounds/ambient_storm.m4a; sourceTree = "<group>"; };
 		4C3F6D131429DF832DEC156D /* MilestoneLogicTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MilestoneLogicTests.swift; path = MilestoneLogicTests.swift; sourceTree = "<group>"; };
+		52019627854D25B472BACF07 /* PromptsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptsView.swift; path = Features/Prompts/PromptsView.swift; sourceTree = "<group>"; };
 		52D18BD1737C0BA640157030 /* ambient_stream.m4a */ = {isa = PBXFileReference; includeInIndex = 1; name = ambient_stream.m4a; path = Sounds/ambient_stream.m4a; sourceTree = "<group>"; };
 		5A3B42F81731303223482210 /* CandleRelightTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CandleRelightTests.swift; sourceTree = "<group>"; };
+		5FEA8350AEF2EA9FB71E7A9F /* WritingPrompt.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WritingPrompt.swift; sourceTree = "<group>"; };
 		6D95EF34BEA0EECAB4880F8D /* ProductIdentifiers.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProductIdentifiers.swift; path = Core/Constants/ProductIdentifiers.swift; sourceTree = "<group>"; };
 		7AEEAEB60B010E7D6255DEF1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		80E5C6FB39AC9EA3518C0D3B /* ambient_earth.m4a */ = {isa = PBXFileReference; includeInIndex = 1; name = ambient_earth.m4a; path = Sounds/ambient_earth.m4a; sourceTree = "<group>"; };
@@ -252,6 +256,7 @@
 				D0D3656A07B7E9ED961ACAC4 /* Features */,
 				CF7535432AF5C063A8B78555 /* Tests */,
 				02090A7E99DB6005712609EE /* Frameworks */,
+				52019627854D25B472BACF07 /* PromptsView.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -355,6 +360,7 @@
 				A20000010000000000000050 /* WeeklyGoalMilestone.swift */,
 				A20000010000000000000053 /* CandleRelight.swift */,
 				A20000010000000000000054 /* Terrace.swift */,
+				5FEA8350AEF2EA9FB71E7A9F /* WritingPrompt.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -723,6 +729,8 @@
 				A10000010000000000000042 /* Book.swift in Sources */,
 				A10000010000000000000043 /* BookDetailView.swift in Sources */,
 				F481BCFEB8A889E1905AEDA2 /* TimeReclaimedCardView.swift in Sources */,
+				B581A0CAD6F8EC9F16246805 /* WritingPrompt.swift in Sources */,
+				37BC8986C09C76DD05F7410C /* PromptsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

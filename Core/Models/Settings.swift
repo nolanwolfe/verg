@@ -10,7 +10,7 @@ enum CalendarStyle: String, CaseIterable, Identifiable, Codable {
 
     var displayName: String {
         switch self {
-        case .heatmap: return "Session History"
+        case .heatmap: return "Sessions"
         case .monthGrid: return "Calendar"
         }
     }

@@ -12,6 +12,10 @@ struct Session: Identifiable, Codable, Equatable {
     /// not `duration`. See [[verg-app-project]] for why the two diverge.
     let activeDuration: TimeInterval
     let imagePath: String
+    /// The prompt this page was written to, if one was chosen. Stored as
+    /// text rather than an id so the page keeps its prompt even if the
+    /// prompt itself is later edited or deleted.
+    let prompt: String?
     let createdAt: Date
 
     init(
@@ -20,6 +24,7 @@ struct Session: Identifiable, Codable, Equatable {
         duration: TimeInterval,
         activeDuration: TimeInterval? = nil,
         imagePath: String,
+        prompt: String? = nil,
         createdAt: Date = Date()
     ) {
         self.id = id
@@ -27,6 +32,7 @@ struct Session: Identifiable, Codable, Equatable {
         self.duration = duration
         self.activeDuration = activeDuration ?? duration
         self.imagePath = imagePath
+        self.prompt = prompt
         self.createdAt = createdAt
     }
 
@@ -35,7 +41,7 @@ struct Session: Identifiable, Codable, Equatable {
     // versions fall back to `duration` (they predate background-time
     // exclusion, so the full candle length is the best available estimate).
     enum CodingKeys: String, CodingKey {
-        case id, date, duration, activeDuration, imagePath, createdAt
+        case id, date, duration, activeDuration, imagePath, prompt, createdAt
     }
 
     init(from decoder: Decoder) throws {
@@ -46,6 +52,9 @@ struct Session: Identifiable, Codable, Equatable {
         imagePath = try container.decode(String.self, forKey: .imagePath)
         createdAt = try container.decode(Date.self, forKey: .createdAt)
         activeDuration = try container.decodeIfPresent(TimeInterval.self, forKey: .activeDuration) ?? duration
+        // prompt didn't exist before prompts shipped — older pages simply
+        // have none, which renders as no prompt line rather than an error.
+        prompt = try container.decodeIfPresent(String.self, forKey: .prompt)
     }
 
     /// Formatted duration string (e.g., "10 min")

@@ -220,30 +220,41 @@ struct OnboardingProjectionView: View {
 // MARK: - Step 5: Closing Note
 /// The last screen before the app. Mentions the rating without asking for
 /// one — the system prompt fires on the third saved page, when there's
-/// something to actually judge. The mark is the candle, not a heart.
+/// something to actually judge. The mark is five gold stars, the same ones
+/// an earned achievement carries.
 struct OnboardingRatingPromptView: View {
     var body: some View {
-        VStack(spacing: Theme.Spacing.xl) {
+        VStack(spacing: Theme.Spacing.lg) {
             Spacer()
 
-            // CandleTabIcon rather than CandleFlameIcon: it's the whole
-            // candle rather than a bare flame, and it already carries the
-            // flicker loop used in the tab bar.
-            CandleTabIcon(isSelected: true)
-                .frame(width: 26, height: 37)
-                .shadow(color: Theme.Colors.flameOuter.opacity(0.5), radius: 14)
+            // The same gold star as an earned achievement, five across and
+            // staggered so the row glimmers rather than blinking as one.
+            HStack(spacing: Theme.Spacing.xxs) {
+                ForEach(0..<5, id: \.self) { index in
+                    AchievementStarIcon(size: 26, phase: Double(index) * 0.12)
+                }
+            }
+            .shadow(color: Color(hex: "D4A017").opacity(0.4), radius: 12)
 
-            VStack(spacing: Theme.Spacing.sm) {
+            VStack(spacing: Theme.Spacing.xs) {
+                // title, not largeTitle: at 34pt this wrapped to two lines
+                // and pushed the screen past the bottom on an SE.
                 Text(AppStrings.Onboarding.ratingPromptTitle)
-                    .font(Theme.Typography.largeTitle)
+                    .font(Theme.Typography.title)
                     .foregroundColor(Theme.Colors.primaryText)
+                    .multilineTextAlignment(.center)
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.8)
 
+                // One line, app name and candle together.
                 Text(AppStrings.Onboarding.ratingPromptBody)
                     .font(Theme.Typography.body)
                     .foregroundColor(Theme.Colors.secondaryText)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, Theme.Spacing.lg)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
             }
+            .padding(.horizontal, Theme.Spacing.lg)
 
             Spacer()
         }

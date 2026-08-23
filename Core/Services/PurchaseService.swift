@@ -144,7 +144,7 @@ final class PurchaseService: ObservableObject {
             if let yearlyPkg = current.availablePackages.first(where: { $0.identifier.lowercased().contains("year") || $0.storeProduct.productIdentifier == ProductIdentifiers.yearly }) {
                 let storeProduct = yearlyPkg.storeProduct
                 yearlyPrice = formattedPrice(storeProduct.price, using: storeProduct.priceFormatter)
-                yearlyMonthlyEquivalentPrice = formattedPrice(storeProduct.price / 12, using: storeProduct.priceFormatter)
+                yearlyMonthlyEquivalentPrice = formattedMonthlyEquivalent(storeProduct.price, using: storeProduct.priceFormatter)
                 if let intro = storeProduct.introductoryDiscount {
                     yearlyIntroOffer = intro.localizedSubscriptionPeriod
                 }
@@ -163,6 +163,17 @@ final class PurchaseService: ObservableObject {
             return formatted
         }
         return "$\(price)"
+    }
+
+    /// The "/mo" figure on the Yearly row. Floors to the cent rather than
+    /// rounding: $59.99 ÷ 12 is $4.9992, and rounding it to $5.00 both
+    /// overstates the price and loses the point of the number. Flooring
+    /// can never claim the plan is cheaper than it is.
+    private func formattedMonthlyEquivalent(_ yearly: Decimal, using formatter: NumberFormatter?) -> String {
+        var perMonth = yearly / 12
+        var floored = Decimal()
+        NSDecimalRound(&floored, &perMonth, 2, .down)
+        return formattedPrice(floored, using: formatter)
     }
 
     /// Whether *this* subscriber (not just the product) is eligible for
@@ -201,7 +212,7 @@ final class PurchaseService: ObservableObject {
                 } else if product.id == ProductIdentifiers.yearly {
                     yearlyPrice = product.displayPrice
                     if let subscription = product.subscription {
-                        yearlyMonthlyEquivalentPrice = formattedPrice(product.price / 12, using: nil)
+                        yearlyMonthlyEquivalentPrice = formattedMonthlyEquivalent(product.price, using: nil)
                         yearlyIntroEligible = await subscription.isEligibleForIntroOffer
                     }
                     yearlyIntroOffer = product.introOfferDescription

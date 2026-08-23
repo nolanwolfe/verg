@@ -14,6 +14,8 @@ final class StorageService: ObservableObject {
     @Published private(set) var sessions: [Session] = []
     @Published private(set) var books: [Book] = []
     @Published private(set) var stats: UserStats = UserStats()
+    @Published private(set) var customPrompts: [WritingPrompt] = []
+    @Published private(set) var promptFolders: [PromptFolder] = []
     @Published var settings: AppSettings = AppSettings()
 
     // MARK: - Private Properties
@@ -30,6 +32,8 @@ final class StorageService: ObservableObject {
     private let statsKey = "verg.stats"
     private let settingsKey = "verg.settings"
     private let imageMigrationKey = "verg.imageMigration.v1"
+    private let customPromptsKey = "verg.customPrompts"
+    private let promptFoldersKey = "verg.promptFolders"
 
     // MARK: - Initialization
     private init() {
@@ -60,6 +64,7 @@ final class StorageService: ObservableObject {
         loadBooks()
         loadStats()
         loadSettings()
+        loadPrompts()
 
         // Migrate old/testing timer defaults (e.g., 5 seconds) to 10 minutes
         if settings.timerDuration == 5 {
@@ -79,6 +84,96 @@ final class StorageService: ObservableObject {
             return
         }
         sessions = decoded.sorted { $0.createdAt > $1.createdAt }
+    }
+
+    // MARK: - Prompts
+    private func loadPrompts() {
+        if let data = userDefaults.data(forKey: customPromptsKey),
+           let decoded = try? JSONDecoder().decode([WritingPrompt].self, from: data) {
+            customPrompts = decoded.sorted { $0.createdAt < $1.createdAt }
+        } else {
+            customPrompts = []
+        }
+
+        if let data = userDefaults.data(forKey: promptFoldersKey),
+           let decoded = try? JSONDecoder().decode([PromptFolder].self, from: data) {
+            promptFolders = decoded.sorted { $0.createdAt < $1.createdAt }
+        } else {
+            promptFolders = []
+        }
+    }
+
+    private func savePrompts() {
+        if let encoded = try? JSONEncoder().encode(customPrompts) {
+            userDefaults.set(encoded, forKey: customPromptsKey)
+        }
+        if let encoded = try? JSONEncoder().encode(promptFolders) {
+            userDefaults.set(encoded, forKey: promptFoldersKey)
+        }
+    }
+
+    /// Everything the shuffle draws from: the fixed set plus the user's own.
+    var allPrompts: [WritingPrompt] {
+        WritingPrompt.builtIn + customPrompts
+    }
+
+    @discardableResult
+    func addCustomPrompt(_ text: String, folderID: UUID? = nil) -> WritingPrompt? {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return nil }
+        let prompt = WritingPrompt(text: String(trimmed.prefix(160)), folderID: folderID)
+        customPrompts.append(prompt)
+        savePrompts()
+        return prompt
+    }
+
+    func updateCustomPrompt(id: UUID, text: String) {
+        let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let index = customPrompts.firstIndex(where: { $0.id == id }), !trimmed.isEmpty else { return }
+        customPrompts[index].text = String(trimmed.prefix(160))
+        savePrompts()
+    }
+
+    func moveCustomPrompt(id: UUID, toFolder folderID: UUID?) {
+        guard let index = customPrompts.firstIndex(where: { $0.id == id }) else { return }
+        customPrompts[index].folderID = folderID
+        savePrompts()
+    }
+
+    func deleteCustomPrompt(id: UUID) {
+        customPrompts.removeAll { $0.id == id }
+        savePrompts()
+    }
+
+    @discardableResult
+    func addPromptFolder(_ name: String) -> PromptFolder? {
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return nil }
+        let folder = PromptFolder(name: String(trimmed.prefix(40)))
+        promptFolders.append(folder)
+        savePrompts()
+        return folder
+    }
+
+    func renamePromptFolder(id: UUID, to name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespaces)
+        guard let index = promptFolders.firstIndex(where: { $0.id == id }), !trimmed.isEmpty else { return }
+        promptFolders[index].name = String(trimmed.prefix(40))
+        savePrompts()
+    }
+
+    /// Deleting a folder keeps its prompts — they fall back to loose rather
+    /// than being destroyed along with it.
+    func deletePromptFolder(id: UUID) {
+        promptFolders.removeAll { $0.id == id }
+        for index in customPrompts.indices where customPrompts[index].folderID == id {
+            customPrompts[index].folderID = nil
+        }
+        savePrompts()
+    }
+
+    func prompts(inFolder folderID: UUID?) -> [WritingPrompt] {
+        customPrompts.filter { $0.folderID == folderID }
     }
 
     private func loadBooks() {
@@ -132,7 +227,7 @@ final class StorageService: ObservableObject {
     // MARK: - Session Management
     /// Save a new session with the captured image
     @discardableResult
-    func saveSession(image: UIImage, duration: TimeInterval, activeDuration: TimeInterval? = nil) -> Session? {
+    func saveSession(image: UIImage, duration: TimeInterval, activeDuration: TimeInterval? = nil, prompt: String? = nil) -> Session? {
         // Generate unique filename
         let filename = "\(UUID().uuidString).jpg"
         let imageURL = imagesDirectory.appendingPathComponent(filename)
@@ -160,6 +255,7 @@ final class StorageService: ObservableObject {
             duration: duration,
             activeDuration: activeDuration,
             imagePath: filename,
+            prompt: prompt,
             createdAt: Date()
         )
 

@@ -168,21 +168,24 @@ struct FullScreenImageView: View {
             // empty placeholders that can never be seen mid-swipe anyway.
             TabView(selection: $currentIndex) {
                 ForEach(Array(sessions.enumerated()), id: \.element.id) { index, session in
-                    Group {
-                        if abs(index - currentIndex) <= 2 {
-                            FullScreenPageView(
-                                session: session,
-                                isNearCurrent: abs(index - currentIndex) <= 1,
-                                loadImage: loadImage,
-                                loadThumbnail: loadThumbnail,
-                                peekThumbnail: peekThumbnail,
-                                onDismiss: onDismiss,
-                                onDragProgressChanged: { dismissDragProgress = $0 }
-                            )
-                        } else {
-                            Color.black
-                        }
-                    }
+                    // Always the same view type per page. This used to swap
+                    // between FullScreenPageView and a plain Color.black as
+                    // the window slid, which changed each page's identity on
+                    // every swipe: SwiftUI tore the page down and rebuilt it,
+                    // losing its already-decoded @State image and flashing a
+                    // placeholder mid-swipe. The window is now a parameter,
+                    // so identity is stable and only the content it holds
+                    // changes.
+                    FullScreenPageView(
+                        session: session,
+                        isWindowed: abs(index - currentIndex) <= 2,
+                        isNearCurrent: abs(index - currentIndex) <= 1,
+                        loadImage: loadImage,
+                        loadThumbnail: loadThumbnail,
+                        peekThumbnail: peekThumbnail,
+                        onDismiss: onDismiss,
+                        onDragProgressChanged: { dismissDragProgress = $0 }
+                    )
                     .ignoresSafeArea()
                     .tag(index)
                 }
@@ -245,6 +248,17 @@ struct FullScreenImageView: View {
                             Text("\(session.formattedTime) • \(session.formattedDuration)")
                                 .font(Theme.Typography.caption)
                                 .foregroundColor(Theme.Colors.secondaryText)
+
+                            // What the page was written to, when there was
+                            // one. Pages saved before prompts existed, and
+                            // pages written with no prompt, simply omit it.
+                            if let prompt = session.prompt, !prompt.isEmpty {
+                                Text(prompt)
+                                    .font(Theme.Typography.caption.italic())
+                                    .foregroundColor(Theme.Colors.secondaryText.opacity(0.85))
+                                    .lineLimit(2)
+                                    .padding(.top, 2)
+                            }
                         }
                         Spacer()
                     }
@@ -288,6 +302,9 @@ struct FullScreenImageView: View {
 /// the (cheap, cached) thumbnail so opening the viewer stays fast at any count.
 private struct FullScreenPageView: View {
     let session: Session
+    /// Within the swipe window. Outside it the page holds no image at all,
+    /// which is what keeps memory bounded however far the user swipes.
+    let isWindowed: Bool
     let isNearCurrent: Bool
     let loadImage: (Session) async -> UIImage?
     let loadThumbnail: (Session) async -> UIImage?
@@ -300,6 +317,7 @@ private struct FullScreenPageView: View {
 
     private struct LoadKey: Equatable {
         let id: UUID
+        let windowed: Bool
         let near: Bool
     }
 
@@ -318,7 +336,15 @@ private struct FullScreenPageView: View {
                     .foregroundColor(Theme.Colors.secondaryText)
             }
         }
-        .task(id: LoadKey(id: session.id, near: isNearCurrent)) {
+        .task(id: LoadKey(id: session.id, windowed: isWindowed, near: isNearCurrent)) {
+            guard isWindowed else {
+                // Outside the window: release the image. Nothing is on screen
+                // here, and this is what bounds memory across a long journal.
+                image = nil
+                hasFullRes = false
+                return
+            }
+
             if isNearCurrent {
                 // Show the already-decoded grid thumbnail immediately while
                 // the full-res decode happens off-main
@@ -330,8 +356,9 @@ private struct FullScreenPageView: View {
                     hasFullRes = true
                 }
             } else {
-                // Downgrade distant pages to the cached thumbnail so memory
-                // stays bounded (~3 full-res images) however far the user swipes.
+                // Just outside the sharp window but still in the swipe
+                // window: keep a thumbnail so the page never flashes empty
+                // as it slides in.
                 if hasFullRes || image == nil {
                     image = await loadThumbnail(session) ?? image
                     hasFullRes = false

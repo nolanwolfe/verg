@@ -55,13 +55,13 @@ enum GoldenPalette {
     static let primaryText = Color(hex: "1E1B14")
     static let secondaryText = Color(hex: "746C5E")     // warm gray, not cool
     static let waxColor = Color(hex: "FFF8E7")
-    static let flameTop = Color(hex: "B08A52")          // ember
-    static let flameBottom = Color(hex: "A44A32")       // ember
+    static let flameTop = Color(hex: "FFCC00")          // ember
+    static let flameBottom = Color(hex: "FF9500")       // ember
     static let flameGradient = LinearGradient(colors: [flameTop, flameBottom], startPoint: .top, endPoint: .bottom)
     /// Deeper than `flameGradient` so white text clears contrast on it —
     /// the pale ember yellow alone is far too light to sit white on.
     static let ctaGradient = LinearGradient(
-        colors: [Color(hex: "B08A52"), Color(hex: "8E6B3F")],
+        colors: [Color(hex: "E8A317"), Color(hex: "C67A0B")],
         startPoint: .top,
         endPoint: .bottom
     )
@@ -72,29 +72,59 @@ enum GoldenPalette {
 struct NativePaywallView: View {
     @ObservedObject var viewModel: PaywallViewModel
 
+    /// The close glyph starts hidden; see `closeButton`.
+    @State private var closeIsVisible = false
+    @State private var closeHideTask: DispatchWorkItem?
+
     var body: some View {
-        GeometryReader { geo in
-            let isCompact = geo.size.height < 600
-            let inlineReviews = geo.size.height >= 700
+        ZStack {
+            GoldenPalette.background.ignoresSafeArea()
+            heavenLight
 
-            ZStack {
-                GoldenPalette.background.ignoresSafeArea()
-                heavenLight
-
-                // The pitch occupies exactly one screen — `minHeight` pins it
-                // to the viewport. The scroll exists only to reach the laurel
-                // below, which is what the chevron above the plans points at.
+            VStack(spacing: 0) {
+                // The descriptive half. On a normal iPhone this all fits and
+                // nothing scrolls; on a short one it scrolls behind the fixed
+                // block below, with a fade so the cut reads as continuing
+                // rather than clipped.
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 0) {
-                        mainColumn(isCompact: isCompact, inlineReviews: inlineReviews)
-                            .frame(minHeight: geo.size.height)
-
-                        belowFold(includingReviews: !inlineReviews)
+                    // Spaced to be read, not to be crammed onto one screen.
+                    // It scrolls if it has to — the buy controls below never
+                    // move, so nothing important is ever out of reach.
+                    VStack(spacing: Theme.Spacing.lg) {
+                        header
+                        heroFeatureCards
+                        reviewStack
+                        LaurelBadge(text: AppStrings.Paywall.laurelBadge)
+                            .padding(.top, Theme.Spacing.xxs)
                     }
+                    .padding(.top, Theme.Spacing.lg)
+                    .padding(.bottom, Theme.Spacing.md)
+                    .frame(maxWidth: .infinity)
                 }
+                .scrollBounceBehavior(.basedOnSize)
+                .mask(
+                    VStack(spacing: 0) {
+                        Rectangle().fill(Color.black)
+                        LinearGradient(colors: [.black, .clear], startPoint: .top, endPoint: .bottom)
+                            .frame(height: 20)
+                    }
+                )
 
-                closeButton
+                // Fixed from Yearly down — plans, button, assurance, links.
+                // These never move, whatever the scroll above is doing.
+                VStack(spacing: Theme.Spacing.xs) {
+                    planSelection
+                    ctaSection
+                    footer
+                }
+                .padding(.top, Theme.Spacing.xs)
+                .padding(.bottom, Theme.Spacing.xxs)
             }
+            .padding(.horizontal, Theme.Spacing.md)
+            .frame(maxWidth: 420)
+            .frame(maxWidth: .infinity)
+
+            closeButton
         }
         .alert("Error", isPresented: $viewModel.showError) {
             Button("OK", role: .cancel) {}
@@ -104,71 +134,11 @@ struct NativePaywallView: View {
         .preferredColorScheme(.light)
     }
 
-    // MARK: - Main Column (the one-screen pitch)
-    private func mainColumn(isCompact: Bool, inlineReviews: Bool) -> some View {
-        VStack(spacing: 0) {
-            VStack(spacing: Theme.Spacing.xs) {
-                header
-                heroFeatureCards
-            }
-            .padding(.top, isCompact ? Theme.Spacing.sm : Theme.Spacing.xl)
-
-            Spacer(minLength: Theme.Spacing.sm)
-
-            if inlineReviews {
-                reviewStack
-                Spacer(minLength: Theme.Spacing.sm)
-            }
-
-            VStack(spacing: Theme.Spacing.sm) {
-                // The laurel sits between the reviews and Yearly rather than
-                // below the fold — it's the mark, not a footnote.
-                LaurelBadge(text: AppStrings.Paywall.laurelBadge)
-
-                VStack(spacing: Theme.Spacing.xs) {
-                    planSelection
-                    ctaSection
-                    footer
-                }
-            }
-            .padding(.bottom, Theme.Spacing.xxs)
-        }
-        // Tighter gutters, and a ceiling so the column stays a narrow shaft
-        // of content on larger phones rather than stretching edge to edge.
-        .padding(.horizontal, Theme.Spacing.md)
-        .frame(maxWidth: 420)
-        .frame(maxWidth: .infinity)
-    }
-
-    /// The two review cards and, directly beneath them, the three words
-    /// that keep them honest. These travel together — see the note on
-    /// `AppStrings.Paywall.reviews`; the cards must never render without
-    /// this line.
     private var reviewStack: some View {
-        VStack(spacing: Theme.Spacing.xxs) {
+        VStack(spacing: Theme.Spacing.xs) {
             ForEach(Array(AppStrings.Paywall.reviews.enumerated()), id: \.offset) { _, review in
                 PaywallReviewCard(review: review)
             }
-
-            Text(AppStrings.Paywall.reviewsAreFictionNote)
-                .font(.system(size: 10))
-                .foregroundColor(GoldenPalette.secondaryText.opacity(0.7))
-        }
-    }
-
-    // MARK: - Below the Fold
-    /// Only used on screens too short to carry the reviews inline; they're
-    /// reached by scrolling. Empty otherwise, so the page simply doesn't
-    /// scroll on a large phone.
-    @ViewBuilder
-    private func belowFold(includingReviews: Bool) -> some View {
-        if includingReviews {
-            reviewStack
-                .padding(.horizontal, Theme.Spacing.md)
-                .padding(.top, Theme.Spacing.lg)
-                .padding(.bottom, Theme.Spacing.xxl)
-                .frame(maxWidth: 420)
-                .frame(maxWidth: .infinity)
         }
     }
 
@@ -204,13 +174,20 @@ struct NativePaywallView: View {
     }
 
     // MARK: - Close Button
-    /// 44x44 tap target per HIG, even though the visible glyph is smaller.
+    /// Hidden until the corner is touched. The tap target is always live at
+    /// the full 44x44 — the first tap reveals the glyph, the second closes.
+    /// It re-hides on its own so the screen goes back to being uninterrupted.
     private var closeButton: some View {
         VStack {
             HStack {
                 Spacer()
                 Button {
-                    viewModel.dismiss()
+                    if closeIsVisible {
+                        viewModel.dismiss()
+                    } else {
+                        withAnimation(.easeOut(duration: 0.18)) { closeIsVisible = true }
+                        hideCloseAfterDelay()
+                    }
                 } label: {
                     Image(systemName: "xmark")
                         .font(.system(size: 14, weight: .semibold))
@@ -219,9 +196,12 @@ struct NativePaywallView: View {
                         .background(GoldenPalette.cardBackground)
                         .overlay(Circle().stroke(GoldenPalette.cardBorder, lineWidth: 1))
                         .clipShape(Circle())
+                        .opacity(closeIsVisible ? 1 : 0)
                         .frame(width: 44, height: 44)
+                        // Always hittable, even while invisible.
                         .contentShape(Rectangle())
                 }
+                .accessibilityLabel("Close")
                 .padding(.trailing, Theme.Spacing.xs)
                 .padding(.top, Theme.Spacing.xxs)
             }
@@ -229,9 +209,18 @@ struct NativePaywallView: View {
         }
     }
 
+    private func hideCloseAfterDelay() {
+        closeHideTask?.cancel()
+        let task = DispatchWorkItem {
+            withAnimation(.easeIn(duration: 0.3)) { closeIsVisible = false }
+        }
+        closeHideTask = task
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3, execute: task)
+    }
+
     // MARK: - Header
     private var header: some View {
-        VStack(spacing: Theme.Spacing.xxs) {
+        VStack(spacing: Theme.Spacing.xs) {
             PaywallIcon()
 
             Text(AppStrings.Paywall.title)
@@ -258,7 +247,7 @@ struct NativePaywallView: View {
     /// Quiet rows, not boxed cards: the paywall borrows the app's own
     /// plain-list language rather than a marketing-page card grid.
     private var heroFeatureCards: some View {
-        VStack(spacing: Theme.Spacing.xs) {
+        VStack(spacing: Theme.Spacing.sm) {
             ForEach(viewModel.heroFeatures) { feature in
                 HStack(spacing: Theme.Spacing.xs) {
                     Group {
@@ -446,7 +435,7 @@ struct LaurelBadge: View {
     var body: some View {
         HStack(spacing: Theme.Spacing.xxs) {
             Image(systemName: "laurel.leading")
-                .font(.system(size: 40, weight: .light))
+                .font(.system(size: 32, weight: .light))
 
             Text(text)
                 .font(.system(size: 15, weight: .semibold))
@@ -454,7 +443,7 @@ struct LaurelBadge: View {
                 .fixedSize()
 
             Image(systemName: "laurel.trailing")
-                .font(.system(size: 40, weight: .light))
+                .font(.system(size: 32, weight: .light))
         }
         .foregroundStyle(GoldenPalette.flameGradient)
         .accessibilityElement(children: .combine)

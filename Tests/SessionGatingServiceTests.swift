@@ -105,3 +105,43 @@ final class AppStringsTests: XCTestCase {
         XCTAssertEqual(AppStrings.SessionGating.freePhotoLimit, 1)
     }
 }
+
+// MARK: - Writing Prompt Tests
+
+final class WritingPromptTests: XCTestCase {
+
+    func testBuiltInPrompts_ExistAndAreShort() {
+        XCTAssertFalse(WritingPrompt.builtIn.isEmpty)
+        for prompt in WritingPrompt.builtIn {
+            XCTAssertFalse(prompt.text.isEmpty)
+            // A prompt is a door, not a paragraph.
+            XCTAssertLessThanOrEqual(prompt.text.count, 60, "Prompt too long: \(prompt.text)")
+            XCTAssertFalse(prompt.text.contains("!"), "Exclamation mark in prompt: \(prompt.text)")
+        }
+    }
+
+    func testNext_EmptyPool_IsNil() {
+        XCTAssertNil(WritingPrompt.next(from: [], after: nil))
+    }
+
+    func testNext_SinglePrompt_ReturnsItEvenIfCurrent() {
+        let only = WritingPrompt(text: "Only one.")
+        XCTAssertEqual(WritingPrompt.next(from: [only], after: only)?.id, only.id)
+    }
+
+    func testNext_NeverRepeatsCurrentWhenAlternativesExist() {
+        let pool = (0..<5).map { WritingPrompt(text: "Prompt \($0)") }
+        let current = pool[2]
+        for _ in 0..<50 {
+            let next = WritingPrompt.next(from: pool, after: current)
+            XCTAssertNotNil(next)
+            XCTAssertNotEqual(next?.id, current.id)
+        }
+    }
+
+    func testNext_NoCurrent_ReturnsSomethingFromPool() {
+        let pool = (0..<3).map { WritingPrompt(text: "Prompt \($0)") }
+        let next = WritingPrompt.next(from: pool, after: nil)
+        XCTAssertTrue(pool.contains { $0.id == next?.id })
+    }
+}

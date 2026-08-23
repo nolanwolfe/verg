@@ -109,6 +109,9 @@ final class SettingsViewModel: ObservableObject {
             .dropFirst()
             .sink { [weak self] enabled in
                 self?.storageService.setSoundEnabled(enabled)
+                // AudioService keeps its own copy; without this the setting
+                // would silence the bells but not the interface ticks.
+                AudioService.shared.setSoundEnabled(enabled)
             }
             .store(in: &cancellables)
 

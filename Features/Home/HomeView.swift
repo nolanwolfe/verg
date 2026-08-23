@@ -10,6 +10,8 @@ struct HomeView: View {
     @State private var showTimer = false
     @State private var showDurationPicker = false
     @State private var showPaywall = false
+    @State private var showPromptSheet = false
+    @State private var selectedPrompt: WritingPrompt?
 
     // Silent brightness control
     @State private var brightness: Double = UIScreen.main.brightness
@@ -42,8 +44,14 @@ struct HomeView: View {
 
                 actionButton
 
-                durationPill
-                    .padding(.top, Theme.Spacing.sm)
+                // Three pills, evenly sized so they read as one row rather
+                // than three differently-shaped buttons.
+                HStack(spacing: Theme.Spacing.xs) {
+                    durationPill
+                    oraclePill
+                    soundPill
+                }
+                .padding(.top, Theme.Spacing.sm)
             }
             .padding(.horizontal, Theme.Spacing.lg)
             .padding(.bottom, Theme.Spacing.xxl)
@@ -59,6 +67,10 @@ struct HomeView: View {
                     dragStartBrightness = brightness
                 }
         )
+        .sheet(isPresented: $showPromptSheet) {
+            PromptSheetView(selection: $selectedPrompt)
+                .environmentObject(storageService)
+        }
         .sheet(isPresented: $showDurationPicker) {
             DurationPickerSheet(
                 currentDuration: storageService.settings.timerDuration,
@@ -79,7 +91,7 @@ struct HomeView: View {
                 .environmentObject(purchaseService)
         }
         .fullScreenCover(isPresented: $showTimer) {
-            TimerView(onComplete: { _ in
+            TimerView(prompt: selectedPrompt?.text, onComplete: { _ in
                 showTimer = false
                 viewModel.refresh()
                 presentSessionPaywallIfEarned()
@@ -146,17 +158,59 @@ struct HomeView: View {
 
     // MARK: - Duration Pill
     private var durationPill: some View {
-        Button {
+        pill(icon: "clock", title: storageService.settings.shortFormattedDuration) {
             showDurationPicker = true
-        } label: {
+        }
+    }
+
+    // MARK: - Prompt Pill
+    /// Same capsule as the duration pill beside it. Shows the chosen prompt
+    /// once there is one, truncated hard — the pill is a reminder, and the
+    /// sheet is where the prompt is actually read.
+    private var oraclePill: some View {
+        // Two fixed labels rather than the script text: showing the script
+        // itself made the pill change width on every shuffle, which shoved
+        // the row around. The script is read in the Oracle sheet.
+        pill(
+            icon: "text.quote",
+            title: selectedPrompt == nil ? "No script" : "Script set"
+        ) {
+            showPromptSheet = true
+        }
+    }
+
+    // MARK: - Sound Pill
+    private var soundPill: some View {
+        // The icon carries the state: crossed out when off, open when on.
+        // Nothing changes colour — all three pills stay the same weight so
+        // the candle is still the only thing lit on this screen.
+        pill(
+            icon: storageService.settings.ambientSoundEnabled ? "speaker.wave.2" : "speaker.slash",
+            title: "Sound"
+        ) {
+            guard gatingService.isPremium else {
+                showPaywall = true
+                return
+            }
+            AudioService.shared.playUITick()
+            storageService.setAmbientSoundEnabled(!storageService.settings.ambientSoundEnabled)
+        }
+    }
+
+    /// One shape for all three pills so the row stays even. Deliberately no
+    /// active/inactive colouring: state is carried by the label or the icon,
+    /// and the candle stays the only lit thing on this screen.
+    private func pill(icon: String, title: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
             HStack(spacing: 4) {
-                Image(systemName: "clock")
+                Image(systemName: icon)
                     .font(.system(size: 11, weight: .medium))
-                Text(storageService.settings.shortFormattedDuration)
+                Text(title)
                     .font(Theme.Typography.caption)
+                    .lineLimit(1)
             }
             .foregroundColor(Theme.Colors.secondaryText)
-            .padding(.horizontal, Theme.Spacing.sm)
+            .frame(maxWidth: .infinity)
             .padding(.vertical, Theme.Spacing.xxs)
             .background(
                 Capsule()

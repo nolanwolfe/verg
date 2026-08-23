@@ -97,6 +97,9 @@ final class AudioService: ObservableObject {
     // MARK: - Initialization
     private init() {
         setupAudioSession()
+        // Mirror the persisted preference at launch — without this the
+        // service starts assuming sound is on regardless of the setting.
+        soundEnabled = StorageService.shared.settings.soundEnabled
     }
 
     // MARK: - Setup
@@ -224,6 +227,17 @@ final class AudioService: ObservableObject {
     func playImpact(_ style: UIImpactFeedbackGenerator.FeedbackStyle = .light) {
         let generator = UIImpactFeedbackGenerator(style: style)
         generator.impactOccurred()
+    }
+
+    /// The small tick used for interface actions — switching tabs, flipping
+    /// a setting. Haptic always, sound only when the user has sound on, so
+    /// the Sound switch in Settings governs the whole interface, not just
+    /// the bells. System sound 1104 is the keyboard tick: short and dry,
+    /// which is what this wants — nothing here should feel like a chime.
+    func playUITick(_ style: UIImpactFeedbackGenerator.FeedbackStyle = .light) {
+        playImpact(style)
+        guard soundEnabled else { return }
+        AudioServicesPlaySystemSound(1104)
     }
 }
 
