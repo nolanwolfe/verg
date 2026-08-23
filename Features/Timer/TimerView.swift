@@ -260,7 +260,7 @@ struct TimerView: View {
             } label: {
                 Image(systemName: viewModel.isRunning ? "pause.fill" : "play.fill")
                     .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundColor(Theme.Colors.primaryText)
                     .frame(width: 60, height: 60)
                     .background(Circle().fill(Theme.Colors.adaptive(light: "FFFFFFA6", dark: "00000066")))
             }

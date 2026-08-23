@@ -25,7 +25,7 @@ struct MilestoneCelebrationView: View {
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.88)
+            Theme.Colors.scrim.opacity(0.92)
                 .ignoresSafeArea()
 
             VStack(spacing: Theme.Spacing.lg) {

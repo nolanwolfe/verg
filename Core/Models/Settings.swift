@@ -18,6 +18,10 @@ enum CalendarStyle: String, CaseIterable, Identifiable, Codable {
 }
 
 /// Light, dark, or whatever the phone is set to.
+///
+/// Light is the default, including for existing installs that predate the
+/// setting — the decode falls back to it rather than to `.system`, so the app
+/// looks the same on every phone until someone chooses otherwise.
 enum AppearanceMode: String, CaseIterable, Identifiable, Codable {
     case system
     case light
@@ -93,7 +97,7 @@ struct AppSettings: Codable, Equatable {
         weeklySummaryNotificationsEnabled: Bool = false,
         weeklyCommitmentDaysPerWeek: Int? = nil,
         calendarStyle: CalendarStyle = .heatmap,
-        appearance: AppearanceMode = .system,
+        appearance: AppearanceMode = .light,
         hasSeenSessionPaywall: Bool = false
     ) {
         self.timerDuration = timerDuration
@@ -150,7 +154,7 @@ struct AppSettings: Codable, Equatable {
         weeklySummaryNotificationsEnabled = try container.decodeIfPresent(Bool.self, forKey: .weeklySummaryNotificationsEnabled) ?? false
         weeklyCommitmentDaysPerWeek = try container.decodeIfPresent(Int.self, forKey: .weeklyCommitmentDaysPerWeek)
         calendarStyle = try container.decodeIfPresent(CalendarStyle.self, forKey: .calendarStyle) ?? .heatmap
-        appearance = try container.decodeIfPresent(AppearanceMode.self, forKey: .appearance) ?? .system
+        appearance = try container.decodeIfPresent(AppearanceMode.self, forKey: .appearance) ?? .light
         hasSeenSessionPaywall = try container.decodeIfPresent(Bool.self, forKey: .hasSeenSessionPaywall) ?? false
     }
 

@@ -12,7 +12,7 @@ struct TimeReclaimedCardView: View {
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.92)
+            Theme.Colors.scrim.opacity(0.94)
                 .ignoresSafeArea()
 
             RadialGradient(

@@ -12,6 +12,27 @@ pages. Journal becomes just the current journal. Books gain rename and
 cover-color customization. The tab bar hides on scroll-down and returns
 on scroll-up on the Library screen.
 
+### Changed — light is the default
+
+Appearance now defaults to Light rather than System, including for installs
+that predate the setting: the decode falls back to Light, so the app looks
+the same on every phone until someone chooses otherwise.
+
+**Four screens were unreadable in light mode**, all the same bug — a
+hardcoded dark scrim under text that is now ink:
+
+- the post-session reveal (92% black),
+- the milestone celebration (88%),
+- the coach-mark notice (70%),
+- the camera's saving overlay (60%).
+
+Each is a full-screen takeover whose content uses `primaryText`, so in light
+mode it was dark ink on near-black. They share a `Theme.Colors.scrim` token
+now. Also fixed: the timer's pause/play glyph was white on a scrim that had
+already been inverted to white, and the tab bar's 45% black drop shadow read
+as a bruise under a pill floating on paper.
+
+
 ### Changed — a book's date and note sit together
 
 Inside a book, the date range and the note were flung to opposite screen

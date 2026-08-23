@@ -342,7 +342,7 @@ struct CameraView: View {
     // MARK: - Saving Overlay
     private var savingOverlay: some View {
         ZStack {
-            Color.black.opacity(0.6)
+            Theme.Colors.scrim.opacity(0.7)
                 .ignoresSafeArea()
 
             VStack(spacing: Theme.Spacing.md) {

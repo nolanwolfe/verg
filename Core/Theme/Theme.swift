@@ -35,6 +35,12 @@ enum Theme {
         static let tertiaryText = adaptive(light: "9A9187", dark: "6E6E73")
         /// Separator lines and card outlines.
         static let hairline = adaptive(light: "E3DCCE", dark: "2C2C2E")
+        /// The wash behind a full-screen takeover — the celebration, the
+        /// coach mark, the saving overlay. Adaptive because the content on
+        /// top of it uses `primaryText`, which is ink in light mode: a
+        /// hardcoded black scrim under ink text is an unreadable screen.
+        static let scrim = adaptive(light: "F2EEE4", dark: "000000")
+
         /// The barely-there fill behind grouped rows and grid cells.
         static let subtleFill = adaptive(light: "00000008", dark: "FFFFFF0A")
 

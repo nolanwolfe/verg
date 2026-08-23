@@ -16,7 +16,7 @@ struct CoachMarkNoticeView: View {
     var body: some View {
         ZStack {
             // Semi-transparent background
-            Color.black.opacity(0.7)
+            Theme.Colors.scrim.opacity(0.75)
                 .ignoresSafeArea()
                 .onTapGesture {
                     // Prevent dismissing by tapping outside

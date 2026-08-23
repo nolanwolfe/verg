@@ -80,8 +80,8 @@ struct CustomTabBar: View {
                 )
         )
         // Elevation shadows — makes it hover
-        .shadow(color: Color.black.opacity(0.45), radius: 24, x: 0, y: 10)
-        .shadow(color: Color.black.opacity(0.18), radius: 4,  x: 0, y: 2)
+        .shadow(color: Theme.Colors.adaptive(light: "17140E1F", dark: "00000073"), radius: 24, x: 0, y: 10)
+        .shadow(color: Theme.Colors.adaptive(light: "17140E14", dark: "0000002E"), radius: 4,  x: 0, y: 2)
         // Warm ambient glow under the pill (ties to candle aesthetic)
         .shadow(color: Color(hex: "FF7000").opacity(0.06), radius: 16, x: 0, y: 0)
         .padding(.horizontal, 22)
