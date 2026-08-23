@@ -12,6 +12,30 @@ pages. Journal becomes just the current journal. Books gain rename and
 cover-color customization. The tab bar hides on scroll-down and returns
 on scroll-up on the Library screen.
 
+### Fixed — viewer opened the wrong page; more swipe churn
+
+- **Tapping a page in a book opened the first page instead.** The viewer was
+  presented with `.fullScreenCover(isPresented:)` alongside a separate
+  `selectedIndex`. Those are set together but are not applied atomically as
+  far as the presentation is concerned, so the cover could be built while the
+  index was still its initial 0. Both the Journal and book screens now
+  present with `.fullScreenCover(item:)`, carrying the starting page *as* the
+  thing being presented, which cannot come apart.
+  - `StatsViewModel.selectSession` and its `selectedSessionIndex` /
+    `showFullScreenImage` / `selectedSession` state are gone. They were the
+    same split-state pattern and, after the change, unreferenced.
+- Swiping between pages no longer reassigns an unchanged image into the
+  image view on every render. SwiftUI re-renders every page in the pager on
+  each swipe, and pushing a full-resolution photo back into `UIImageView`
+  forces a redraw — five pages at a time, that is a visible hitch.
+- Page geometry now re-derives when the image's *aspect* changes rather than
+  never. Keyed on aspect, not size, so swapping a thumbnail for the sharp
+  decode of the same photo does not reset the reader's zoom.
+- The picture-retention window widened from ±2 to ±5 pages. A fast flick
+  outran ±2, so pages were released and had to re-decode on the way back,
+  flashing empty. Only the immediate neighbours hold a full-resolution
+  decode; the rest of the window is cheap thumbnails.
+
 ### Changed — one page format, larger viewfinder
 
 - **Every saved page is now the same shape.** The camera shoots at the

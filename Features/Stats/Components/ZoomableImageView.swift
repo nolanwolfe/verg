@@ -56,8 +56,7 @@ struct ZoomableImageView: UIViewRepresentable {
 
     func updateUIView(_ scrollView: UIScrollView, context: Context) {
         context.coordinator.parent = self
-        context.coordinator.imageView?.image = image
-        context.coordinator.layout()
+        context.coordinator.apply(image)
     }
 
     static func dismantleUIView(_ scrollView: UIScrollView, coordinator: Coordinator) {
@@ -79,6 +78,13 @@ struct ZoomableImageView: UIViewRepresentable {
         /// viewport itself changed size (first layout, rotation).
         private var lastLaidOutBoundsSize: CGSize = .zero
 
+        /// Aspect ratio the current geometry was derived from. Keyed on
+        /// *aspect*, not pixel size, deliberately: a page swaps its thumbnail
+        /// for the full-resolution decode of the same photo, and those differ
+        /// in size but not in shape. Re-laying out on size would reset the
+        /// user's zoom the instant the sharp version arrived.
+        private var lastLaidOutAspect: CGFloat = 0
+
         init(_ parent: ZoomableImageView) {
             self.parent = parent
         }
@@ -89,16 +95,31 @@ struct ZoomableImageView: UIViewRepresentable {
             centerImage()
         }
 
+        /// Push a (possibly new) image in and re-derive geometry if needed.
+        func apply(_ newImage: UIImage) {
+            guard let imageView else { return }
+            // SwiftUI re-renders every page in the pager on each swipe, so
+            // this runs constantly. Assigning the same image back into the
+            // view still forces a redraw of a full-resolution photo — enough,
+            // five pages at a time, to show up as a hitch while paging.
+            if imageView.image !== newImage {
+                imageView.image = newImage
+            }
+            layout()
+        }
+
         func layout() {
             guard let scrollView, let imageView, let image = imageView.image else { return }
             let boundsSize = scrollView.bounds.size
-            guard boundsSize.width > 0, boundsSize.height > 0, image.size.width > 0 else { return }
+            guard boundsSize.width > 0, boundsSize.height > 0, image.size.width > 0, image.size.height > 0 else { return }
 
-            guard boundsSize != lastLaidOutBoundsSize else {
+            let aspect = image.size.width / image.size.height
+            guard boundsSize != lastLaidOutBoundsSize || abs(aspect - lastLaidOutAspect) > 0.001 else {
                 centerImage()
                 return
             }
             lastLaidOutBoundsSize = boundsSize
+            lastLaidOutAspect = aspect
 
             let scale = min(boundsSize.width / image.size.width, boundsSize.height / image.size.height)
             let fitSize = CGSize(width: image.size.width * scale, height: image.size.height * scale)

@@ -118,6 +118,19 @@ struct PageThumbnail: View {
     }
 }
 
+// MARK: - Viewer Presentation
+/// Which page the fullscreen viewer opens on.
+///
+/// Exists so the viewer is presented with `.fullScreenCover(item:)` rather
+/// than a boolean plus a separate index. Those two pieces of state are set in
+/// the same closure but are not applied atomically from the presentation's
+/// point of view, and the cover could be built before the index landed —
+/// which opened the first page no matter which one was tapped.
+struct ViewerStart: Identifiable {
+    let index: Int
+    var id: Int { index }
+}
+
 // MARK: - Full Screen Image View (swipeable)
 struct FullScreenImageView: View {
     @State private var sessions: [Session]
@@ -178,7 +191,14 @@ struct FullScreenImageView: View {
                     // changes.
                     FullScreenPageView(
                         session: session,
-                        isWindowed: abs(index - currentIndex) <= 2,
+                        // Hold on to a page's picture well past the two
+                        // neighbours that can be on screen. Releasing at ±2
+                        // meant a fast flick outran the window: pages were
+                        // blanked and had to re-decode as they came back, so
+                        // swiping quickly flashed empty frames. Only the
+                        // immediate neighbours carry a full-resolution decode;
+                        // the rest of this window is cheap thumbnails.
+                        isWindowed: abs(index - currentIndex) <= 5,
                         isNearCurrent: abs(index - currentIndex) <= 1,
                         loadImage: loadImage,
                         loadThumbnail: loadThumbnail,

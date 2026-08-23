@@ -10,6 +10,9 @@ struct JournalView: View {
     @State private var newBookTitle = ""
     @State private var showPaywall = false
     @State private var paywallContext: Date?
+    /// Presented with `item:` so the starting page cannot be lost between
+    /// setting the index and raising a separate boolean — see `ViewerStart`.
+    @State private var viewerStart: ViewerStart?
 
     private let gatingService = SessionGatingService.shared
 
@@ -25,7 +28,11 @@ struct JournalView: View {
                     sessions: viewModel.currentSessions,
                     loadThumbnail: { await viewModel.loadThumbnailAsync(for: $0) },
                     peekThumbnail: { viewModel.cachedThumbnail(for: $0) },
-                    onSelect: { viewModel.selectSession($0, in: viewModel.currentSessions) },
+                    onSelect: { session in
+                        guard let index = viewModel.currentSessions
+                            .firstIndex(where: { $0.id == session.id }) else { return }
+                        viewerStart = ViewerStart(index: index)
+                    },
                     isLocked: { !gatingService.canViewPage(dated: $0.date) },
                     onLockedTap: { session in
                         // Both, always: `paywallContext` alone set the date
@@ -41,17 +48,14 @@ struct JournalView: View {
                 )
             }
         }
-        .fullScreenCover(isPresented: $viewModel.showFullScreenImage) {
+        .fullScreenCover(item: $viewerStart) { start in
             FullScreenImageView(
                 sessions: viewModel.currentSessions,
-                initialIndex: viewModel.selectedSessionIndex,
+                initialIndex: start.index,
                 loadImage: { await viewModel.loadImageAsync(for: $0) },
                 loadThumbnail: { await viewModel.loadThumbnailAsync(for: $0) },
                 peekThumbnail: { viewModel.cachedThumbnail(for: $0) },
-                onDismiss: {
-                    viewModel.showFullScreenImage = false
-                    viewModel.selectedSession = nil
-                },
+                onDismiss: { viewerStart = nil },
                 onDelete: { session in
                     viewModel.deleteSession(session)
                 }

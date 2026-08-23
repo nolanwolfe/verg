@@ -6,8 +6,15 @@ struct BookDetailView: View {
     @ObservedObject var viewModel: StatsViewModel
     @Environment(\.dismiss) private var dismiss
 
-    @State private var showFullScreen = false
-    @State private var selectedIndex = 0
+    /// The page the viewer should open on, carried *with* the presentation.
+    ///
+    /// This used to be a separate `selectedIndex` alongside a boolean
+    /// `showFullScreen`. Setting the two together is not atomic as far as the
+    /// presentation machinery is concerned: the cover could be built while
+    /// the index was still its initial 0, so tapping any page opened the
+    /// first one. An `item:` presentation cannot come apart that way — the
+    /// index is the thing being presented.
+    @State private var viewerStart: ViewerStart?
     @State private var showDeleteConfirmation = false
     @State private var showPaywall = false
     @State private var showCustomize = false
@@ -68,8 +75,8 @@ struct BookDetailView: View {
                         loadThumbnail: { await viewModel.loadThumbnailAsync(for: $0) },
                         peekThumbnail: { viewModel.cachedThumbnail(for: $0) },
                         onSelect: { session in
-                            selectedIndex = pages.firstIndex(where: { $0.id == session.id }) ?? 0
-                            showFullScreen = true
+                            guard let index = pages.firstIndex(where: { $0.id == session.id }) else { return }
+                            viewerStart = ViewerStart(index: index)
                         },
                         isLocked: { !gatingService.canViewPage(dated: $0.date) },
                         onLockedTap: { _ in showPaywall = true },
@@ -107,14 +114,14 @@ struct BookDetailView: View {
                 }
             }
         }
-        .fullScreenCover(isPresented: $showFullScreen) {
+        .fullScreenCover(item: $viewerStart) { start in
             FullScreenImageView(
                 sessions: pages,
-                initialIndex: selectedIndex,
+                initialIndex: start.index,
                 loadImage: { await viewModel.loadImageAsync(for: $0) },
                 loadThumbnail: { await viewModel.loadThumbnailAsync(for: $0) },
                 peekThumbnail: { viewModel.cachedThumbnail(for: $0) },
-                onDismiss: { showFullScreen = false },
+                onDismiss: { viewerStart = nil },
                 allowsDelete: false
             )
         }
