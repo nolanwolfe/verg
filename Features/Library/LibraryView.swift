@@ -280,7 +280,10 @@ struct LibraryView: View {
                                     RoundedRectangle(cornerRadius: 2)
                                         .fill(Theme.Colors.hairline)
                                     RoundedRectangle(cornerRadius: 2)
-                                        .fill(Theme.Colors.accent)
+                                        // Plain, not gold. This is a
+                                        // measurement, not a highlight — the
+                                        // gold made it look like an award.
+                                        .fill(Theme.Colors.adaptive(light: "8C8478", dark: "FFFFFF8C"))
                                         .frame(width: barWidth(maxPages: maxPages(years: years), pages: entry.pages, available: geo.size.width))
                                 }
                             }

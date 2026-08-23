@@ -12,6 +12,26 @@ pages. Journal becomes just the current journal. Books gain rename and
 cover-color customization. The tab bar hides on scroll-down and returns
 on scroll-up on the Library screen.
 
+### Changed — every tab follows Appearance; Verg lights up
+
+- **Verg and Write follow the setting now**, like the rest of the app. Only
+  the writing timer and the fullscreen page viewer still pin themselves
+  dark — the timer dims the display for the length of a session, and a photo
+  viewer is dark in every app there is. The tabs are just rooms, and they can
+  be lit.
+- Verg's ground is warmer than the rest of the app in both themes: near-black
+  by candlelight, the colour of paper held near a flame in light.
+- **The ambient glow is scaled to a third in light mode.** Its opacities were
+  tuned against near-black, where light has to be strong to register; laid
+  over paper at the same values the whole room turned orange. Light adds, and
+  in light mode there is already a lit ground under it.
+- The rotating word ("candlelight") was ember orange — invisible sitting on
+  an orange glow. It takes the room's own ink on paper.
+- The year-by-year bar is a plain line again. Gold made a measurement look
+  like an award.
+- Appearance moved from Guide to Account, directly under The Golden Age.
+
+
 ### Added — Appearance: Light, Dark, System
 
 Settings → Guide → Appearance. Three-way, defaulting to System so the app

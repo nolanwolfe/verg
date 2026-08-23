@@ -218,6 +218,20 @@ struct SettingsView: View {
                 }
             )
 
+
+            settingsDivider
+
+            SettingsRow(
+                icon: "circle.lefthalf.filled",
+                iconColor: Theme.Colors.accent,
+                title: "Appearance",
+                value: viewModel.appearance.displayName,
+                action: {
+                    AudioService.shared.playUITick()
+                    viewModel.showAppearancePicker = true
+                }
+            )
+
             settingsDivider
 
             SettingsButtonRow(
@@ -284,18 +298,6 @@ struct SettingsView: View {
                 }
             )
 
-            settingsDivider
-
-            SettingsRow(
-                icon: "circle.lefthalf.filled",
-                iconColor: Theme.Colors.accent,
-                title: "Appearance",
-                value: viewModel.appearance.displayName,
-                action: {
-                    AudioService.shared.playUITick()
-                    viewModel.showAppearancePicker = true
-                }
-            )
         }
     }
 

@@ -4,6 +4,7 @@ import UIKit
 /// Verg — candlelight mode for journaling in the dark
 struct VergFlameView: View {
 
+    @Environment(\.colorScheme) private var colorScheme
     @State private var brightness: Double = 0.65
     @State private var glowPulse: Double = 0.0
     @State private var showControls: Bool = true
@@ -26,7 +27,11 @@ struct VergFlameView: View {
     var body: some View {
         ZStack {
             // Deep warm-black base
-            Color(hex: "080400").ignoresSafeArea()
+            // Warm to the bone in both: near-black by candlelight, and the
+            // colour of paper held near a flame in the light theme. Not
+            // Theme.Colors.background — this room is warmer than the rest of
+            // the app on purpose.
+            Theme.Colors.adaptive(light: "FBF3E6", dark: "080400").ignoresSafeArea()
 
             // Ambient radial glow — the room lit by flame
             ambientBackground
@@ -77,13 +82,20 @@ struct VergFlameView: View {
 
     // MARK: - Ambient Background
 
+    /// Glow strength. The opacities below were tuned against near-black,
+    /// where light has to be strong to register at all. Laid over paper at
+    /// the same values the room turns orange — light *adds*, and there is
+    /// already a lit ground under it. A third of the strength reads as the
+    /// same flame in a room that happens to have daylight in it.
+    private var glowScale: Double { colorScheme == .dark ? 1.0 : 0.34 }
+
     private var ambientBackground: some View {
         ZStack {
             RadialGradient(
                 colors: [
-                    Color(hex: "FF7000").opacity(lerp(0.30, 0.55, brightness) + glowPulse * 0.04),
-                    Color(hex: "FF5500").opacity(lerp(0.18, 0.35, brightness) + glowPulse * 0.02),
-                    Color(hex: "FF3300").opacity(lerp(0.06, 0.14, brightness)),
+                    Color(hex: "FF7000").opacity((lerp(0.30, 0.55, brightness) + glowPulse * 0.04) * glowScale),
+                    Color(hex: "FF5500").opacity((lerp(0.18, 0.35, brightness) + glowPulse * 0.02) * glowScale),
+                    Color(hex: "FF3300").opacity(lerp(0.06, 0.14, brightness) * glowScale),
                     Color.clear
                 ],
                 center: UnitPoint(x: 0.5, y: 0.46),
@@ -93,7 +105,7 @@ struct VergFlameView: View {
             .ignoresSafeArea()
 
             LinearGradient(
-                colors: [Color.clear, Color(hex: "FF6000").opacity(lerp(0.04, 0.12, brightness))],
+                colors: [Color.clear, Color(hex: "FF6000").opacity(lerp(0.04, 0.12, brightness) * glowScale)],
                 startPoint: .center,
                 endPoint: .bottom
             )
@@ -126,7 +138,14 @@ struct VergFlameView: View {
         VStack {
             Text(phrases[phraseIndex])
                 .font(.system(size: 13, weight: .ultraLight, design: .serif))
-                .foregroundColor(Theme.Colors.flameOuter.opacity(0.45))
+                // Ember on black, but that same orange laid over a lit
+                // orange glow is invisible. On paper the word takes the
+                // room's own ink instead.
+                .foregroundColor(
+                    colorScheme == .dark
+                        ? Theme.Colors.flameOuter.opacity(0.45)
+                        : Color(hex: "8A6A3A").opacity(0.75)
+                )
                 .tracking(5)
                 .multilineTextAlignment(.center)
                 .padding(.top, 64)

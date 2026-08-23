@@ -179,17 +179,14 @@ struct ContentView: View {
     @State private var tabBarVisibility: TabBarVisibility = .visible
     @State private var keyboardVisible = false
 
-    /// The candle tabs are dark in every appearance — they are the room the
-    /// ritual happens in, and Write dims the screen the moment you start.
-    /// Everything else follows the Appearance setting, and `nil` there means
-    /// the phone's own.
+    /// Every tab follows the Appearance setting; `nil` means the phone's own.
+    ///
+    /// The writing timer and the fullscreen page viewer still pin themselves
+    /// dark, and they are the two that earn it — the timer dims the display
+    /// for the length of a session, and a photo viewer is dark in every app
+    /// there is. The tabs themselves are just rooms, and they can be lit.
     private var resolvedColorScheme: ColorScheme? {
-        switch selectedTab {
-        case .write, .verg:
-            return .dark
-        case .journal, .library, .settings:
-            return storageService.settings.appearance.colorScheme
-        }
+        storageService.settings.appearance.colorScheme
     }
 
     @ViewBuilder
