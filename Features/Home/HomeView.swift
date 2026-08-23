@@ -61,7 +61,10 @@ struct HomeView: View {
                 .onChanged { value in
                     let delta = Double(-value.translation.height) / 300.0
                     brightness = max(0.05, min(1.0, dragStartBrightness + delta))
-                    UIScreen.main.brightness = brightness
+                    // `take` is idempotent: it captures the user's own
+                    // setting the first time only, so a drag here can claim
+                    // brightness without stomping the saved value.
+                    BrightnessService.shared.take(brightness)
                 }
                 .onEnded { _ in
                     dragStartBrightness = brightness
@@ -98,6 +101,10 @@ struct HomeView: View {
             })
         }
         .onAppear {
+            // Sit at whatever the app is already holding, so returning to
+            // this tab never jumps the screen.
+            brightness = BrightnessService.shared.levelOnAppear(default: brightness)
+            dragStartBrightness = brightness
             DispatchQueue.main.async {
                 viewModel.refresh()
             }

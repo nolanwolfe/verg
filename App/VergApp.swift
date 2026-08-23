@@ -7,6 +7,7 @@ struct VergApp: App {
     // MARK: - Services
     @StateObject private var storageService = StorageService.shared
     @StateObject private var purchaseService = PurchaseService.shared
+    @Environment(\.scenePhase) private var scenePhase
 
     // MARK: - Initialization
     init() {
@@ -27,6 +28,20 @@ struct VergApp: App {
                 .environmentObject(storageService)
                 .environmentObject(purchaseService)
                 .preferredColorScheme(.dark)
+        }
+        // Screen brightness is the app's for as long as the app is in front,
+        // and the user's again the moment it isn't. This is the *only* place
+        // it is handed back — screens no longer restore it on disappear, so
+        // moving between tabs leaves it alone.
+        .onChange(of: scenePhase) { _, phase in
+            switch phase {
+            case .active:
+                BrightnessService.shared.reapplyAfterForeground()
+            case .inactive, .background:
+                BrightnessService.shared.relinquish()
+            @unknown default:
+                break
+            }
         }
     }
 

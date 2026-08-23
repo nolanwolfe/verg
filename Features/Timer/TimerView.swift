@@ -22,7 +22,6 @@ struct TimerView: View {
 
     // Brightness (swipe up/down, no visual indicator)
     @State private var brightness: Double = 0.7
-    @State private var savedSystemBrightness: CGFloat = UIScreen.main.brightness
     @State private var dragStartBrightness: Double = 0.7
 
     var body: some View {
@@ -148,7 +147,7 @@ struct TimerView: View {
                 .onChanged { value in
                     let delta = Double(-value.translation.height) / 300.0
                     brightness = max(0.05, min(1.0, dragStartBrightness + delta))
-                    UIScreen.main.brightness = brightness
+                    BrightnessService.shared.set(brightness)
                 }
                 .onEnded { _ in
                     dragStartBrightness = brightness
@@ -178,8 +177,8 @@ struct TimerView: View {
             viewModel.onComplete = { session in dismiss(); onComplete?(session) }
             scheduleHide()
             startGlowPulse()
-            savedSystemBrightness = UIScreen.main.brightness
-            UIScreen.main.brightness = brightness
+            brightness = BrightnessService.shared.levelOnAppear(default: 0.7)
+            BrightnessService.shared.take(brightness)
             dragStartBrightness = brightness
             UIApplication.shared.isIdleTimerDisabled = true
             DispatchQueue.main.async {
@@ -189,7 +188,7 @@ struct TimerView: View {
         .onDisappear {
             viewModel.stopTimer()
             hideTask?.cancel()
-            UIScreen.main.brightness = savedSystemBrightness
+            // Brightness deliberately persists — see BrightnessService.
             UIApplication.shared.isIdleTimerDisabled = false
         }
         .statusBar(hidden: true)

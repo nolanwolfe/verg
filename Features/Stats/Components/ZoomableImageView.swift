@@ -6,8 +6,33 @@ import UIKit
 /// SwiftUI DragGesture on top of TabView's own paging gesture fights it for
 /// the same touch, so zoom/pan is delegated to UIKit exactly like Photos.app
 /// does, and only the dismiss pan is a separate recognizer layered on top.
+/// A scroll view that reports its own layout passes.
+///
+/// SwiftUI's `updateUIView` is not a layout signal — it fires on every
+/// re-render, including many where nothing about the geometry changed. Fit
+/// geometry has to be derived from an actual bounds change instead, or the
+/// scroll view gets reset underneath live gestures.
+final class ZoomScrollView: UIScrollView {
+    var onBoundsChange: (() -> Void)?
+    private var lastBounds: CGRect = .zero
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        guard bounds != lastBounds else { return }
+        lastBounds = bounds
+        onBoundsChange?()
+    }
+}
+
 struct ZoomableImageView: UIViewRepresentable {
     let image: UIImage
+    /// Identity of the *page* this view is showing, not of the image object.
+    /// A page swaps a thumbnail for the full-resolution decode of the same
+    /// photo, which must not disturb the reader's zoom; moving to a different
+    /// page must reset it. Only this can tell those two apart — and it is
+    /// also what stops a recycled scroll view showing the previous page's
+    /// picture for a frame.
+    let pageID: UUID
     var onDismiss: () -> Void
     var onDragProgressChanged: (CGFloat) -> Void = { _ in }
 
@@ -19,8 +44,15 @@ struct ZoomableImageView: UIViewRepresentable {
         Coordinator(self)
     }
 
-    func makeUIView(context: Context) -> UIScrollView {
-        let scrollView = UIScrollView()
+    func makeUIView(context: Context) -> ZoomScrollView {
+        let scrollView = ZoomScrollView()
+        // Geometry is rebuilt from the view's own layout pass, not from
+        // SwiftUI re-renders. On the first pass the bounds are still zero, so
+        // there is no size to fit an image into yet; this is what picks it up
+        // once there is one (and again on rotation).
+        scrollView.onBoundsChange = { [weak coordinator = context.coordinator] in
+            coordinator?.boundsChanged()
+        }
         scrollView.delegate = context.coordinator
         scrollView.maximumZoomScale = maxZoomScale
         scrollView.minimumZoomScale = 1
@@ -54,12 +86,13 @@ struct ZoomableImageView: UIViewRepresentable {
         return scrollView
     }
 
-    func updateUIView(_ scrollView: UIScrollView, context: Context) {
+    func updateUIView(_ scrollView: ZoomScrollView, context: Context) {
         context.coordinator.parent = self
-        context.coordinator.apply(image)
+        context.coordinator.apply(image, pageID: pageID)
     }
 
-    static func dismantleUIView(_ scrollView: UIScrollView, coordinator: Coordinator) {
+    static func dismantleUIView(_ scrollView: ZoomScrollView, coordinator: Coordinator) {
+        scrollView.onBoundsChange = nil
         scrollView.gestureRecognizers?.forEach { scrollView.removeGestureRecognizer($0) }
     }
 
@@ -78,12 +111,8 @@ struct ZoomableImageView: UIViewRepresentable {
         /// viewport itself changed size (first layout, rotation).
         private var lastLaidOutBoundsSize: CGSize = .zero
 
-        /// Aspect ratio the current geometry was derived from. Keyed on
-        /// *aspect*, not pixel size, deliberately: a page swaps its thumbnail
-        /// for the full-resolution decode of the same photo, and those differ
-        /// in size but not in shape. Re-laying out on size would reset the
-        /// user's zoom the instant the sharp version arrived.
-        private var lastLaidOutAspect: CGFloat = 0
+        /// The page whose geometry is currently installed.
+        private var currentPageID: UUID?
 
         init(_ parent: ZoomableImageView) {
             self.parent = parent
@@ -95,38 +124,77 @@ struct ZoomableImageView: UIViewRepresentable {
             centerImage()
         }
 
-        /// Push a (possibly new) image in and re-derive geometry if needed.
-        func apply(_ newImage: UIImage) {
+        /// The single entry point from SwiftUI.
+        ///
+        /// This is called on *every* re-render of the pager — which is every
+        /// swipe, every drag frame, for every page in the window. It used to
+        /// reassign the image and re-run layout each time, and `layout()`
+        /// ends in `centerImage()`, which writes `imageView.center`. Doing
+        /// that underneath a live pinch fights the gesture: the image would
+        /// judder, and the zoom could run away as the scroll view's own
+        /// adjustments compounded with ours. So the overwhelmingly common
+        /// case — nothing actually changed — now does nothing at all.
+        func apply(_ newImage: UIImage, pageID: UUID) {
             guard let imageView else { return }
-            // SwiftUI re-renders every page in the pager on each swipe, so
-            // this runs constantly. Assigning the same image back into the
-            // view still forces a redraw of a full-resolution photo — enough,
-            // five pages at a time, to show up as a hitch while paging.
-            if imageView.image !== newImage {
+
+            if pageID != currentPageID {
+                // A different page. Everything is stale: install the image and
+                // rebuild geometry from scratch, back at 1x.
+                currentPageID = pageID
                 imageView.image = newImage
-            }
-            layout()
-        }
-
-        func layout() {
-            guard let scrollView, let imageView, let image = imageView.image else { return }
-            let boundsSize = scrollView.bounds.size
-            guard boundsSize.width > 0, boundsSize.height > 0, image.size.width > 0, image.size.height > 0 else { return }
-
-            let aspect = image.size.width / image.size.height
-            guard boundsSize != lastLaidOutBoundsSize || abs(aspect - lastLaidOutAspect) > 0.001 else {
-                centerImage()
+                resetGeometry()
                 return
             }
+
+            guard imageView.image !== newImage else {
+                // Same page, same image. Leave the scroll view strictly alone
+                // so an in-progress zoom or pan is never touched.
+                return
+            }
+
+            // Same page, sharper picture. Swap it in but keep the reader where
+            // they are — only rebuild if the shape genuinely differs, which a
+            // thumbnail of the same photo will not.
+            let previousAspect = aspect(of: imageView.image)
+            imageView.image = newImage
+            if abs(aspect(of: newImage) - previousAspect) > 0.01 {
+                resetGeometry()
+            }
+        }
+
+        private func aspect(of image: UIImage?) -> CGFloat {
+            guard let image, image.size.height > 0 else { return 0 }
+            return image.size.width / image.size.height
+        }
+
+        /// Recompute the 1x "fit" geometry for the current bounds and image.
+        /// Only ever called when something real changed — a new page, a new
+        /// shape, or a resized viewport — never speculatively on re-render.
+        func resetGeometry() {
+            guard let scrollView, let imageView, let image = imageView.image else { return }
+            let boundsSize = scrollView.bounds.size
+            guard boundsSize.width > 0, boundsSize.height > 0,
+                  image.size.width > 0, image.size.height > 0 else { return }
+
             lastLaidOutBoundsSize = boundsSize
-            lastLaidOutAspect = aspect
 
             let scale = min(boundsSize.width / image.size.width, boundsSize.height / image.size.height)
             let fitSize = CGSize(width: image.size.width * scale, height: image.size.height * scale)
             scrollView.zoomScale = 1
+            imageView.transform = .identity
             imageView.bounds = CGRect(origin: .zero, size: fitSize)
             scrollView.contentSize = fitSize
             centerImage()
+        }
+
+        /// Viewport changed size (first real layout, rotation). Distinct from
+        /// a SwiftUI re-render, which must not reach the scroll view at all.
+        func boundsChanged() {
+            guard let scrollView else { return }
+            let boundsSize = scrollView.bounds.size
+            guard boundsSize.width > 0, boundsSize.height > 0,
+                  boundsSize != lastLaidOutBoundsSize else { return }
+            resetGeometry()
         }
 
         private func centerImage() {

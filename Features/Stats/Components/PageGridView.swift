@@ -347,6 +347,7 @@ private struct FullScreenPageView: View {
             if let image = image {
                 ZoomableImageView(
                     image: image,
+                    pageID: session.id,
                     onDismiss: onDismiss,
                     onDragProgressChanged: onDragProgressChanged
                 )
@@ -371,7 +372,20 @@ private struct FullScreenPageView: View {
                 if image == nil {
                     image = peekThumbnail(session)
                 }
+
+                // Settle before decoding. Flicking through a long journal
+                // drags this page in and out of the sharp window several
+                // times a second, and each pass used to queue a full-
+                // resolution decode of a multi-megapixel photo — work that
+                // was obsolete before it finished, and the reason paging felt
+                // worse the more pages a book had. `.task(id:)` cancels this
+                // sleep the moment the window moves on, so a page swiped past
+                // never starts a decode at all.
+                try? await Task.sleep(nanoseconds: 120_000_000)
+                guard !Task.isCancelled else { return }
+
                 if !hasFullRes, let full = await loadImage(session) {
+                    guard !Task.isCancelled else { return }
                     image = full
                     hasFullRes = true
                 }

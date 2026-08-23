@@ -3,6 +3,10 @@ import SwiftUI
 struct CustomTabBar: View {
     @Binding var selectedTab: ContentView.Tab
 
+    /// Ties the hovering capsule to whichever item is selected, so it slides
+    /// between them instead of cross-fading in place.
+    @Namespace private var hoverNamespace
+
     var body: some View {
         HStack(spacing: 0) {
             standardItem(tab: .verg, icon: nil, label: "Verg")
@@ -83,7 +87,55 @@ struct CustomTabBar: View {
     private func select(_ tab: ContentView.Tab) {
         guard tab != selectedTab else { return }
         AudioService.shared.playUITick()
-        selectedTab = tab
+        withAnimation(.spring(response: 0.34, dampingFraction: 0.72)) {
+            selectedTab = tab
+        }
+    }
+
+    // MARK: - Hover
+    /// The lozenge of brighter glass that rides under the selected tab —
+    /// its own little pane sitting on the bar, catching light along the top
+    /// edge the way the bar itself does. Only ever one exists; the namespace
+    /// slides it between items rather than fading one out and another in.
+    @ViewBuilder
+    private func hover(for tab: ContentView.Tab) -> some View {
+        if selectedTab == tab {
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.16),
+                                    Color.white.opacity(0.05),
+                                    Color.clear
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .strokeBorder(
+                            LinearGradient(
+                                colors: [
+                                    Color.white.opacity(0.30),
+                                    Color.white.opacity(0.08)
+                                ],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            ),
+                            lineWidth: 0.7
+                        )
+                )
+                // Warm underglow, so the lit tab belongs to the candle
+                .shadow(color: Theme.Colors.flameOuter.opacity(0.18), radius: 8)
+                .matchedGeometryEffect(id: "tabHover", in: hoverNamespace)
+                .padding(.vertical, 4)
+                .padding(.horizontal, 5)
+        }
     }
 
     // MARK: - Standard Tab Item
@@ -117,10 +169,11 @@ struct CustomTabBar: View {
             }
             .offset(y: tab == .verg ? -3 : 0)
             .frame(maxWidth: .infinity)
+            .frame(height: 56)
+            .background(hover(for: tab))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .animation(Theme.Animation.quick, value: selectedTab)
     }
 
     // MARK: - Write Tab
@@ -139,10 +192,11 @@ struct CustomTabBar: View {
                         : Theme.Colors.secondaryText.opacity(0.45))
             }
             .frame(maxWidth: .infinity)
+            .frame(height: 56)
+            .background(hover(for: .write))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
-        .animation(Theme.Animation.quick, value: selectedTab)
     }
 }
 

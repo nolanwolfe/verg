@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2327A2B0F046CC33DBE68D02 /* BrightnessService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBBD1D40F4DC353098590A98 /* BrightnessService.swift */; };
 		37BC8986C09C76DD05F7410C /* PromptsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52019627854D25B472BACF07 /* PromptsView.swift */; };
 		37EA337057ECBB624B85FDF6 /* OnboardingProjectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0EB2EA2468FDCFA22B69538 /* OnboardingProjectionTests.swift */; };
 		40A9B4E8536EC83BCC001F96 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7AEEAEB60B010E7D6255DEF1 /* Foundation.framework */; };
@@ -185,6 +186,7 @@
 		BA85F0D61ED1E6AE8A4E80C4 /* VergTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VergTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		BF931F0B81C02B6A9E991A0A /* ambient_movement.m4a */ = {isa = PBXFileReference; includeInIndex = 1; name = ambient_movement.m4a; path = Sounds/ambient_movement.m4a; sourceTree = "<group>"; };
 		D66B0478F0B1B87D3C18A0C6 /* ambient_motion.m4a */ = {isa = PBXFileReference; includeInIndex = 1; name = ambient_motion.m4a; path = Sounds/ambient_motion.m4a; sourceTree = "<group>"; };
+		DBBD1D40F4DC353098590A98 /* BrightnessService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BrightnessService.swift; path = Core/Services/BrightnessService.swift; sourceTree = "<group>"; };
 		E0E9AAF30597470AE40B5615 /* SessionGatingService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionGatingService.swift; path = Core/Services/SessionGatingService.swift; sourceTree = "<group>"; };
 		F363E01CA80309C00CBFA394 /* SessionGatingServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionGatingServiceTests.swift; path = SessionGatingServiceTests.swift; sourceTree = "<group>"; };
 		FADBFB1EA0CFE9BA340C3877 /* ambient_deep.m4a */ = {isa = PBXFileReference; includeInIndex = 1; name = ambient_deep.m4a; path = Sounds/ambient_deep.m4a; sourceTree = "<group>"; };
@@ -233,6 +235,7 @@
 			isa = PBXGroup;
 			children = (
 				E0E9AAF30597470AE40B5615 /* SessionGatingService.swift */,
+				DBBD1D40F4DC353098590A98 /* BrightnessService.swift */,
 			);
 			name = Services;
 			sourceTree = "<group>";
@@ -739,6 +742,7 @@
 				B581A0CAD6F8EC9F16246805 /* WritingPrompt.swift in Sources */,
 				37BC8986C09C76DD05F7410C /* PromptsView.swift in Sources */,
 				E6951BF72A20C2C005D2ED6A /* PageCapture.swift in Sources */,
+				2327A2B0F046CC33DBE68D02 /* BrightnessService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

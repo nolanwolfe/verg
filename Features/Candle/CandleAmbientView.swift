@@ -5,7 +5,6 @@ import UIKit
 struct CandleAmbientView: View {
 
     @State private var brightness: Double = 0.65
-    @State private var savedSystemBrightness: CGFloat = UIScreen.main.brightness
     @State private var glowPulse: Double = 0.0
     @State private var showControls: Bool = true
     @State private var hideTask: Task<Void, Never>?
@@ -31,18 +30,18 @@ struct CandleAmbientView: View {
         .onTapGesture { toggleControls() }
         .onAppear {
             UIApplication.shared.isIdleTimerDisabled = true
-            savedSystemBrightness = UIScreen.main.brightness
-            UIScreen.main.brightness = brightness
+            brightness = BrightnessService.shared.levelOnAppear(default: 0.65)
+            BrightnessService.shared.take(brightness)
             startGlowPulse()
             scheduleHide()
         }
         .onDisappear {
             UIApplication.shared.isIdleTimerDisabled = false
-            UIScreen.main.brightness = savedSystemBrightness
+            // Brightness stays with the app until the app goes away.
             hideTask?.cancel()
         }
         .onChange(of: brightness) { _, value in
-            UIScreen.main.brightness = value
+            BrightnessService.shared.set(value)
         }
     }
 

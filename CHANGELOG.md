@@ -12,6 +12,46 @@ pages. Journal becomes just the current journal. Books gain rename and
 cover-color customization. The tab bar hides on scroll-down and returns
 on scroll-up on the Library screen.
 
+### Fixed — page viewer stability, brightness ownership; tab bar hover returns
+
+**The page viewer no longer fights itself.** `updateUIView` runs on every
+SwiftUI re-render — which, inside a pager, is every swipe and every drag
+frame, for every page in the window. It was reassigning the image and
+re-running layout each time, and layout ends by writing `imageView.center`.
+Doing that underneath a live pinch fights the gesture: the image juddered,
+and the zoom could run away as the scroll view's own adjustments compounded
+with ours. Now:
+
+- Nothing changed → the scroll view is not touched at all.
+- Same page, sharper image → the picture is swapped and the reader's zoom and
+  pan are left exactly where they were.
+- Different page → full reset, back at 1x.
+- Fit geometry is derived from the scroll view's own layout pass (a new
+  `ZoomScrollView` reports bounds changes) rather than from re-renders, which
+  were never a layout signal.
+
+A page's identity is now carried explicitly, so a recycled scroll view can no
+longer show the previous page's picture for a frame.
+
+**Flicking through a long book.** Each pass through the sharp window used to
+queue a full-resolution decode, obsolete before it finished — which is why
+paging felt worse the more pages a book had. Decoding now waits for the index
+to settle; `.task(id:)` cancels that wait, so a page swiped past never starts
+a decode.
+
+**Brightness has one owner.** Four screens each saved "the system value" on
+appear and restored it on disappear. Two consequences: every tab change
+yanked the brightness, and a screen entered *from* an already-dimmed screen
+saved that dim level as the system value — bounce between two and the user's
+real setting was overwritten for good. `BrightnessService` captures the
+user's setting once, before the app first dims anything, and hands it back
+only when the app leaves the foreground. Between tabs, brightness simply
+stays put.
+
+**Tab bar.** The selected tab regains its pane of hovering glass — blurred,
+lit along the top edge, with a warm underglow — sliding between items via
+`matchedGeometryEffect` rather than fading in place.
+
 ### Fixed — viewer opened the wrong page; more swipe churn
 
 - **Tapping a page in a book opened the first page instead.** The viewer was
