@@ -95,7 +95,7 @@ struct CameraView: View {
             Text("Capture Your Page")
                 .font(Theme.Typography.title)
                 .foregroundColor(Theme.Colors.primaryText)
-                .padding(.top, Theme.Spacing.sm)
+                .padding(.top, Theme.Spacing.xxxs)
 
             #if targetEnvironment(simulator)
             Text("Select a photo from your library")
@@ -107,7 +107,9 @@ struct CameraView: View {
                 .foregroundColor(Theme.Colors.secondaryText)
             #endif
         }
-        .padding(.bottom, Theme.Spacing.md)
+        // Chrome is kept tight here: every point this header gives up goes
+        // straight into the viewfinder below it.
+        .padding(.bottom, Theme.Spacing.xs)
     }
 
     // MARK: - Simulator View
@@ -158,7 +160,7 @@ struct CameraView: View {
 
     // MARK: - Camera View
     private var cameraView: some View {
-        VStack(spacing: Theme.Spacing.xl) {
+        VStack(spacing: Theme.Spacing.md) {
             ZStack {
                 CameraPreviewView(session: viewModel.session, onTap: { devicePoint, layerPoint in
                     viewModel.focus(at: devicePoint)
@@ -175,9 +177,9 @@ struct CameraView: View {
                             .allowsHitTesting(false)
                     }
                 }
-                .aspectRatio(3/4, contentMode: .fit)
+                .aspectRatio(PageCapture.aspectRatio, contentMode: .fit)
                 .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.medium, style: .continuous))
-                .padding(.horizontal, Theme.Spacing.md)
+                .padding(.horizontal, Theme.Spacing.xxs)
 
                 if !viewModel.isCameraReady {
                     ProgressView()
@@ -211,7 +213,7 @@ struct CameraView: View {
             }
 
             Spacer()
-                .frame(height: Theme.Spacing.xxl)
+                .frame(height: Theme.Spacing.md)
         }
     }
 
@@ -399,8 +401,16 @@ struct PhotoPicker: UIViewControllerRepresentable {
             }
 
             provider.loadObject(ofClass: UIImage.self) { [weak self] image, error in
+                guard let picked = image as? UIImage else { return }
+                // Library photos arrive in whatever shape they were shot or
+                // screenshotted in. Cropping to the page format here — off
+                // the main thread, before anything sees it — is what keeps a
+                // picked page the same shape as a captured one. The preview
+                // screen then shows the actual cropped result, so "Use Photo"
+                // never saves something different from what was on screen.
+                let page = PageCapture.normalized(picked)
                 DispatchQueue.main.async {
-                    self?.parent.selectedImage = image as? UIImage
+                    self?.parent.selectedImage = page
                 }
             }
         }

@@ -12,6 +12,22 @@ pages. Journal becomes just the current journal. Books gain rename and
 cover-color customization. The tab bar hides on scroll-down and returns
 on scroll-up on the Library screen.
 
+### Changed — one page format, larger viewfinder
+
+- **Every saved page is now the same shape.** The camera shoots at the
+  `.photo` preset (portrait 3:4), but a library photo arrived as whatever it
+  happened to be — 16:9, square, a tall screenshot — and was saved unchanged,
+  so the journal held pages of several different formats and the grid and
+  viewer framed them inconsistently. Both paths now run through
+  `PageCapture.normalized`, which centre-crops to 3:4. A camera capture is
+  already that shape and passes through untouched.
+  - Centre-crop, not letterbox: bars around a page would read as part of the
+    photo.
+  - The crop happens before the preview screen, so "Use Photo" always saves
+    exactly what was on screen.
+- Viewfinder enlarged: side padding 20pt → 8pt, stack spacing 32pt → 20pt,
+  and the header and footer tightened. All of it goes to the preview.
+
 ### Fixed — journal swiping, close-up capture, and a background-thread write
 
 **Swiping between journal pages.** The fullscreen viewer layers a

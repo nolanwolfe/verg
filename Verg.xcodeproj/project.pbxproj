@@ -20,6 +20,7 @@
 		667CA47039B7D924E46CC693 /* ambient_stream.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 52D18BD1737C0BA640157030 /* ambient_stream.m4a */; };
 		6B7C68B371EBE84982E1B033 /* ambient_earth.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 80E5C6FB39AC9EA3518C0D3B /* ambient_earth.m4a */; };
 		84D808917CA182531D07412E /* AppStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0037D8A48FC68AECADF0E328 /* AppStrings.swift */; };
+		89CFE2F8A3ACB70A9B60AC08 /* PageCaptureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DABEE012D4572BC7AFA1F71 /* PageCaptureTests.swift */; };
 		9362AFD0F21ECF56B7936C4D /* ambient_movement.m4a in Resources */ = {isa = PBXBuildFile; fileRef = BF931F0B81C02B6A9E991A0A /* ambient_movement.m4a */; };
 		95F6805D2F1D205D00B93C28 /* 27421__kerri__zenbell_1.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 95F6805B2F1D205D00B93C28 /* 27421__kerri__zenbell_1.mp3 */; };
 		95F6805E2F1D205D00B93C28 /* 185822__lloydevans09__single-chime.wav in Resources */ = {isa = PBXBuildFile; fileRef = 95F6805C2F1D205D00B93C28 /* 185822__lloydevans09__single-chime.wav */; };
@@ -86,6 +87,7 @@
 		D7B1C5FD6D6E734DD931B22A /* ambient_floating.m4a in Resources */ = {isa = PBXBuildFile; fileRef = FF7A7749761A40116B7282BF /* ambient_floating.m4a */; };
 		DBF85CC00BAB63176ADB9C70 /* ProductIdentifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D95EF34BEA0EECAB4880F8D /* ProductIdentifiers.swift */; };
 		DC83CEA230D1B5AFA07BE16B /* ambient_deep.m4a in Resources */ = {isa = PBXBuildFile; fileRef = FADBFB1EA0CFE9BA340C3877 /* ambient_deep.m4a */; };
+		E6951BF72A20C2C005D2ED6A /* PageCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0A20F00D8D4B1B5CE0E2AA /* PageCapture.swift */; };
 		EBE50F474E89A8361C62810C /* TerraceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACC785888D739156328E98A1 /* TerraceTests.swift */; };
 		F481BCFEB8A889E1905AEDA2 /* TimeReclaimedCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 898AD9244BCD3A4014BB05AC /* TimeReclaimedCardView.swift */; };
 		FDA2A4020948DF89A7806BE7 /* BookLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04EC071F00E1D30084A3F7A3 /* BookLogicTests.swift */; };
@@ -107,6 +109,7 @@
 		213D410F133EC97A9E13BDA3 /* ambient_replenish.m4a */ = {isa = PBXFileReference; includeInIndex = 1; name = ambient_replenish.m4a; path = Sounds/ambient_replenish.m4a; sourceTree = "<group>"; };
 		2B3EA26F8AEF44C05BFDF756 /* TimeReclaimedTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TimeReclaimedTests.swift; path = TimeReclaimedTests.swift; sourceTree = "<group>"; };
 		2FB0870FBFDAE6781C712AC6 /* ambient_storm.m4a */ = {isa = PBXFileReference; includeInIndex = 1; name = ambient_storm.m4a; path = Sounds/ambient_storm.m4a; sourceTree = "<group>"; };
+		3DABEE012D4572BC7AFA1F71 /* PageCaptureTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PageCaptureTests.swift; path = PageCaptureTests.swift; sourceTree = "<group>"; };
 		4C3F6D131429DF832DEC156D /* MilestoneLogicTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MilestoneLogicTests.swift; path = MilestoneLogicTests.swift; sourceTree = "<group>"; };
 		52019627854D25B472BACF07 /* PromptsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptsView.swift; path = Features/Prompts/PromptsView.swift; sourceTree = "<group>"; };
 		52D18BD1737C0BA640157030 /* ambient_stream.m4a */ = {isa = PBXFileReference; includeInIndex = 1; name = ambient_stream.m4a; path = Sounds/ambient_stream.m4a; sourceTree = "<group>"; };
@@ -185,6 +188,7 @@
 		E0E9AAF30597470AE40B5615 /* SessionGatingService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionGatingService.swift; path = Core/Services/SessionGatingService.swift; sourceTree = "<group>"; };
 		F363E01CA80309C00CBFA394 /* SessionGatingServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionGatingServiceTests.swift; path = SessionGatingServiceTests.swift; sourceTree = "<group>"; };
 		FADBFB1EA0CFE9BA340C3877 /* ambient_deep.m4a */ = {isa = PBXFileReference; includeInIndex = 1; name = ambient_deep.m4a; path = Sounds/ambient_deep.m4a; sourceTree = "<group>"; };
+		FD0A20F00D8D4B1B5CE0E2AA /* PageCapture.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PageCapture.swift; path = Core/Constants/PageCapture.swift; sourceTree = "<group>"; };
 		FF7A7749761A40116B7282BF /* ambient_floating.m4a */ = {isa = PBXFileReference; includeInIndex = 1; name = ambient_floating.m4a; path = Sounds/ambient_floating.m4a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -238,6 +242,7 @@
 			children = (
 				0037D8A48FC68AECADF0E328 /* AppStrings.swift */,
 				6D95EF34BEA0EECAB4880F8D /* ProductIdentifiers.swift */,
+				FD0A20F00D8D4B1B5CE0E2AA /* PageCapture.swift */,
 			);
 			name = Constants;
 			sourceTree = "<group>";
@@ -535,6 +540,7 @@
 				5A3B42F81731303223482210 /* CandleRelightTests.swift */,
 				ACC785888D739156328E98A1 /* TerraceTests.swift */,
 				85EC2041E044532B57A5617A /* CandleDaysLitStateTests.swift */,
+				3DABEE012D4572BC7AFA1F71 /* PageCaptureTests.swift */,
 			);
 			name = Tests;
 			path = Tests;
@@ -667,6 +673,7 @@
 				48E41DC190311552932A2598 /* CandleRelightTests.swift in Sources */,
 				EBE50F474E89A8361C62810C /* TerraceTests.swift in Sources */,
 				B8D3EDEFD64E0B0FFDB2309A /* CandleDaysLitStateTests.swift in Sources */,
+				89CFE2F8A3ACB70A9B60AC08 /* PageCaptureTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -731,6 +738,7 @@
 				F481BCFEB8A889E1905AEDA2 /* TimeReclaimedCardView.swift in Sources */,
 				B581A0CAD6F8EC9F16246805 /* WritingPrompt.swift in Sources */,
 				37BC8986C09C76DD05F7410C /* PromptsView.swift in Sources */,
+				E6951BF72A20C2C005D2ED6A /* PageCapture.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
