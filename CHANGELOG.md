@@ -12,6 +12,30 @@ pages. Journal becomes just the current journal. Books gain rename and
 cover-color customization. The tab bar hides on scroll-down and returns
 on scroll-up on the Library screen.
 
+### Changed — paywall headline, feature marks, and the trial
+
+- The headline is now **"On the Verg 🕯️ of ______"**. "Becoming" answered the
+  question for the reader; the blank hands it back, and whatever they fill in
+  is the thing they would be paying for.
+- Subtitle: "Put the phone down. Light the candle. Write the words." Three
+  imperatives, all of them actions, ending on the one that matters.
+- **The three feature marks are one set now.** A filled book stack, a
+  procedural candle flame, and a hairline sliders glyph were three different
+  weights sitting in a column, so the row read as three unrelated marks
+  competing with the words beside them. All three are outlined SF Symbols at
+  `.light`: `books.vertical`, `doc.text` (a page and its lines), and the
+  sliders that were already right.
+- **Yearly leads with the free trial.** It was buried in the same grey as the
+  price. The trial is now gold with a slow sheen travelling across it — a
+  band inside the gradient rather than a shape over the glyphs, so the text
+  never stops being readable, and it holds still under Reduce Motion.
+- The price after the trial ("then $59.99/year") is deliberately kept beside
+  it, quiet. App Review 3.1.2 wants the post-trial price disclosed where the
+  offer is sold, and the "$4.99/mo" on the right of the row is a per-month
+  equivalence, not the amount that leaves the account — remove this line and
+  the real figure appears nowhere on the screen.
+
+
 ### Changed — gold replaces purple
 
 The accent was `#BF5AF2` — Apple's `systemPurple`, stock and unmodified. It

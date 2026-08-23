@@ -112,8 +112,11 @@ enum AppStrings {
 
     // MARK: - Paywall
     enum Paywall {
-        static let title = "On the Verg 🕯️ of Becoming"
-        static let subtitle = "Put the phone down. Light the candle. You owe it to yourself."
+        /// Left unfinished on purpose. "Becoming" answered the question for
+        /// the reader; the blank hands it back — whatever they are on the
+        /// verge of is the thing they'd be paying for.
+        static let title = "On the Verg 🕯️ of ______"
+        static let subtitle = "Put the phone down. Light the candle. Write the words."
         static let ctaTitle = "The Golden Age"
         static let contextSubtitleFormat = "%@ is still here."
         static let footerAssurance = "Writing is free. It always will be."

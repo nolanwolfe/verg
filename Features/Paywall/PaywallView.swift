@@ -250,16 +250,13 @@ struct NativePaywallView: View {
         VStack(spacing: Theme.Spacing.sm) {
             ForEach(viewModel.heroFeatures) { feature in
                 HStack(spacing: Theme.Spacing.xs) {
-                    Group {
-                        if feature.usesCandleMark {
-                            CandleFlameIcon(size: 12)
-                        } else {
-                            Image(systemName: feature.icon)
-                                .font(.system(size: 13))
-                                .foregroundStyle(GoldenPalette.flameGradient)
-                        }
-                    }
-                    .frame(width: 20)
+                    // One weight, one treatment, all three rows. `.light`
+                    // keeps them as quiet as the sliders glyph, which was the
+                    // only one already reading as a hairline mark.
+                    Image(systemName: feature.icon)
+                        .font(.system(size: 15, weight: .light))
+                        .foregroundStyle(GoldenPalette.flameGradient)
+                        .frame(width: 20)
 
                     Text(feature.text)
                         .font(Theme.Typography.subheadline)
@@ -286,6 +283,7 @@ struct NativePaywallView: View {
                 period: "/mo",
                 badge: nil,
                 subtitle: viewModel.yearlySubtitle,
+                trialHeadline: viewModel.yearlyTrialHeadline,
                 isSelected: viewModel.selectedPlan == .yearly,
                 onTap: { viewModel.selectPlan(.yearly) }
             )
@@ -358,6 +356,46 @@ struct NativePaywallView: View {
     }
 }
 
+// MARK: - Shiny Gold Text
+/// Gold lettering with a highlight that travels across it, once every few
+/// seconds — the way light moves over a gilded edge when the page tilts.
+///
+/// The sheen is a bright band inside the gradient rather than a white shape
+/// laid over the glyphs, so the text never brightens as a whole and never
+/// stops being readable. Under Reduce Motion it holds still and simply stays
+/// gold: the point is to catch the eye, not to demand it.
+struct ShinyGoldText: View {
+    let text: String
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var sweep: CGFloat = -1
+
+    init(_ text: String) { self.text = text }
+
+    var body: some View {
+        Text(text)
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundStyle(
+                LinearGradient(
+                    stops: [
+                        .init(color: GoldenPalette.flameBottom, location: 0),
+                        .init(color: Color(hex: "FFE9A8"), location: max(0, sweep)),
+                        .init(color: GoldenPalette.flameBottom, location: 1)
+                    ],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
+            .onAppear {
+                guard !reduceMotion else { return }
+                // A long, unhurried cycle. Anything quicker reads as a
+                // notification badge rather than a material.
+                withAnimation(.easeInOut(duration: 2.2).repeatForever(autoreverses: false).delay(0.4)) {
+                    sweep = 2
+                }
+            }
+    }
+}
+
 /// Individual plan selection card — price appears exactly once, on the
 /// right. Yearly's subtitle carries the trial/full-price disclosure;
 /// Monthly has none, per "shown plainly."
@@ -367,6 +405,10 @@ struct PlanCard: View {
     let period: String
     let badge: String?
     let subtitle: String?
+    /// The free-trial line, when this subscriber can actually have one. Set
+    /// in gold with a slow sheen — it is the single most persuasive thing on
+    /// the screen and was previously buried in the same grey as the price.
+    var trialHeadline: String? = nil
     let isSelected: Bool
     let onTap: () -> Void
 
@@ -390,13 +432,18 @@ struct PlanCard: View {
                         }
                     }
 
-                    if let subtitle {
-                        Text(subtitle)
-                            .font(Theme.Typography.caption)
-                            .foregroundColor(GoldenPalette.secondaryText)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.85)
+                    HStack(spacing: 5) {
+                        if let trialHeadline {
+                            ShinyGoldText(trialHeadline)
+                        }
+                        if let subtitle {
+                            Text(subtitle)
+                                .font(Theme.Typography.caption)
+                                .foregroundColor(GoldenPalette.secondaryText)
+                        }
                     }
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.8)
                 }
 
                 Spacer()

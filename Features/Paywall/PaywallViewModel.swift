@@ -39,13 +39,9 @@ final class PaywallViewModel: ObservableObject {
     // MARK: - Features
     struct Feature: Identifiable {
         let id = UUID()
-        /// SF Symbol name, rendered in the gold gradient. Ignored when
-        /// `emoji` is set.
+        /// SF Symbol name, rendered in the gold gradient at a single light
+        /// weight for every row.
         let icon: String
-        /// Draws the app's own procedural candle flame instead of an SF
-        /// Symbol. An actual 🕯️ emoji can't be tinted, so it clashed with
-        /// the gold glyphs on the other rows; this matches them.
-        var usesCandleMark: Bool = false
         let text: String
     }
 
@@ -53,8 +49,12 @@ final class PaywallViewModel: ObservableObject {
     // per VOICE.md: short declaratives, concrete nouns, no sales pressure.
     // The relight row states the mechanic without gamified framing.
     let heroFeatures: [Feature] = [
-        Feature(icon: "books.vertical.fill", text: "A full collection of your journals. Every page and every book, kept private to you."),
-        Feature(icon: "flame.fill", usesCandleMark: true, text: "Real paper progress of who you're becoming, and insights to prove it."),
+        // All three are line-drawn at the same weight. The filled book stack
+        // and the candle mark were heavier than the sliders beside them, so
+        // the row read as three unrelated marks; outlined, they read as a set
+        // and the eye goes to the words instead of the icons.
+        Feature(icon: "books.vertical", text: "A full collection of your journals. Every page and every book, kept private to you."),
+        Feature(icon: "doc.text", text: "Real paper progress of who you're becoming, and insights to prove it."),
         Feature(icon: "slider.horizontal.3", text: "Customization, ambience, prompts, candle wicks, session length, year-by-year facts.")
     ]
 
@@ -115,13 +115,24 @@ final class PaywallViewModel: ObservableObject {
         yearlyIntroOffer != nil && yearlyIntroEligible
     }
 
-    /// Yearly row's subtitle: the trial disclosure when eligible, or the
-    /// plain per-year price with no trial line when not (e.g. a lapsed
-    /// subscriber) — the price still appears, just not twice on the row,
-    /// since the equivalence on the right is the only other number shown.
+    /// The trial, as the thing the eye should land on. Nil when this
+    /// subscriber can't actually have it, so a lapsed subscriber is never
+    /// shown a free trial they'd be refused at the till.
+    var yearlyTrialHeadline: String? {
+        guard yearlyTrialAvailable, let offer = yearlyIntroOffer else { return nil }
+        return "\(offer) free"
+    }
+
+    /// What they will actually be charged, and when.
+    ///
+    /// This stays on screen even while the trial is the loud part. App Review
+    /// 3.1.2 wants the price after an introductory offer disclosed on the
+    /// screen that sells it, and "$4.99/mo" on the right of the row is a
+    /// per-month equivalence, not the amount that leaves their account. Drop
+    /// this line and the real figure appears nowhere.
     var yearlySubtitle: String {
-        if yearlyTrialAvailable, let offer = yearlyIntroOffer {
-            return "\(offer), then \(yearlyPrice)/year"
+        if yearlyTrialAvailable {
+            return "then \(yearlyPrice)/year"
         }
         return "\(yearlyPrice)/year"
     }
