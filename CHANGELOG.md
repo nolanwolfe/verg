@@ -50,6 +50,21 @@ wide, and opts in to automatic lens switching.
   paths now balance `beginConfiguration()` — they returned without
   committing, leaving the session wedged mid-configuration.
 - The torch is extinguished when the camera closes.
+- **Regression fix (same batch):** the first pass balanced
+  `beginConfiguration()` with a function-level `defer`, which fires on
+  *return* — after `startRunning()`. A session started while still inside a
+  configuration block never comes up, so the camera opened to nothing. The
+  configuration is now its own scope that commits before anything starts it.
+- Photo dimensions are chosen after the commit, from the format that is
+  actually active. Committing the preset can change the active format, and
+  AVFoundation raises on an unsupported `maxPhotoDimensions` rather than
+  clamping it.
+- Every `unlockForConfiguration()` now sits inside its successful `do`.
+  Unlocking a device that was never locked is itself a crash, and two paths
+  used `try?` and then unlocked unconditionally.
+- Capture and re-entry: `capturePhoto()` runs on the session queue like every
+  other call touching the output, and reopening the screen resumes the
+  existing session instead of rebuilding it.
 
 **Other**
 

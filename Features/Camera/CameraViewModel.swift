@@ -119,52 +119,29 @@ final class CameraViewModel: NSObject, ObservableObject {
     /// its caller for a noticeable beat — this used to run on the main thread,
     /// stalling the UI between the timer ending and the camera appearing.
     private func configureSessionOnQueue() {
+        // Already built (the screen was reopened) — just resume.
+        guard session.inputs.isEmpty else {
+            startRunningIfNeeded()
+            return
+        }
+
         guard let camera = bestAvailableCamera() else {
-            DispatchQueue.main.async { [weak self] in
-                self?.errorMessage = "Unable to access camera"
-                self?.showError = true
-            }
+            reportSetupFailure("Unable to access camera")
             return
         }
 
         currentDevice = camera
 
-        session.beginConfiguration()
-        // Every exit from here on must balance this, or the session is left
-        // mid-configuration and silently never starts. The two early returns
-        // below used to do exactly that.
-        defer { session.commitConfiguration() }
-
-        session.sessionPreset = .photo
-
-        do {
-            let input = try AVCaptureDeviceInput(device: camera)
-            guard session.canAddInput(input) else {
-                DispatchQueue.main.async { [weak self] in
-                    self?.errorMessage = "Unable to configure camera"
-                    self?.showError = true
-                }
-                return
-            }
-            session.addInput(input)
-        } catch {
-            DispatchQueue.main.async { [weak self] in
-                self?.errorMessage = "Unable to configure camera: \(error.localizedDescription)"
-                self?.showError = true
-            }
-            return
-        }
-
-        if session.canAddOutput(photoOutput) {
-            session.addOutput(photoOutput)
-            photoOutput.maxPhotoQualityPrioritization = .quality
-            if let maxDimensions = camera.activeFormat.supportedMaxPhotoDimensions
-                .max(by: { $0.width * $0.height < $1.width * $1.height }) {
-                photoOutput.maxPhotoDimensions = maxDimensions
-            }
-        }
+        // The configuration block is deliberately its own scope, so
+        // `commitConfiguration()` has definitely run before anything below
+        // touches the session. A `defer` at function level would not have:
+        // it fires on return, which is *after* `startRunning()`, and a
+        // session started while still mid-configuration never comes up.
+        let configured = applyConfiguration(for: camera)
+        guard configured else { return }
 
         configureDevice(camera)
+        publishCapabilities(for: camera)
 
         NotificationCenter.default.addObserver(
             self,
@@ -173,6 +150,71 @@ final class CameraViewModel: NSObject, ObservableObject {
             object: camera
         )
 
+        startRunningIfNeeded()
+    }
+
+    /// Inputs, output, preset. Returns false (having reported the reason) if
+    /// the session could not be built. Balances begin/commit on every path.
+    private func applyConfiguration(for camera: AVCaptureDevice) -> Bool {
+        session.beginConfiguration()
+        session.sessionPreset = .photo
+
+        let input: AVCaptureDeviceInput
+        do {
+            input = try AVCaptureDeviceInput(device: camera)
+        } catch {
+            session.commitConfiguration()
+            reportSetupFailure("Unable to configure camera: \(error.localizedDescription)")
+            return false
+        }
+
+        guard session.canAddInput(input) else {
+            session.commitConfiguration()
+            reportSetupFailure("Unable to configure camera")
+            return false
+        }
+        session.addInput(input)
+
+        if session.canAddOutput(photoOutput) {
+            session.addOutput(photoOutput)
+            photoOutput.maxPhotoQualityPrioritization = .quality
+        }
+
+        session.commitConfiguration()
+
+        // Photo dimensions are chosen *after* the commit, from the format that
+        // is actually active. Committing the preset can change the device's
+        // active format, so a size read beforehand may not be one the final
+        // format accepts — and AVFoundation raises on an unsupported value
+        // rather than clamping it, which takes the whole app down.
+        if let maxDimensions = camera.activeFormat.supportedMaxPhotoDimensions
+            .max(by: { $0.width * $0.height < $1.width * $1.height }) {
+            session.beginConfiguration()
+            photoOutput.maxPhotoDimensions = maxDimensions
+            session.commitConfiguration()
+        }
+
+        return true
+    }
+
+    private func startRunningIfNeeded() {
+        if !session.isRunning {
+            session.startRunning()
+        }
+        DispatchQueue.main.async { [weak self] in
+            self?.isCameraReady = true
+        }
+    }
+
+    private func reportSetupFailure(_ message: String) {
+        DispatchQueue.main.async { [weak self] in
+            self?.errorMessage = message
+            self?.showError = true
+        }
+    }
+
+    /// Zoom range, macro availability, torch — published for the controls.
+    private func publishCapabilities(for camera: AVCaptureDevice) {
         let hasMacro = camera.constituentDevices.contains { $0.deviceType == .builtInUltraWideCamera }
         let zooms = zoomOptions(for: camera)
 
@@ -180,23 +222,25 @@ final class CameraViewModel: NSObject, ObservableObject {
         // zoom factor of 1.0 selects the *ultra-wide*, so leaving the default
         // alone would greet the user with a distorted, far-too-wide frame and
         // call it 1x. The wide lens sits at the first switch-over factor.
-        let initialZoom = hasMacro ? (zooms.dropFirst().first ?? 1) : 1
-        if initialZoom != 1 {
-            try? camera.lockForConfiguration()
-            camera.videoZoomFactor = initialZoom
-            camera.unlockForConfiguration()
+        var initialZoom: CGFloat = 1
+        if hasMacro, let wideSwitch = zooms.dropFirst().first {
+            do {
+                try camera.lockForConfiguration()
+                camera.videoZoomFactor = wideSwitch
+                camera.unlockForConfiguration()
+                initialZoom = wideSwitch
+            } catch {
+                // Unlocking a device we never locked is itself a crash, so
+                // the unlock stays inside the successful branch.
+            }
         }
 
+        let resolvedZoom = initialZoom
         DispatchQueue.main.async { [weak self] in
             self?.supportsMacro = hasMacro
             self?.zoomOptions = zooms
-            self?.zoomFactor = initialZoom
+            self?.zoomFactor = resolvedZoom
             self?.hasFlash = camera.hasTorch
-        }
-
-        session.startRunning()
-        DispatchQueue.main.async { [weak self] in
-            self?.isCameraReady = true
         }
     }
 
@@ -287,13 +331,18 @@ final class CameraViewModel: NSObject, ObservableObject {
     // MARK: - Actions
     func capturePhoto() {
         guard isCameraReady else { return }
-
-        let settings = AVCapturePhotoSettings()
-        settings.maxPhotoDimensions = photoOutput.maxPhotoDimensions
-        settings.photoQualityPrioritization = .quality
-
         audioService.playImpact(.medium)
-        photoOutput.capturePhoto(with: settings, delegate: self)
+
+        // On the session queue, like every other call that touches the
+        // output — and so `maxPhotoDimensions` is read after any in-flight
+        // configuration has finished rather than racing it.
+        sessionQueue.async { [weak self] in
+            guard let self, self.session.isRunning else { return }
+            let settings = AVCapturePhotoSettings()
+            settings.maxPhotoDimensions = self.photoOutput.maxPhotoDimensions
+            settings.photoQualityPrioritization = .quality
+            self.photoOutput.capturePhoto(with: settings, delegate: self)
+        }
     }
 
     func retakePhoto() {
@@ -345,9 +394,15 @@ final class CameraViewModel: NSObject, ObservableObject {
             guard let self else { return }
             // Leaving the torch burning would keep it lit behind the app.
             if let camera = self.currentDevice, camera.hasTorch, camera.isTorchActive {
-                try? camera.lockForConfiguration()
-                camera.torchMode = .off
-                camera.unlockForConfiguration()
+                // unlockForConfiguration() without a matching successful lock
+                // is itself a crash, so it stays inside the `do`.
+                do {
+                    try camera.lockForConfiguration()
+                    camera.torchMode = .off
+                    camera.unlockForConfiguration()
+                } catch {
+                    // Best-effort
+                }
             }
             self.session.stopRunning()
             DispatchQueue.main.async { self.isTorchOn = false }
