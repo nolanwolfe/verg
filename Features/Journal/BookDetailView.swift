@@ -10,7 +10,6 @@ struct BookDetailView: View {
     @State private var selectedIndex = 0
     @State private var showDeleteConfirmation = false
     @State private var showPaywall = false
-    @State private var paywallContext: Date?
     @State private var showCustomize = false
 
     private let gatingService = SessionGatingService.shared
@@ -73,7 +72,7 @@ struct BookDetailView: View {
                             showFullScreen = true
                         },
                         isLocked: { !gatingService.canViewPage(dated: $0.date) },
-                        onLockedTap: { session in paywallContext = session.date },
+                        onLockedTap: { _ in showPaywall = true },
                         emptyStateMessage: "This book has no pages."
                     )
                 }
@@ -120,7 +119,7 @@ struct BookDetailView: View {
             )
         }
         .fullScreenCover(isPresented: $showPaywall) {
-            PaywallView(lockedPageDate: paywallContext)
+            PaywallView()
                 .environmentObject(PurchaseService.shared)
         }
         .sheet(isPresented: $showCustomize) {

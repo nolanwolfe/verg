@@ -32,14 +32,7 @@ struct TimerView: View {
             GeometryReader { geo in
                 CandleView(
                     progress: viewModel.progress,
-                    // Deliberately not `viewModel.isRunning`: CandleView
-                    // removes its flame/glow from the layout entirely when
-                    // not burning (see CandleView.body), which changes its
-                    // rendered height — since it's centered here via
-                    // `.position()`, that shift made the whole candle visibly
-                    // jump on pause. Pausing isn't blowing the candle out, so
-                    // it should still read as lit; only real completion should.
-                    isBurning: !viewModel.isComplete
+                    isBurning: viewModel.isRunning
                 )
                 .scaleEffect(1.3)
                 .shadow(
@@ -58,7 +51,7 @@ struct TimerView: View {
             }
 
             // Warm flash when candle extinguishes
-            Color(hex: "A44A32")
+            Color(hex: "FF6000")
                 .opacity(completionFlash)
                 .ignoresSafeArea()
                 .allowsHitTesting(false)
@@ -290,29 +283,27 @@ struct TimerView: View {
             ZStack {
                 Theme.Colors.background.ignoresSafeArea()
 
-                ScrollView {
-                    VStack(spacing: Theme.Spacing.sm) {
-                        Button {
-                            viewModel.setAmbienceEnabled(false)
-                        } label: {
-                            ambienceRow(icon: "speaker.slash", iconColor: Theme.Colors.secondaryText, title: "Off", isSelected: !viewModel.ambientSoundEnabled)
-                        }
+                VStack(spacing: Theme.Spacing.sm) {
+                    Button {
+                        viewModel.setAmbienceEnabled(false)
+                    } label: {
+                        ambienceRow(icon: "speaker.slash", iconColor: Theme.Colors.secondaryText, title: "Off", isSelected: !viewModel.ambientSoundEnabled)
+                    }
 
-                        ForEach(AudioService.AmbientSound.allCases) { sound in
-                            Button {
-                                viewModel.selectAmbientSound(sound)
-                            } label: {
-                                ambienceRow(
-                                    icon: sound.icon,
-                                    iconColor: Theme.Colors.flameOuter,
-                                    title: sound.displayName,
-                                    isSelected: viewModel.ambientSoundEnabled && viewModel.ambientSoundID == sound.rawValue
-                                )
-                            }
+                    ForEach(AudioService.AmbientSound.allCases) { sound in
+                        Button {
+                            viewModel.selectAmbientSound(sound)
+                        } label: {
+                            ambienceRow(
+                                icon: sound.icon,
+                                iconColor: Theme.Colors.flameOuter,
+                                title: sound.displayName,
+                                isSelected: viewModel.ambientSoundEnabled && viewModel.ambientSoundID == sound.rawValue
+                            )
                         }
                     }
-                    .padding(Theme.Spacing.md)
                 }
+                .padding(Theme.Spacing.md)
             }
             .navigationTitle("Ambience")
             .navigationBarTitleDisplayMode(.inline)
@@ -323,7 +314,7 @@ struct TimerView: View {
                 }
             }
         }
-        .presentationDetents([.medium, .large])
+        .presentationDetents([.medium])
     }
 
     private func ambienceRow(icon: String, iconColor: Color, title: String, isSelected: Bool) -> some View {
@@ -351,9 +342,9 @@ struct TimerView: View {
         ZStack {
             RadialGradient(
                 colors: [
-                    Color(hex: "A44A32").opacity((0.30 + glowPulse * 0.04) * viewModel.progress),
-                    Color(hex: "8E3F2B").opacity((0.22 + glowPulse * 0.02) * viewModel.progress),
-                    Color(hex: "8E3F2B").opacity(0.10 * viewModel.progress),
+                    Color(hex: "FF7000").opacity((0.30 + glowPulse * 0.04) * viewModel.progress),
+                    Color(hex: "FF5500").opacity((0.22 + glowPulse * 0.02) * viewModel.progress),
+                    Color(hex: "FF3300").opacity(0.10 * viewModel.progress),
                     Color.clear
                 ],
                 center: UnitPoint(x: 0.5, y: 0.44),
@@ -363,7 +354,7 @@ struct TimerView: View {
             .ignoresSafeArea()
 
             LinearGradient(
-                colors: [Color.clear, Color(hex: "A44A32").opacity(0.10 * viewModel.progress)],
+                colors: [Color.clear, Color(hex: "FF6000").opacity(0.10 * viewModel.progress)],
                 startPoint: .center,
                 endPoint: .bottom
             )

@@ -16,7 +16,7 @@ struct StatsView: View {
 
     /// Free per the business model: the ritual, days lit, and the
     /// calendar. Everything else in Stats (page count, longest run, Time
-    /// Reclaimed, weekly goal, milestones) is The Golden Age.
+    /// Reclaimed, weekly goal, milestones) is Ascent.
     private var isStatsLocked: Bool { !gatingService.isPremium }
 
     var body: some View {
@@ -86,7 +86,7 @@ struct StatsView: View {
         RadialGradient(
             colors: [
                 Theme.Colors.flameOuter.opacity(0.10),
-                Color(hex: "A44A32").opacity(0.04),
+                Color(hex: "FF7000").opacity(0.04),
                 Color.clear
             ],
             center: UnitPoint(x: 0.5, y: 0),
@@ -195,7 +195,7 @@ struct StatsView: View {
                             Image(systemName: "lock.fill")
                                 .font(.system(size: 20))
                                 .foregroundColor(Theme.Colors.primaryText)
-                            Text("Included with The Golden Age.")
+                            Text("Included with The Ascent.")
                                 .font(Theme.Typography.caption)
                                 .foregroundColor(Theme.Colors.primaryText)
                         }

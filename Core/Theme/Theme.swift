@@ -6,42 +6,33 @@ import SwiftUI
 enum Theme {
 
     // MARK: - Colors
-    /// The palette: blackened room → red pigment → aged ivory → muted gold.
-    /// Ancient, warm, literary, Roman — four colors, no more.
     enum Colors {
-        /// #171513 — primary background
-        static let background = Color(hex: "171513")
-        /// Elevated surfaces sit one step above the room
-        static let cardBackground = Color(hex: "221F1C")
-        /// #E7E0D2 — primary text / light elements
-        static let primaryText = Color(hex: "E7E0D2")
-        static let secondaryText = Color(hex: "E7E0D2").opacity(0.5)
-        /// #A44A32 — red pigment / Roman terracotta, primary accent
-        static let accent = Color(hex: "A44A32")
-        /// #B08A52 — muted gold, subtle secondary accent
-        static let gold = Color(hex: "B08A52")
+        static let background = Color(hex: "000000")
+        static let cardBackground = Color(hex: "1C1C1E")
+        static let primaryText = Color(hex: "FFFFFF")
+        static let secondaryText = Color(hex: "8E8E93")
+        static let accent = Color(hex: "BF5AF2")
 
         static let accentGradient = LinearGradient(
-            colors: [Color(hex: "A44A32"), Color(hex: "8E3F2B")],
+            colors: [Color(hex: "F7F1E2"), Color(hex: "F7F1E2")],
             startPoint: .leading,
             endPoint: .trailing
         )
 
         static let accentGradientVertical = LinearGradient(
-            colors: [Color(hex: "A44A32"), Color(hex: "8E3F2B")],
+            colors: [Color(hex: "F7F1E2"), Color(hex: "F7F1E2")],
             startPoint: .top,
             endPoint: .bottom
         )
 
-        // Candle colors — warm ivory wax, ember flame drawn from the
-        // terracotta/gold pair rather than pure orange
-        static let candleWax = Color(hex: "E7E0D2")
-        static let candleWaxDark = Color(hex: "C9BFA9")
-        static let flameOuter = Color(hex: "A44A32")
-        static let flameInner = Color(hex: "B08A52")
-        static let flameCore = Color(hex: "E7E0D2")
-        static let wickColor = Color(hex: "171513")
-        static let glowColor = Color(hex: "A44A32").opacity(0.3)
+        // Candle colors
+        static let candleWax = Color(hex: "FFF8E7")
+        static let candleWaxDark = Color(hex: "E8DCC8")
+        static let flameOuter = Color(hex: "FF9500")
+        static let flameInner = Color(hex: "FFCC00")
+        static let flameCore = Color(hex: "FFFFFF")
+        static let wickColor = Color(hex: "2C2C2E")
+        static let glowColor = Color(hex: "FF9500").opacity(0.3)
     }
 
     // MARK: - Typography
