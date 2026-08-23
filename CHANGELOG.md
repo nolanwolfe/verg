@@ -12,6 +12,16 @@ pages. Journal becomes just the current journal. Books gain rename and
 cover-color customization. The tab bar hides on scroll-down and returns
 on scroll-up on the Library screen.
 
+### Changed — a book's date and note sit together
+
+Inside a book, the date range and the note were flung to opposite screen
+margins by a `Spacer`, which read as two unrelated labels pinned to the
+edges. They are one centred unit now, separated by a hairline, landing over
+the seams between the three columns of pages below rather than outside them.
+The header also takes the grid's own gutter, so it sits inside the page block
+instead of in a wider margin of its own.
+
+
 ### Changed — every tab follows Appearance; Verg lights up
 
 - **Verg and Write follow the setting now**, like the rest of the app. Only

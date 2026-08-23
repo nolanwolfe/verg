@@ -32,9 +32,14 @@ struct BookDetailView: View {
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
-                    // Book info
-                    HStack(alignment: .top) {
-                        VStack(alignment: .leading, spacing: 2) {
+                    // Book info — one centred unit, not two things flung to
+                    // opposite margins. Pushed apart by a Spacer they read as
+                    // unrelated labels pinned to the screen edges; grouped in
+                    // the middle they read as a caption belonging to the grid
+                    // of pages under them, and they land over the seams
+                    // between its three columns rather than outside it.
+                    HStack(alignment: .center, spacing: Theme.Spacing.sm) {
+                        VStack(alignment: .trailing, spacing: 1) {
                             Text(book.formattedDateRange)
                                 .font(Theme.Typography.caption)
                                 .foregroundColor(Theme.Colors.secondaryText)
@@ -43,7 +48,10 @@ struct BookDetailView: View {
                                 .foregroundColor(Theme.Colors.secondaryText.opacity(0.7))
                         }
 
-                        Spacer()
+                        // Hairline between the fact and the feeling.
+                        Rectangle()
+                            .fill(Theme.Colors.hairline)
+                            .frame(width: 1, height: 22)
 
                         // A little subtitle/memory the user can write about
                         // this book — tapping it (or "+ Add a note") opens
@@ -61,13 +69,16 @@ struct BookDetailView: View {
                                 }
                             }
                             .font(.system(size: 12, design: .serif).italic())
-                            .multilineTextAlignment(.trailing)
+                            .multilineTextAlignment(.leading)
                             .lineLimit(2)
+                            .fixedSize(horizontal: false, vertical: true)
                         }
                         .buttonStyle(.plain)
-                        .frame(maxWidth: 170, alignment: .trailing)
+                        .frame(maxWidth: 170, alignment: .leading)
                     }
-                    .padding(.horizontal, Theme.Spacing.md)
+                    // Same gutter as the grid below, so the unit sits inside
+                    // the page block rather than in its own wider margin.
+                    .padding(.horizontal, Theme.Spacing.sm)
                     .padding(.vertical, Theme.Spacing.xs)
 
                     PageGridView(
