@@ -12,6 +12,43 @@ pages. Journal becomes just the current journal. Books gain rename and
 cover-color customization. The tab bar hides on scroll-down and returns
 on scroll-up on the Library screen.
 
+### Changed — gold replaces purple
+
+The accent was `#BF5AF2` — Apple's `systemPurple`, stock and unmodified. It
+read as a default rather than a decision, and it was the coolest hue
+available on an app built around candlelight: every screen had a warm centre
+and a cool frame. It is now gold, `#D4AF37`, which belongs to the flame
+without competing with it and was already half-present in the achievement
+stars and The Golden Age — so the paid tier's colour is the product's colour.
+
+Gold reads expensive as a line and cheap as a slab, so it is kept to icons,
+rules, small type, and thin strokes. Large fills stay cream: the Begin
+Writing button is unchanged, only its glow is now warm instead of violet.
+
+Deliberately *not* gold:
+
+- **The days-lit heatmap keeps GitHub's greens.** The ramp is instantly
+  legible and universally understood, and that grid's whole job is density
+  at a glance.
+- **Switches tint Apple's system blue.** A toggle is a system affordance;
+  people read blue as "on" without being taught, and a gold switch reads as
+  decoration rather than state.
+- **Settings keeps its multicoloured row icons** in the iOS Settings idiom —
+  blue clock, orange speaker, red bell, green restore, and so on. The rows
+  that were purple moved onto that set rather than to gold. The one
+  exception is The Golden Age's laurel, which is gold because it is the
+  emblem of the thing it names.
+
+### Added — the full spectrum of book covers
+
+Cover colours went from seven browns to twenty-one: the original bindings
+first (so every book already on a shelf keeps exactly the cover it had),
+then the full spectrum, then two neutrals. Each is mid-saturation rather
+than a pure hue — covers render as a gradient down to 35% opacity on black,
+and neon reads as plastic at that treatment. The picker is a wrapping grid
+now; a single row of twenty-one swatches would have run off the screen.
+
+
 ### Fixed — page viewer stability, brightness ownership; tab bar hover returns
 
 **The page viewer no longer fights itself.** `updateUIView` runs on every

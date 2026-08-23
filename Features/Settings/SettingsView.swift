@@ -112,7 +112,7 @@ struct SettingsView: View {
         SettingsSection(title: "Candle") {
             SettingsRow(
                 icon: "clock",
-                iconColor: Theme.Colors.accent,
+                iconColor: .blue,
                 title: "Duration",
                 value: viewModel.formattedDuration,
                 action: {
@@ -134,7 +134,7 @@ struct SettingsView: View {
 
             SettingsRow(
                 icon: "music.note",
-                iconColor: .purple,
+                iconColor: .pink,
                 title: isPremium ? "Ambience" : "Ambience  🔒",
                 value: viewModel.ambienceLabel,
                 action: {
@@ -185,7 +185,7 @@ struct SettingsView: View {
 
             SettingsToggleRow(
                 icon: "hourglass",
-                iconColor: Theme.Colors.accent,
+                iconColor: .indigo,
                 title: "Weekly Recap",
                 isOn: $viewModel.weeklySummaryNotificationsEnabled
             )
@@ -231,7 +231,7 @@ struct SettingsView: View {
 
             SettingsButtonRow(
                 icon: "gift",
-                iconColor: .purple,
+                iconColor: .pink,
                 title: purchaseService.isFriendsAndFamily ? "Friends & Family Access Active" : "Redeem Access Code",
                 action: {
                     guard !purchaseService.isFriendsAndFamily else { return }
@@ -248,7 +248,7 @@ struct SettingsView: View {
         SettingsSection(title: "Guide") {
             SettingsButtonRow(
                 icon: "book",
-                iconColor: Theme.Colors.accent,
+                iconColor: .indigo,
                 title: "How to write with Verg 🕯️",
                 action: {
                     AudioService.shared.playUITick()
@@ -260,7 +260,7 @@ struct SettingsView: View {
 
             SettingsButtonRow(
                 icon: "text.quote",
-                iconColor: Theme.Colors.accent,
+                iconColor: .teal,
                 title: "The Oracle",
                 action: {
                     AudioService.shared.playUITick()
@@ -331,7 +331,7 @@ struct SettingsView: View {
         SettingsSection(title: "Debug") {
             SettingsButtonRow(
                 icon: "creditcard",
-                iconColor: .purple,
+                iconColor: .indigo,
                 title: "Test Paywall",
                 action: { viewModel.showPaywall = true }
             )
@@ -668,7 +668,7 @@ struct SettingsToggleRow: View {
             Spacer()
 
             Toggle("", isOn: $isOn)
-                .tint(Theme.Colors.accent)
+                .tint(Theme.Colors.toggleTint)
                 // Every switch ticks. Haptic always; the sound follows the
                 // Sound setting, which this row may itself be flipping — so
                 // turning sound off is silent and turning it on is not.
@@ -708,7 +708,7 @@ struct SettingsSwitchButtonRow: View {
                 Spacer()
 
                 Capsule()
-                    .fill(isOn ? Theme.Colors.accent : Color(.systemGray5))
+                    .fill(isOn ? Theme.Colors.toggleTint : Color(.systemGray5))
                     .frame(width: 51, height: 31)
                     .overlay(
                         Circle()

@@ -11,7 +11,28 @@ enum Theme {
         static let cardBackground = Color(hex: "1C1C1E")
         static let primaryText = Color(hex: "FFFFFF")
         static let secondaryText = Color(hex: "8E8E93")
-        static let accent = Color(hex: "BF5AF2")
+
+        /// Gold. Replaces the old `systemPurple`, which was Apple's stock
+        /// value unmodified and sat cold against a candlelit app — every
+        /// screen had a warm centre and a cool frame. Gold belongs to the
+        /// flame without competing with it, and it was already half-present
+        /// in the achievement stars and The Golden Age, so the paid tier's
+        /// colour is now the product's colour.
+        ///
+        /// Reads expensive as a line and cheap as a slab: keep it to icons,
+        /// rules, small type, and thin strokes. Large fills stay cream.
+        static let accent = Color(hex: "D4AF37")
+        /// Lifted gold for text on the accent, and for the brighter stop of
+        /// a gradient.
+        static let accentLight = Color(hex: "F2E3A6")
+        /// Recessed gold for gradient bottoms and pressed states.
+        static let accentDeep = Color(hex: "8A6D1E")
+
+        /// Switches only. Deliberately Apple's system blue rather than the
+        /// app accent: a toggle is a system affordance, and people read blue
+        /// as "on" without being taught. Gold switches also read as
+        /// decoration rather than state.
+        static let toggleTint = Color.blue
 
         static let accentGradient = LinearGradient(
             colors: [Color(hex: "F7F1E2"), Color(hex: "F7F1E2")],

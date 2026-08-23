@@ -152,17 +152,42 @@ struct BookDetailView: View {
 struct BookCoverView: View {
     let book: Book
 
-    /// Cover color presets, indexed by book.colorIndex. Entry 0 is the
-    /// original warm leather; the rest are user-selectable in
-    /// BookCustomizeView.
+    /// Cover color presets, indexed by book.colorIndex.
+    ///
+    /// Order is load-bearing: entry 0 is the original warm leather and the
+    /// next six are the muted bindings that shipped first, so every book
+    /// already on someone's shelf keeps exactly the cover it had. The full
+    /// spectrum is appended after them — a shelf should look like a shelf,
+    /// and that means the person choosing gets real colors, not six browns.
+    ///
+    /// Each is a mid-saturation value rather than a pure hue: covers render
+    /// as a gradient down to 35% opacity on black, and neon reads as plastic
+    /// at that treatment.
     static let palette: [Color] = [
+        // Original bindings
         Color(hex: "8B3A0F"), // leather (default)
         Color(hex: "6B4A1F"), // walnut
         Color(hex: "7A2E3D"), // oxblood
         Color(hex: "3E5641"), // forest
         Color(hex: "44415C"), // indigo
         Color(hex: "2E2E30"), // charcoal
-        Color(hex: "8A6D3B")  // gold-leaf tan
+        Color(hex: "8A6D3B"), // gold-leaf tan
+        // Spectrum
+        Color(hex: "C0392B"), // red
+        Color(hex: "D35400"), // orange
+        Color(hex: "E0A81C"), // amber
+        Color(hex: "7A9A2E"), // olive
+        Color(hex: "2E8B57"), // green
+        Color(hex: "14837B"), // teal
+        Color(hex: "1B7FA8"), // cyan
+        Color(hex: "2C5FA8"), // blue
+        Color(hex: "5B4BA8"), // violet
+        Color(hex: "7B3FA0"), // purple
+        Color(hex: "A8317E"), // magenta
+        Color(hex: "C0396B"), // rose
+        // Neutrals
+        Color(hex: "55606B"), // slate
+        Color(hex: "B9AFA0")  // bone
     ]
 
     var coverColor: Color {
@@ -294,9 +319,17 @@ struct BookCustomizeView: View {
                             .font(.system(size: 11, weight: .semibold))
                             .foregroundColor(Theme.Colors.secondaryText)
 
-                        HStack(spacing: Theme.Spacing.sm) {
+                        // A wrapping grid, not a row: the palette is the full
+                        // spectrum now and a single HStack would run off the
+                        // side of the screen. The cell is 44pt so the whole
+                        // swatch is a comfortable target.
+                        LazyVGrid(
+                            columns: [GridItem(.adaptive(minimum: 44), spacing: Theme.Spacing.xs)],
+                            spacing: Theme.Spacing.xs
+                        ) {
                             ForEach(BookCoverView.palette.indices, id: \.self) { index in
                                 Button {
+                                    AudioService.shared.playUITick()
                                     colorIndex = index
                                     viewModel.setBookColor(book, colorIndex: index)
                                     book.colorIndex = index
@@ -304,7 +337,7 @@ struct BookCustomizeView: View {
                                     ZStack {
                                         Circle()
                                             .fill(BookCoverView.palette[index])
-                                            .frame(width: 36, height: 36)
+                                            .frame(width: 34, height: 34)
                                             .overlay(
                                                 Circle().strokeBorder(Color.white.opacity(0.15), lineWidth: 1)
                                             )
@@ -312,11 +345,13 @@ struct BookCustomizeView: View {
                                         if colorIndex == index {
                                             Circle()
                                                 .strokeBorder(Theme.Colors.accent, lineWidth: 2)
-                                                .frame(width: 44, height: 44)
+                                                .frame(width: 43, height: 43)
                                         }
                                     }
+                                    .frame(width: 44, height: 44)
                                 }
                                 .buttonStyle(.plain)
+                                .accessibilityLabel("Cover color \(index + 1) of \(BookCoverView.palette.count)")
                             }
                         }
                     }
