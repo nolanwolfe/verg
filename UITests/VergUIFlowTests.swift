@@ -278,6 +278,34 @@ final class VergUIFlowTests: XCTestCase {
                       "The paywall did not open")
     }
 
+    // MARK: - The timer
+    //
+    // Its ground, countdown and control scrims all became theme-aware, and
+    // none of that had been seen — the screen is a full-screen cover behind a
+    // running session.
+
+    func testTimerRendersInLight() { timerScreen(appearance: "light") }
+    func testTimerRendersInDark() { timerScreen(appearance: "dark") }
+
+    private func timerScreen(appearance: String) {
+        let app = launch(appearance: appearance, seeded: true)
+        open(app, tab: "write")
+
+        let begin = app.buttons["Begin Writing"]
+        XCTAssertTrue(begin.waitForExistence(timeout: 5), "Write has no Begin Writing button")
+        begin.tap()
+        settle(1.6)
+        shoot(app, "\(appearance)-timer")
+
+        // The countdown is the proof it started, and it must be legible —
+        // it was plain white until the timer learned about light mode.
+        let countdown = app.staticTexts.matching(
+            NSPredicate(format: "label MATCHES %@", "^[0-9]{1,2}:[0-9]{2}$")
+        ).firstMatch
+        XCTAssertTrue(countdown.waitForExistence(timeout: 5),
+                      "The timer screen shows no countdown")
+    }
+
     // MARK: - Sound is one switch in two places
 
     /// Flipping Sound on Write has to move the Sound row in Settings. They
@@ -288,13 +316,16 @@ final class VergUIFlowTests: XCTestCase {
 
         let pill = app.buttons.containing(.staticText, identifier: "Sound").firstMatch
         XCTAssertTrue(pill.waitForExistence(timeout: 5))
+        shoot(app, "sound-before-tap")
         pill.tap()   // turn Sound off
+        settle()
+        shoot(app, "sound-after-tap")
 
         open(app, tab: "settings")
-        let toggle = app.switches.firstMatch
+        let toggle = app.switches["settings.toggle.Sound"]
         XCTAssertTrue(toggle.waitForExistence(timeout: 5), "Settings has no Sound switch")
+        shoot(app, "sound-settings-row")
         XCTAssertEqual(toggle.value as? String, "0",
                        "Turning Sound off on Write left the Settings switch on")
-        shoot(app, "sound-synced-off")
     }
 }
