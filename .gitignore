@@ -27,4 +27,9 @@ fastlane/test_output
 
 # StoreKit config files can be tracked if you want; comment out if needed
 # **/*.storekit
-verg.app/download/
+# Sound source files — 35MB of MP3/WAV/CAF masters at the repo root, kept
+# out of the repo by "Keep sound source MP3s out of the repo". Anchored with
+# a leading slash so it means *this* folder and nothing else: written bare as
+# `download/` it also matched verg.app/download/, which silently excluded the
+# website's own download page from the build.
+/download/
