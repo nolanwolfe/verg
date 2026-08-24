@@ -19,10 +19,15 @@ final class VergUIFlowTests: XCTestCase {
 
     // MARK: - Launch
 
-    private func launch(appearance: String, seeded: Bool = false) -> XCUIApplication {
+    private func launch(
+        appearance: String,
+        seeded: Bool = false,
+        onboarding: Bool = false
+    ) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-VergUITest", "-VergAppearance", appearance]
         if seeded { app.launchArguments.append("-VergSeedData") }
+        if onboarding { app.launchArguments.append("-VergOnboarding") }
         app.launch()
         return app
     }
@@ -278,6 +283,46 @@ final class VergUIFlowTests: XCTestCase {
                       "The paywall did not open")
     }
 
+    // MARK: - Onboarding
+    //
+    // Six screens a person sees exactly once, which is also how often they
+    // get looked at. Every line of copy on them changed during 2.2.
+
+    func testOnboardingWalksAllSixScreens() {
+        let app = launch(appearance: "light", onboarding: true)
+
+        let cont = app.buttons["Continue"]
+        XCTAssertTrue(cont.waitForExistence(timeout: 10), "Onboarding never appeared")
+
+        // Screen 1 is the epigraph.
+        XCTAssertTrue(app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS 'Dante to Virgil'")
+        ).firstMatch.exists, "The epigraph screen did not render")
+        shoot(app, "onboarding-1-epigraph")
+
+        for step in 2...6 {
+            guard cont.waitForExistence(timeout: 5) else { break }
+            cont.tap()
+            settle(0.7)
+            shoot(app, "onboarding-\(step)")
+        }
+
+        // The last screen carries the rating note; then Continue leaves.
+        XCTAssertTrue(app.staticTexts["One more thing."].exists,
+                      "The closing screen did not render its title")
+    }
+
+    func testOnboardingSkipGoesStraightIn() {
+        let app = launch(appearance: "light", onboarding: true)
+        let skip = app.buttons["Skip"]
+        XCTAssertTrue(skip.waitForExistence(timeout: 10), "Onboarding has no Skip")
+        skip.tap()
+        settle(1.2)
+        shoot(app, "onboarding-skipped")
+        XCTAssertTrue(tab(app, "write").waitForExistence(timeout: 8),
+                      "Skipping onboarding did not reach the app")
+    }
+
     // MARK: - The timer
     //
     // Its ground, countdown and control scrims all became theme-aware, and
@@ -304,6 +349,68 @@ final class VergUIFlowTests: XCTestCase {
         ).firstMatch
         XCTAssertTrue(countdown.waitForExistence(timeout: 5),
                       "The timer screen shows no countdown")
+    }
+
+    // MARK: - Locked pages
+    //
+    // Pages older than the free window render dimmed with a lock and open the
+    // paywall. On the Journal tab that tap did nothing at all until 2.2 — it
+    // set the date the paywall would explain and never presented it — and the
+    // fix went in without ever being seen.
+
+    func testTappingALockedPageOpensThePaywall() {
+        let app = launch(appearance: "light", seeded: true)
+        open(app, tab: "journal")
+
+        let pages = app.scrollViews.buttons
+        XCTAssertTrue(pages.firstMatch.waitForExistence(timeout: 5), "No pages in the journal")
+        // The oldest seeded page is outside the free window.
+        let oldest = pages.element(boundBy: pages.count - 1)
+        oldest.tap()
+        settle(1.2)
+        shoot(app, "locked-page-tapped")
+
+        XCTAssertTrue(app.buttons["The Golden Age"].waitForExistence(timeout: 5),
+                      "Tapping a locked page did not open the paywall")
+
+        // And it should name the page they reached for, not fall back to the
+        // generic line. The date travels with the presentation now; when it
+        // was a separate `Date?` beside a boolean it arrived too late.
+        XCTAssertTrue(app.staticTexts.containing(
+            NSPredicate(format: "label CONTAINS 'is still here'")
+        ).firstMatch.waitForExistence(timeout: 3),
+        "The paywall did not name the locked page that opened it")
+    }
+
+    // MARK: - Book customization
+
+    func testBookRenameAndColourPicker() {
+        let app = launch(appearance: "light", seeded: true)
+        open(app, tab: "library")
+
+        let book = app.buttons.containing(.staticText, identifier: "Shiloh").firstMatch
+        XCTAssertTrue(book.waitForExistence(timeout: 5), "No book on the shelf")
+        book.tap()
+        settle()
+
+        // The overflow menu carries Rename & Color.
+        let menu = app.buttons["ellipsis.circle"].exists
+            ? app.buttons["ellipsis.circle"]
+            : app.navigationBars.buttons.firstMatch
+        XCTAssertTrue(menu.waitForExistence(timeout: 5), "Book detail has no overflow menu")
+        menu.tap()
+        settle(0.6)
+
+        let rename = app.buttons["Rename & Color"]
+        guard rename.waitForExistence(timeout: 4) else {
+            shoot(app, "book-menu")
+            return XCTFail("The overflow menu has no Rename & Color")
+        }
+        rename.tap()
+        settle(0.8)
+        shoot(app, "book-customize")
+        XCTAssertTrue(app.staticTexts["COVER COLOR"].waitForExistence(timeout: 5),
+                      "The customize sheet has no colour picker")
     }
 
     // MARK: - Sound is one switch in two places

@@ -16,7 +16,14 @@ struct BookDetailView: View {
     /// index is the thing being presented.
     @State private var viewerStart: ViewerStart?
     @State private var showDeleteConfirmation = false
-    @State private var showPaywall = false
+    /// Same as the Journal tab: the locked page travels with the paywall so
+    /// it can name the day rather than falling back to a generic line.
+    @State private var lockedPage: LockedPage?
+
+    private struct LockedPage: Identifiable {
+        let date: Date
+        var id: TimeInterval { date.timeIntervalSince1970 }
+    }
     @State private var showCustomize = false
 
     private let gatingService = SessionGatingService.shared
@@ -117,7 +124,7 @@ struct BookDetailView: View {
                             viewerStart = ViewerStart(index: index)
                         },
                         isLocked: { !gatingService.canViewPage(dated: $0.date) },
-                        onLockedTap: { _ in showPaywall = true },
+                        onLockedTap: { session in lockedPage = LockedPage(date: session.date) },
                         emptyStateMessage: "This book has no pages."
                     )
                 }
@@ -163,8 +170,8 @@ struct BookDetailView: View {
                 allowsDelete: false
             )
         }
-        .fullScreenCover(isPresented: $showPaywall) {
-            PaywallView()
+        .fullScreenCover(item: $lockedPage) { page in
+            PaywallView(lockedPageDate: page.date)
                 .environmentObject(PurchaseService.shared)
         }
         .sheet(isPresented: $showCustomize) {

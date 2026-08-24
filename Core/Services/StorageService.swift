@@ -98,8 +98,11 @@ final class StorageService: ObservableObject {
     private func applyUITestOverridesIfNeeded() {
         let args = ProcessInfo.processInfo.arguments
         guard args.contains("-VergUITest") else { return }
-        settings.hasSeenOnboarding = true
-        settings.hasSeenSetTimerNotice = true
+        // `-VergOnboarding` keeps the first-run sequence so it can be walked;
+        // otherwise a UI test starts past it.
+        let wantsOnboarding = args.contains("-VergOnboarding")
+        settings.hasSeenOnboarding = !wantsOnboarding
+        settings.hasSeenSetTimerNotice = !wantsOnboarding
         // Reset the display choices too, or a run inherits whatever the last
         // one picked and test order starts to matter.
         settings.calendarStyle = .heatmap
@@ -131,11 +134,18 @@ final class StorageService: ObservableObject {
         books = []
         stats = UserStats()
 
-        let made: [Session] = (0..<9).compactMap { index in
+        // Day offsets chosen so the free archive window actually bites: the
+        // current journal holds three recent pages and two beyond it, so a
+        // test can tap a locked one. Without an old page in the journal the
+        // locked path is unreachable and appears to pass by never running.
+        let journalDays = [0, 1, 2, 9, 12]
+        let bookDays = [20, 21, 22, 23]
+
+        func page(_ index: Int, daysAgo: Int) -> Session? {
             guard let data = Self.ruledPage(number: index + 1).jpegData(compressionQuality: 0.7) else { return nil }
             let filename = "uitest-\(index).jpg"
             try? data.write(to: imagesDirectory.appendingPathComponent(filename), options: [.atomic])
-            let day = Calendar.current.date(byAdding: .day, value: -index, to: Date()) ?? Date()
+            let day = Calendar.current.date(byAdding: .day, value: -daysAgo, to: Date()) ?? Date()
             return Session(
                 date: day,
                 duration: 600,
@@ -145,15 +155,17 @@ final class StorageService: ObservableObject {
                 createdAt: day
             )
         }
-        sessions = made.sorted { $0.createdAt > $1.createdAt }
-        stats.totalSessions = made.count
-        stats.daysLit = 4
+
+        let journalPages = journalDays.enumerated().compactMap { page($0.offset, daysAgo: $0.element) }
+        let bookPages = bookDays.enumerated().compactMap { page($0.offset + journalDays.count, daysAgo: $0.element) }
+
+        sessions = (journalPages + bookPages).sorted { $0.createdAt > $1.createdAt }
+        stats.totalSessions = sessions.count
+        stats.daysLit = 3
         saveSessions()
         saveStats()
 
-        // Archive the older half so there is a book on the shelf too.
-        let archived = Array(sessions.suffix(4))
-        if let book = Book.make(title: "Shiloh", archiving: archived, coverStyle: 0) {
+        if let book = Book.make(title: "Shiloh", archiving: bookPages, coverStyle: 0) {
             books = [book]
             saveBooks()
         }

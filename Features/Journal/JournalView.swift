@@ -8,8 +8,18 @@ struct JournalView: View {
 
     @State private var showFinishAlert = false
     @State private var newBookTitle = ""
-    @State private var showPaywall = false
-    @State private var paywallContext: Date?
+    /// The locked page that sent someone to the paywall, carried *with* the
+    /// presentation. A `Date?` set alongside a separate boolean is the same
+    /// trap the page viewer fell into: the two are assigned together but are
+    /// not applied atomically, so the cover could be built before the date
+    /// landed and the paywall fell back to its generic line instead of
+    /// naming the page they reached for.
+    @State private var lockedPage: LockedPage?
+
+    private struct LockedPage: Identifiable {
+        let date: Date
+        var id: TimeInterval { date.timeIntervalSince1970 }
+    }
     /// Presented with `item:` so the starting page cannot be lost between
     /// setting the index and raising a separate boolean — see `ViewerStart`.
     @State private var viewerStart: ViewerStart?
@@ -35,12 +45,7 @@ struct JournalView: View {
                     },
                     isLocked: { !gatingService.canViewPage(dated: $0.date) },
                     onLockedTap: { session in
-                        // Both, always: `paywallContext` alone set the date
-                        // the paywall would explain and never presented it,
-                        // so tapping a locked page in the journal did nothing
-                        // at all.
-                        paywallContext = session.date
-                        showPaywall = true
+                        lockedPage = LockedPage(date: session.date)
                     },
                     emptyStateMessage: viewModel.books.isEmpty
                         ? "Complete a writing session to capture your first page"
@@ -61,8 +66,8 @@ struct JournalView: View {
                 }
             )
         }
-        .fullScreenCover(isPresented: $showPaywall) {
-            PaywallView(lockedPageDate: paywallContext)
+        .fullScreenCover(item: $lockedPage) { page in
+            PaywallView(lockedPageDate: page.date)
                 .environmentObject(purchaseService)
         }
         .alert("Finish this journal?", isPresented: $showFinishAlert) {
