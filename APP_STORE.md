@@ -11,18 +11,39 @@ guide speaks to the writer, never as a company.
 
 ---
 
-## Promotional text — 107 / 170
+## Promotional text — 101 / 170
 
-Updatable without shipping a build, so this is the line to change when the
-pitch moves.
+Written for traffic arriving from Instagram and TikTok, which wants a
+different line than App Store search does. Someone who found Verg by
+searching needs to be told what it is. Someone who just watched a candle burn
+next to a notebook already knows — they need the tap closed.
 
-> Light a candle. Put the phone down. Write until the bell. Photograph the page — your own handwriting, kept.
+The whole point of this field is that it updates without shipping a build, so
+run one for a week, swap, and keep whichever moves installs.
 
-Alternates in the same voice:
+**Running now:**
 
-> Pen, paper, ten minutes. Light a candle, write until the bell, and photograph the page.
+> Ten minutes on paper instead of scrolling. Light the candle, write until the bell, and keep the page.
 
-> A journal you write by hand. Light a candle, set the phone face down, and write until the bell.
+The hook is aimed at where the person is standing. They are mid-scroll when
+they tap through, and this is the one line in the listing that names that.
+The app already frames the trade this way after every session — "you wrote
+for twelve minutes instead of scrolling" — so it is the product's own
+sentence, moved to the front. It is a promise, not a scolding, and it has to
+stay on that side of the line.
+
+**If the trade framing reads as a rebuke to someone who just came from a
+feed, swap to the ritual stated plainly:**
+
+> Light a candle. Set the phone face down. Write on paper until the bell. Photograph the page, and Verg keeps it.
+
+**Or lead with the object, which is what the videos are actually selling:**
+
+> Your own handwriting, kept. Light a candle, set the phone face down, and write on paper until the bell.
+
+Deliberately absent: the three-day trial. This field's job with social
+traffic is the install, and the offer has its own screen at the seventh page.
+Spending the hook on a discount buys a worse install.
 
 ---
 
