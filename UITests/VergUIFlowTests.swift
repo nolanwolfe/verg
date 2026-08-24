@@ -275,6 +275,22 @@ final class VergUIFlowTests: XCTestCase {
         shoot(app, "seeded-archive-numbers")
     }
 
+    /// The paywall is daylight whatever the app is set to. It used to invert
+    /// against the theme, which meant a dark app got a light paywall and a
+    /// light app got a dark one.
+    func testPaywallIsLightEvenWhenTheAppIsDark() {
+        let app = launch(appearance: "dark", seeded: true)
+        open(app, tab: "settings")
+        let row = app.buttons["settings.The Golden Age"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5), "Settings has no Golden Age row")
+        row.tap()
+        settle(1.0)
+        shoot(app, "paywall-from-dark-app")
+        XCTAssertTrue(app.buttons.matching(
+            NSPredicate(format: "label BEGINSWITH 'The Golden Age'")
+        ).firstMatch.waitForExistence(timeout: 5), "The paywall did not open from a dark app")
+    }
+
     func testPaywallOpensFromGoldenAge() {
         let app = launch(appearance: "light", seeded: true)
         open(app, tab: "settings")

@@ -12,6 +12,19 @@ pages. Journal becomes just the current journal. Books gain rename and
 cover-color customization. The tab bar hides on scroll-down and returns
 on scroll-up on the Library screen.
 
+### Changed — the paywall is always light
+
+It inverted against the app: daylight over a dark app, a dark room over a
+light one. Symmetrical, but it made the screen two different things depending
+on a setting. Verg is candle-dark by default and the Golden Age is the summit
+— you climb out of the dark into daylight — and that gesture only works if
+this screen is daylight every time.
+
+`GoldenPalette` goes back to fixed values rather than adaptive pairs, since a
+dark half is now code that can never be drawn, and the probe that read the
+app's appearance to decide which way to invert is gone with it.
+
+
 ### Fixed — the trial badge, now that there is a trial
 
 App Store Connect now carries the introductory offer and Monthly is $7.99, so
