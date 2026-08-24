@@ -26,63 +26,60 @@ Alternates in the same voice:
 
 ---
 
-## Description — 2358 / 4000
+## Description — 1839 / 4000
 
-The first three lines are what shows before "more", so they carry the whole
-pitch on their own.
+The first three lines show before "more", so they carry the whole pitch on
+their own. Only what Verg is, in the active voice — the owner's direction for
+2.2: never define the app by what it is not.
 
 ```
 Verg is a journal you write by hand.
 
-Light a candle. Set the phone face down. Write on paper until the bell. Then photograph the page, and Verg keeps it.
+Light a candle. Set the phone face down. Write on paper until the bell. Photograph the page, and Verg keeps it.
 
-That is the whole app. There is no text field. Nothing here composes for you, corrects you, or asks how your day went. The paper does that, and the paper is better at it.
+This is Verg. A candle, paper, a bell, and your own handwriting.
 
 THE RITUAL
 
-Light the candle. It burns on screen for as long as you chose — five minutes, ten, fifteen, or a length of your own.
+Light the candle. It burns on screen for five minutes, ten, fifteen, or a length of your own.
 
-Phone face down. The screen dims itself. Ambient sound if you want it: rain, a fireplace, a stream, eight more.
+Set the phone face down. The screen dims itself. Ambient sound if you want it: rain, a fireplace, a stream, eight more.
 
 Write until the bell. On paper, in your own hand, at whatever speed your hand goes.
 
-Photograph the page. Hold the phone over what you wrote. Verg keeps the photograph, dated, in your journal.
+Photograph the page. Verg keeps it, dated, in your journal.
 
 WHAT IT KEEPS
 
-Your pages, in order, as photographs of your own handwriting.
+Your pages, in order, in your own handwriting.
 
-Days lit — a full year of them, one square a day, brighter where you wrote more. A missed day means the candle went out. You light it again.
+Days lit — a full year at a glance, one square a day, brighter where you wrote more. A missed day means the candle went out. You light it again.
 
 Time reclaimed — the minutes you spent writing instead of scrolling, this week and all time.
 
-Books. Finish a journal and it becomes a book on your shelf, named and coloured however you like, with a line to remember it by.
+Books. Finish a journal and it becomes a book on your shelf. Name it, choose its cover, write a line to remember it by.
 
 THE ORACLE
 
-Twenty-four scripts for when the page is blank. Short ones — a door, not a paragraph. Write your own and keep them in folders. Or take no script, which is its own choice.
+Twenty-four scripts for when the page is blank. Short ones, each a door. Write your own and keep them in folders.
 
-WHAT IT DOES NOT DO
+YOURS
 
-No account. No sign-in. Your pages are photographs on your phone, and they stay there.
-
-No notifications you did not ask for. No badges, no points, no rankings, no confetti.
-
-No advice. Verg has no opinion about what you write or why.
+Every page lives on your phone, in your own hand, and stays there. Verg guides the ritual and keeps the record. The writing is yours.
 
 FREE, AND THE GOLDEN AGE
 
-Writing is free and always will be. Save as many pages as you like, forever, without paying and without an account. Your last seven days stay open to read.
+Writing is free, always. Save as many pages as you like, and your last seven days stay open to read.
 
-The Golden Age opens the rest: your whole archive, every stat, the scripts, ambient sound, custom session lengths, and one relight a week when a day gets away from you.
+The Golden Age opens the whole archive, every stat, the scripts, ambient sound, custom session lengths, and one relight a week when a day gets away from you.
 
 $7.99 a month, or $59.99 a year with the first three days free.
 
-Nothing is ever deleted or hidden. A page outside the free window is still yours, still on your phone, waiting.
+Your pages stay yours, on your phone, waiting.
 
 ---
 
-Named for Virgil, who walked Dante up the mountain and did not carry him.
+Named for Virgil, who walked Dante up the mountain.
 
 Terms: https://nolanwolfe.github.io/verg/terms
 Privacy: https://nolanwolfe.github.io/verg/privacy
@@ -155,10 +152,12 @@ thing that should be corrected.
 same frame" holds whichever aspect ratio the format settles on, so the copy
 does not need rewriting when it does.
 
-**The description leads with what the app refuses to do** — no text field,
-nothing that composes or corrects or asks how your day went. That is the
-sharpest difference from every other journaling app on the shelf, and burying
-it under a feature list would waste it.
+**The description states only what Verg is.** An earlier draft led with
+refusals — no text field, no advice — and the owner's call for 2.2 is the
+opposite: active statements, zero negation. The contrast with other journaling
+apps is carried by what the ritual is ("a candle, paper, a bell, and your own
+handwriting") rather than by a list of absences. The draft greps clean for
+no / not / never / nothing / without.
 
 **Every number was read from the source, not remembered:** 24 built-in
 scripts, 21 cover colours, 11 ambient tracks, 5/10/15-minute presets plus
