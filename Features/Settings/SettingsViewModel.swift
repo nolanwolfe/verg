@@ -33,6 +33,22 @@ final class SettingsViewModel: ObservableObject {
     @Published var showRedeemResult: Bool = false
     @Published var redeemResultMessage: String = ""
 
+    // MARK: - App Lock
+    /// Drives the Lock App switch. Both directions open a sheet and both can
+    /// be cancelled, so this is a *request* rather than the truth — the truth
+    /// is `AppLockService.isEnabled`, and `finishAppLock…` reconciles the two.
+    @Published var appLockEnabled: Bool = false
+    @Published var showAppLockSetup: Bool = false
+    @Published var showAppLockConfirm: Bool = false
+
+    /// Set while the view model is putting the switch back after a cancel,
+    /// so the binding's own sink doesn't read that correction as a new tap
+    /// and open the sheet again.
+    private var isReconcilingAppLock = false
+
+    @MainActor
+    var appLock: AppLockService { .shared }
+
     // MARK: - Dependencies
     private let storageService: StorageService
     private let purchaseService: PurchaseService
@@ -97,6 +113,8 @@ final class SettingsViewModel: ObservableObject {
         weeklySummaryNotificationsEnabled = settings.weeklySummaryNotificationsEnabled
         calendarStyle = settings.calendarStyle
         appearance = settings.appearance
+        // The lock's truth lives in the Keychain, not the settings file.
+        appLockEnabled = MainActor.assumeIsolated { AppLockService.shared.isEnabled }
     }
 
     /// Re-read from storage, assigning only what actually differs.
@@ -122,6 +140,11 @@ final class SettingsViewModel: ObservableObject {
         }
         if calendarStyle != settings.calendarStyle { calendarStyle = settings.calendarStyle }
         if appearance != settings.appearance { appearance = settings.appearance }
+
+        // Reconciled, not assigned: a plain write would fire the toggle's
+        // sink and re-open the set-up sheet every time the tab came back.
+        let locked = MainActor.assumeIsolated { AppLockService.shared.isEnabled }
+        MainActor.assumeIsolated { reconcileAppLockSwitch(to: locked) }
     }
 
     private func setupBindings() {
@@ -194,6 +217,54 @@ final class SettingsViewModel: ObservableObject {
                 self?.storageService.setAppearance(mode)
             }
             .store(in: &cancellables)
+
+        $appLockEnabled
+            .dropFirst()
+            .sink { [weak self] wants in
+                self?.handleAppLockToggle(wants)
+            }
+            .store(in: &cancellables)
+    }
+
+    // MARK: - App Lock
+
+    private func handleAppLockToggle(_ wants: Bool) {
+        // Ignore the echo from our own correction after a cancelled sheet.
+        guard !isReconcilingAppLock else { return }
+        MainActor.assumeIsolated {
+            guard wants != appLock.isEnabled else { return }
+            if wants {
+                showAppLockSetup = true
+            } else {
+                // Turning the lock off needs the code. Without that check the
+                // lock is decorative — anyone holding the unlocked phone
+                // could flip this switch and walk in.
+                showAppLockConfirm = true
+            }
+        }
+    }
+
+    @MainActor
+    func finishAppLockSetup(didEnable: Bool) {
+        showAppLockSetup = false
+        reconcileAppLockSwitch(to: didEnable)
+    }
+
+    @MainActor
+    func finishAppLockDisable(didDisable: Bool) {
+        showAppLockConfirm = false
+        // Cancelled, or the wrong code: the lock is still on, so the switch
+        // goes back on with it.
+        reconcileAppLockSwitch(to: !didDisable)
+    }
+
+    /// Put the switch where the service actually is, without re-triggering.
+    @MainActor
+    private func reconcileAppLockSwitch(to value: Bool) {
+        guard appLockEnabled != value else { return }
+        isReconcilingAppLock = true
+        appLockEnabled = value
+        isReconcilingAppLock = false
     }
 
     // MARK: - Actions

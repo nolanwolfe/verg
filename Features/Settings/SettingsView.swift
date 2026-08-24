@@ -32,6 +32,9 @@ struct SettingsView: View {
                     // Account
                     accountSection
 
+                    // App — appearance and the lock
+                    appSection
+
                     // About
                     aboutSection
 
@@ -90,6 +93,19 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $viewModel.showCustomerCenter) {
             CustomerCenterView()
+        }
+        // Both directions of the Lock App switch run a flow, and both can be
+        // cancelled — the sheets call back with the outcome so the toggle
+        // lands on what actually happened rather than what was tapped.
+        .sheet(isPresented: $viewModel.showAppLockSetup) {
+            AppLockSetupSheet(lock: viewModel.appLock) { didEnable in
+                viewModel.finishAppLockSetup(didEnable: didEnable)
+            }
+        }
+        .sheet(isPresented: $viewModel.showAppLockConfirm) {
+            AppLockConfirmSheet(lock: viewModel.appLock) { didDisable in
+                viewModel.finishAppLockDisable(didDisable: didDisable)
+            }
         }
         .fullScreenCover(isPresented: $viewModel.showPaywall) {
             PaywallView(onSubscribed: {
@@ -225,14 +241,17 @@ struct SettingsView: View {
 
             settingsDivider
 
-            SettingsRow(
-                icon: "circle.lefthalf.filled",
+            SettingsButtonRow(
+                icon: "gift",
+                // Blue: redeeming a code is the one row here that grants
+                // access without a purchase, and it reads as a system action
+                // beside the two gold subscription rows.
                 iconColor: .blue,
-                title: "Appearance",
-                value: viewModel.appearance.displayName,
+                title: purchaseService.isFriendsAndFamily ? "Friends & Family Access Active" : "Redeem Access Code",
                 action: {
+                    guard !purchaseService.isFriendsAndFamily else { return }
                     AudioService.shared.playUITick()
-                    viewModel.showAppearancePicker = true
+                    viewModel.showRedeemSheet = true
                 }
             )
 
@@ -247,18 +266,45 @@ struct SettingsView: View {
                     viewModel.restorePurchases()
                 }
             )
+        }
+    }
+
+    // MARK: - App Section
+    /// The app itself rather than the ritual: how it looks, and who can open
+    /// it. Appearance moved here out of Account, where it never belonged —
+    /// it has nothing to do with a subscription.
+    private var appSection: some View {
+        SettingsSection(title: "App") {
+            SettingsButtonRow(
+                icon: "star",
+                iconColor: Theme.Colors.accent,
+                title: "Rate Verg",
+                action: { viewModel.rateApp() }
+            )
 
             settingsDivider
 
-            SettingsButtonRow(
-                icon: "gift",
-                iconColor: Theme.Colors.accent,
-                title: purchaseService.isFriendsAndFamily ? "Friends & Family Access Active" : "Redeem Access Code",
+            SettingsRow(
+                icon: "circle.lefthalf.filled",
+                iconColor: .blue,
+                title: "Appearance",
+                value: viewModel.appearance.displayName,
                 action: {
-                    guard !purchaseService.isFriendsAndFamily else { return }
                     AudioService.shared.playUITick()
-                    viewModel.showRedeemSheet = true
+                    viewModel.showAppearancePicker = true
                 }
+            )
+
+            settingsDivider
+
+            // A real `Toggle`, not the switch-shaped button used for The
+            // Golden Age: this one owns a local bool and both directions run
+            // a flow, so it can be driven straight from the binding.
+            SettingsToggleRow(
+                icon: "lock",
+                iconColor: Theme.Colors.accent,
+                title: "Lock App",
+                isOn: $viewModel.appLockEnabled
             )
         }
     }
@@ -309,16 +355,6 @@ struct SettingsView: View {
     private var aboutSection: some View {
         SettingsSection(title: "About") {
             SettingsButtonRow(
-                icon: "star",
-                iconColor: Theme.Colors.accent,
-                title: "Rate Verg",
-                action: { viewModel.rateApp() }
-            )
-
-            Divider()
-                .background(Theme.Colors.secondaryText.opacity(0.2))
-
-            SettingsButtonRow(
                 icon: "square.and.arrow.up",
                 // Blue: sharing is a system action, and the share sheet it
                 // opens is Apple's, not ours.
@@ -327,25 +363,25 @@ struct SettingsView: View {
                 action: { viewModel.shareApp() }
             )
 
-            Divider()
-                .background(Theme.Colors.secondaryText.opacity(0.2))
+            settingsDivider
 
             SettingsLinkRow(
                 icon: "lock.shield",
-                // The two legal rows stay plain white — gilding a privacy
-                // policy is the wrong tone, and they are the only rows here
-                // that leave the app.
-                iconColor: .white,
+                // The two legal rows take the text colour rather than a
+                // tint: gilding a privacy policy is the wrong tone. These
+                // were hardcoded `.white`, which was invisible against the
+                // white card once the light theme arrived — `primaryText`
+                // is black on light and white on dark, so both themes read.
+                iconColor: Theme.Colors.primaryText,
                 title: "Privacy Policy",
                 url: URL(string: "https://nolanwolfe.github.io/verg/privacy")!
             )
 
-            Divider()
-                .background(Theme.Colors.secondaryText.opacity(0.2))
+            settingsDivider
 
             SettingsLinkRow(
                 icon: "doc.text",
-                iconColor: .white,
+                iconColor: Theme.Colors.primaryText,
                 title: "Terms of Service",
                 url: URL(string: "https://nolanwolfe.github.io/verg/terms")!
             )
@@ -402,10 +438,19 @@ struct SettingsView: View {
 
     // MARK: - Version Section
     private var versionSection: some View {
-        Text(viewModel.appVersion)
-            .font(Theme.Typography.caption)
-            .foregroundColor(Theme.Colors.secondaryText)
-            .padding(.top, Theme.Spacing.md)
+        VStack(spacing: Theme.Spacing.xxs) {
+            Link(destination: URL(string: "https://verg.app")!) {
+                Text("verg.app")
+                    .font(Theme.Typography.caption)
+                    .foregroundColor(Theme.Colors.accent)
+            }
+            .accessibilityIdentifier("settings.website")
+
+            Text(viewModel.appVersion)
+                .font(Theme.Typography.caption)
+                .foregroundColor(Theme.Colors.secondaryText)
+        }
+        .padding(.top, Theme.Spacing.md)
     }
 
     // MARK: - Redeem Code Sheet

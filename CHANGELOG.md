@@ -5,6 +5,63 @@ when the change was written, not necessarily released.
 
 ## [Unreleased] — build 19 (Library redesign, book customization, tab bar)
 
+### Added — Lock App
+
+A passcode on the journal, for a phone that gets handed around. Four digits
+or a written code, unlocked by Face ID / Touch ID where the phone has it,
+with the code as the fallback. Settings → App → Lock App.
+
+The code is never stored. A random salt and a SHA-256 of salt-plus-code go
+to the Keychain as `ThisDeviceOnly`, so the lock doesn't ride a backup onto
+another phone and a Keychain dump doesn't hand over a passcode the owner
+probably reuses elsewhere.
+
+Locking is on `.background` only. `.inactive` fires for a Control Center
+pull, a notification banner and a glance at the app switcher, and locking on
+those would throw someone out of a session they're sitting in front of — the
+same trap the brightness service already learned. `.inactive` instead draws a
+cover so the app-switcher snapshot isn't a page of handwriting; it clears on
+`.active` without authenticating.
+
+Turning the lock off asks for the current code. Without that the lock is
+decorative — anyone holding the unlocked phone could flip the switch.
+
+There is deliberately no recovery. Everything Verg holds is local, so a
+"forgot code" door would have to open for exactly the person the lock exists
+to stop. The set-up screen says so before it accepts a code. A recovery path
+is a later decision, not an oversight.
+
+### Fixed — the lock screen only covered the app, it didn't hide it
+
+The first version drew the lock over the tab content, which left everything
+underneath in the accessibility tree: VoiceOver would read out a locked
+journal. `ContentView` now marks the content hidden and inert while locked.
+Caught by a UI test asserting a Settings row is unreachable through the lock,
+and confirmed by removing the fix and watching that test fail.
+
+### Fixed — the legal rows were invisible in light mode
+
+Privacy Policy and Terms of Service had hardcoded `.white` icons sitting on a
+white card, so they vanished when the light theme arrived. They take
+`primaryText` now — black on light, white on dark.
+
+### Changed — Settings regrouped
+
+Account is the three subscription rows (The Golden Age, Redeem Access Code,
+Restore); Redeem goes blue as the one row that grants access without a
+purchase. A new App section takes Rate Verg, Appearance — which never had
+anything to do with a subscription — and Lock App. About keeps Share Verg and
+the two legal rows. `verg.app` joins the version string in the footer.
+
+### Changed — the first paywall review is attributed to Shiloh
+
+At the owner's request. Worth recording that this costs the joke its cover:
+"Sibylla" and "Dante" were an oracle and a dead poet, and nobody mistakes
+either for a customer. "Shiloh" reads as a real person's testimonial beside a
+Buy button, which is what Guideline 2.3.1 and the FTC's 2024 consumer-review
+rule are aimed at. The fix, if Review ever calls it, is a one-line revert —
+or better, replacing the quote with a real one from App Store Connect.
+
 A new Library tab that carries the whole record of the writing — the
 year-by-year ledger, finished books, a GitHub-style days-lit heatmap,
 the stat grid, and the full page-milestone ladder out to one million

@@ -149,17 +149,26 @@ enum AppStrings {
         /// dead poet, neither of whom owns a phone, both writing like
         /// present-day teenagers.
         ///
-        /// Deliberately unlabelled: the owner's call is that "Sibylla" and
-        /// "Dante" read as the joke they are, given an app named for Virgil
-        /// that opens on a Dante epigraph. An explicit "Not real reviews."
-        /// line was tried here and cut as redundant.
+        /// Deliberately unlabelled: the owner's call is that these read as
+        /// the joke they are, given an app named for Virgil that opens on a
+        /// Dante epigraph. An explicit "Not real reviews." line was tried
+        /// here and cut as redundant.
         ///
-        /// Recorded because it's a judgement call with a downside: these are
-        /// invented five-star testimonials beside a Buy button. If App
-        /// Review ever reads them as genuine (Guideline 2.3.1, or the FTC's
-        /// 2024 consumer-review rule), the one-line fix is to put the
-        /// epithets back — "Sibylla of Cumae", "Dante, c. 1320" — or to
-        /// restore a short disclosure under the cards.
+        /// Recorded because it's a judgement call with a downside, and the
+        /// downside grew when the first attribution changed from "Sibylla"
+        /// to "Shiloh" at the owner's request. "Sibylla" and "Dante" were an
+        /// oracle and a dead poet — nobody mistakes either for a customer.
+        /// "Shiloh" is an ordinary given name, so the first card now reads
+        /// as a real person's testimonial beside a Buy button, which is
+        /// squarely what Guideline 2.3.1 and the FTC's 2024 consumer-review
+        /// rule are aimed at.
+        ///
+        /// Two one-line fixes if App Review ever reads it as genuine: put an
+        /// epithet back ("Dante, c. 1320") and return the first card to a
+        /// mythological name, or restore a short disclosure under the cards.
+        /// The clean resolution is for the quote to be real — copied
+        /// verbatim from App Store Connect — at which point the risk is gone
+        /// rather than mitigated.
         ///
         /// They also stay clear of health claims. Nothing here promises a
         /// therapeutic outcome, which a paywall has no business doing.
@@ -174,7 +183,7 @@ enum AppStrings {
         static let reviews: [Review] = [
             Review(
                 quote: "ok so i've filled FOUR notebooks and my handwriting is unreal now?? obsessed.",
-                attribution: "Sibylla"
+                attribution: "Shiloh"
             ),
             Review(
                 quote: "not to be dramatic but journaling is my whole personality now. worth it.",

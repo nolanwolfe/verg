@@ -4,6 +4,7 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject private var storageService: StorageService
     @EnvironmentObject private var purchaseService: PurchaseService
+    @ObservedObject private var appLock = AppLockService.shared
 
     @State private var selectedTab: Tab = .write
     @State private var showOnboarding: Bool = true
@@ -23,6 +24,15 @@ struct ContentView: View {
         ZStack {
             // Main app is always the base layer
             mainTabView
+                // Covering the content is not the same as hiding it. The
+                // lock screen is drawn on top, but everything underneath
+                // stayed in the accessibility tree — VoiceOver would happily
+                // read out a locked journal, and the UI test caught it by
+                // finding "Settings" through the lock. Hidden and inert
+                // rather than unmounted, so a lock doesn't tear down the
+                // state of whatever screen the user was on.
+                .accessibilityHidden(appLock.isLocked || appLock.isObscured)
+                .allowsHitTesting(!appLock.isLocked)
 
             // Onboarding overlay (first launch, or replayed from
             // Settings → Guide)
@@ -59,6 +69,22 @@ struct ContentView: View {
                     }
                 )
                 .zIndex(1)
+            }
+
+            // The app lock sits above everything, onboarding included — a
+            // locked app should reveal nothing at all, and the coach marks
+            // and onboarding both narrate what the app is for.
+            if appLock.isLocked {
+                AppLockScreen(lock: appLock)
+                    .transition(.opacity)
+                    .zIndex(10)
+            } else if appLock.isObscured {
+                // Not a lock: the cover iOS photographs for the app switcher.
+                // Cleared on `.active` without authenticating.
+                Theme.Colors.background
+                    .ignoresSafeArea()
+                    .overlay(Text("🕯️").font(.system(size: 44)))
+                    .zIndex(9)
             }
         }
         .fullScreenCover(isPresented: $showTimerFromNotice) {

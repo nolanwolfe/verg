@@ -114,6 +114,13 @@ final class StorageService: ObservableObject {
         customPrompts = []
         promptFolders = []
         savePrompts()
+        // The app lock lives in the Keychain, which outlives an app delete —
+        // so without this a single test that sets a code would leave every
+        // later run staring at a lock screen it has no code for, on a
+        // simulator that looks clean. Cleared unless a test asks for it.
+        if !args.contains("-VergAppLock") {
+            MainActor.assumeIsolated { AppLockService.shared.disable() }
+        }
         if let index = args.firstIndex(of: "-VergAppearance"),
            index + 1 < args.count,
            let mode = AppearanceMode(rawValue: args[index + 1]) {

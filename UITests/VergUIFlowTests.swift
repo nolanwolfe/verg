@@ -596,4 +596,151 @@ final class VergUIFlowTests: XCTestCase {
         XCTAssertEqual(toggle.value as? String, "0",
                        "Turning Sound off on Write left the Settings switch on")
     }
+
+    // MARK: - App Lock
+
+    /// The APP section and its three rows, in order.
+    func testAppSectionHoldsRateAppearanceAndLock() {
+        let app = launch(appearance: "light")
+        open(app, tab: "settings")
+
+        XCTAssertTrue(app.staticTexts["APP"].waitForExistence(timeout: 5),
+                      "Settings lost the APP section")
+        for row in ["Rate Verg", "Appearance", "Lock App"] {
+            XCTAssertTrue(app.staticTexts[row].exists, "APP section lost the \(row) row")
+        }
+
+        // These sections live below the fold, so a screenshot taken here
+        // catches only Candle and Guide. Scroll so the pass actually shows
+        // the rows this test is about — the icon tints are the whole point
+        // of reviewing them by eye.
+        app.swipeUp()
+        app.swipeUp()
+        settle()
+        shoot(app, "settings-app-section")
+
+        XCTAssertTrue(app.staticTexts["ABOUT"].exists, "Settings lost the ABOUT section")
+        for row in ["Share Verg", "Privacy Policy", "Terms of Service"] {
+            XCTAssertTrue(app.staticTexts[row].exists, "ABOUT section lost the \(row) row")
+        }
+        // A SwiftUI `Link` surfaces as a button, not `links`.
+        XCTAssertTrue(app.buttons["settings.website"].exists,
+                      "Settings footer lost the verg.app link")
+    }
+
+    /// Backing out of the set-up sheet must leave the switch off. The bug
+    /// this guards is the obvious one: flipping the switch optimistically and
+    /// leaving it on after a cancel, so Settings claims a lock that the
+    /// Keychain knows nothing about.
+    func testCancellingLockSetupLeavesTheSwitchOff() {
+        let app = launch(appearance: "light")
+        open(app, tab: "settings")
+
+        let toggle = app.switches["settings.toggle.Lock App"]
+        XCTAssertTrue(toggle.waitForExistence(timeout: 5), "Settings has no Lock App switch")
+        XCTAssertEqual(toggle.value as? String, "0", "Lock App started on")
+
+        toggle.tap()
+        let cancel = app.buttons["Cancel"]
+        XCTAssertTrue(cancel.waitForExistence(timeout: 5), "Lock set-up sheet did not open")
+        shoot(app, "lock-setup-sheet")
+        cancel.tap()
+        settle()
+
+        XCTAssertEqual(toggle.value as? String, "0",
+                       "Cancelling set-up left the Lock App switch on")
+    }
+
+    /// The whole round trip: set a code, background the app, come back to a
+    /// lock screen, and get in with the code.
+    func testLockEngagesOnBackgroundAndOpensWithTheCode() {
+        let app = launch(appearance: "light")
+        open(app, tab: "settings")
+
+        let toggle = app.switches["settings.toggle.Lock App"]
+        XCTAssertTrue(toggle.waitForExistence(timeout: 5), "Settings has no Lock App switch")
+        toggle.tap()
+
+        let field = app.secureTextFields["applock.codeField"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5), "Lock set-up sheet has no code field")
+        // Four digits submits itself, which advances to the confirm stage.
+        field.tap()
+        field.typeText("2468")
+        settle()
+
+        let confirm = app.secureTextFields["applock.codeField"]
+        XCTAssertTrue(confirm.waitForExistence(timeout: 5), "Set-up did not ask to confirm")
+        confirm.tap()
+        confirm.typeText("2468")
+        settle()
+
+        XCTAssertEqual(toggle.value as? String, "1", "Setting a code left the switch off")
+        shoot(app, "lock-enabled")
+
+        // Out and back: `.background`, the one phase that locks.
+        XCUIDevice.shared.press(.home)
+        settle()
+        app.activate()
+
+        let locked = app.staticTexts["Verg is locked"].waitForExistence(timeout: 10)
+        if !locked { shoot(app, "lock-did-not-engage") }
+        XCTAssertTrue(locked, "Returning from the background did not lock the app")
+        shoot(app, "lock-screen")
+
+        // Covered is not hidden. "Duration" is a Settings row label and
+        // belongs to no tab button, so it is only reachable if the content
+        // behind the lock is still in the accessibility tree — which it was,
+        // until ContentView started hiding it. VoiceOver would have read a
+        // locked journal aloud.
+        XCTAssertFalse(app.staticTexts["Duration"].exists,
+                       "Content behind the lock screen is still readable")
+
+        let entry = app.secureTextFields["applock.codeField"]
+        XCTAssertTrue(entry.waitForExistence(timeout: 5), "Lock screen has no code field")
+        entry.tap()
+        entry.typeText("2468")
+        settle()
+
+        XCTAssertTrue(app.staticTexts["Settings"].waitForExistence(timeout: 10),
+                      "The correct code did not unlock the app")
+        shoot(app, "lock-opened")
+    }
+
+    /// A wrong code must not open it. Cheap to assert, and the exact thing
+    /// a hash comparison bug would silently break.
+    func testWrongCodeDoesNotUnlock() {
+        let app = launch(appearance: "light")
+        open(app, tab: "settings")
+
+        let toggle = app.switches["settings.toggle.Lock App"]
+        XCTAssertTrue(toggle.waitForExistence(timeout: 5))
+        toggle.tap()
+
+        let field = app.secureTextFields["applock.codeField"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        field.tap(); field.typeText("1111")
+        settle()
+        let confirm = app.secureTextFields["applock.codeField"]
+        XCTAssertTrue(confirm.waitForExistence(timeout: 5))
+        confirm.tap(); confirm.typeText("1111")
+        settle()
+
+        XCUIDevice.shared.press(.home)
+        settle()
+        app.activate()
+
+        let entry = app.secureTextFields["applock.codeField"]
+        XCTAssertTrue(entry.waitForExistence(timeout: 10), "App did not lock")
+        entry.tap(); entry.typeText("9999")
+        settle()
+
+        XCTAssertTrue(app.staticTexts["Wrong code."].exists,
+                      "A wrong code was not rejected")
+        // Still locked is the invariant. Not `staticTexts["Settings"]` —
+        // that matches the tab bar's own button label, so it is present
+        // whether or not the gate opened, and asserting on it proves nothing.
+        XCTAssertTrue(app.staticTexts["Verg is locked"].exists,
+                      "A wrong code let the app through")
+        shoot(app, "lock-wrong-code")
+    }
 }

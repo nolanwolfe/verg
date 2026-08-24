@@ -40,6 +40,7 @@ struct VergApp: App {
             switch phase {
             case .active:
                 BrightnessService.shared.reapplyAfterForeground()
+                AppLockService.shared.handleDidBecomeActive()
             case .background:
                 // `.background` only. `.inactive` also fires for a pulled-down
                 // Control Center, a notification banner, or a glance at the
@@ -47,9 +48,15 @@ struct VergApp: App {
                 // the screen jump while the app was still on screen, which is
                 // exactly the reset this service exists to prevent.
                 BrightnessService.shared.relinquish()
+                // The one phase that locks. See AppLockService's type note
+                // for why `.inactive` must not.
+                AppLockService.shared.handleDidEnterBackground()
             case .inactive:
                 // Momentary — the app is still on screen. Leave brightness be.
-                break
+                // The lock covers the app-switcher snapshot here but does not
+                // engage: Control Center and notification banners land here
+                // too, and locking on those throws the user out mid-session.
+                AppLockService.shared.handleWillResignActive()
             @unknown default:
                 break
             }
