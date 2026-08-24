@@ -51,7 +51,6 @@
 		A10000010000000000000021 /* SettingsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000021 /* SettingsViewModel.swift */; };
 		A10000010000000000000022 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000022 /* CalendarView.swift */; };
 		A10000010000000000000023 /* PageGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000023 /* PageGridView.swift */; };
-		A10000010000000000000024 /* StatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000024 /* StatsView.swift */; };
 		A10000010000000000000025 /* StatsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000025 /* StatsViewModel.swift */; };
 		A10000010000000000000026 /* CandleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000026 /* CandleView.swift */; };
 		A10000010000000000000027 /* TimerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000027 /* TimerView.swift */; };
@@ -61,7 +60,6 @@
 		A10000010000000000000033 /* OnboardingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000033 /* OnboardingViewModel.swift */; };
 		A10000010000000000000034 /* CustomTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000034 /* CustomTabBar.swift */; };
 		A10000010000000000000035 /* VergFlameView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000035 /* VergFlameView.swift */; };
-		A10000010000000000000036 /* CandleAmbientView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000036 /* CandleAmbientView.swift */; };
 		A10000010000000000000037 /* JournalView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000037 /* JournalView.swift */; };
 		A10000010000000000000038 /* Milestone.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000038 /* Milestone.swift */; };
 		A10000010000000000000039 /* AchievementService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000039 /* AchievementService.swift */; };
@@ -160,7 +158,6 @@
 		A20000010000000000000021 /* SettingsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsViewModel.swift; sourceTree = "<group>"; };
 		A20000010000000000000022 /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		A20000010000000000000023 /* PageGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageGridView.swift; sourceTree = "<group>"; };
-		A20000010000000000000024 /* StatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsView.swift; sourceTree = "<group>"; };
 		A20000010000000000000025 /* StatsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatsViewModel.swift; sourceTree = "<group>"; };
 		A20000010000000000000026 /* CandleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandleView.swift; sourceTree = "<group>"; };
 		A20000010000000000000027 /* TimerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerView.swift; sourceTree = "<group>"; };
@@ -171,7 +168,6 @@
 		A20000010000000000000033 /* OnboardingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingViewModel.swift; sourceTree = "<group>"; };
 		A20000010000000000000034 /* CustomTabBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomTabBar.swift; sourceTree = "<group>"; };
 		A20000010000000000000035 /* VergFlameView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VergFlameView.swift; sourceTree = "<group>"; };
-		A20000010000000000000036 /* CandleAmbientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CandleAmbientView.swift; sourceTree = "<group>"; };
 		A20000010000000000000037 /* JournalView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JournalView.swift; sourceTree = "<group>"; };
 		A20000010000000000000038 /* Milestone.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Milestone.swift; sourceTree = "<group>"; };
 		A20000010000000000000039 /* AchievementService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AchievementService.swift; sourceTree = "<group>"; };
@@ -465,7 +461,6 @@
 			isa = PBXGroup;
 			children = (
 				A40000010000000000000018 /* Components */,
-				A20000010000000000000024 /* StatsView.swift */,
 				A20000010000000000000025 /* StatsViewModel.swift */,
 			);
 			path = Stats;
@@ -515,7 +510,6 @@
 		A40000010000000000000021 /* Candle */ = {
 			isa = PBXGroup;
 			children = (
-				A20000010000000000000036 /* CandleAmbientView.swift */,
 			);
 			path = Candle;
 			sourceTree = "<group>";
@@ -781,7 +775,6 @@
 				A10000010000000000000054 /* Terrace.swift in Sources */,
 				A10000010000000000000055 /* LibraryView.swift in Sources */,
 				A10000010000000000000057 /* TabBarAutoHide.swift in Sources */,
-				A10000010000000000000024 /* StatsView.swift in Sources */,
 				A10000010000000000000025 /* StatsViewModel.swift in Sources */,
 				A10000010000000000000026 /* CandleView.swift in Sources */,
 				A10000010000000000000027 /* TimerView.swift in Sources */,
@@ -794,7 +787,6 @@
 				41720B928E05C6F67AA0E2E8 /* SessionGatingService.swift in Sources */,
 				A10000010000000000000034 /* CustomTabBar.swift in Sources */,
 				A10000010000000000000035 /* VergFlameView.swift in Sources */,
-				A10000010000000000000036 /* CandleAmbientView.swift in Sources */,
 				A10000010000000000000037 /* JournalView.swift in Sources */,
 				A10000010000000000000038 /* Milestone.swift in Sources */,
 				A10000010000000000000039 /* AchievementService.swift in Sources */,
