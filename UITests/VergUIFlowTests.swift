@@ -413,6 +413,22 @@ final class VergUIFlowTests: XCTestCase {
                       "The customize sheet has no colour picker")
     }
 
+    // MARK: - Achievements
+    /// Below the fold on the Archive, so never seen without scrolling.
+
+    func testAchievementsLadderRenders() {
+        let app = launch(appearance: "light", seeded: true)
+        open(app, tab: "library")
+        XCTAssertTrue(app.staticTexts["Archive"].waitForExistence(timeout: 5))
+
+        app.swipeUp()
+        app.swipeUp()
+        settle()
+        shoot(app, "archive-achievements")
+        XCTAssertTrue(app.staticTexts["ACHIEVEMENTS"].waitForExistence(timeout: 5),
+                      "The achievements ladder never came into view")
+    }
+
     // MARK: - Sound is one switch in two places
 
     /// Flipping Sound on Write has to move the Sound row in Settings. They

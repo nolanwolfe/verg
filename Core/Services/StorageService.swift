@@ -162,6 +162,7 @@ final class StorageService: ObservableObject {
         sessions = (journalPages + bookPages).sorted { $0.createdAt > $1.createdAt }
         stats.totalSessions = sessions.count
         stats.daysLit = 3
+        stats.longestDaysLit = 5
         saveSessions()
         saveStats()
 

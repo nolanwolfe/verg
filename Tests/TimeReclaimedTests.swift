@@ -340,3 +340,25 @@ final class DurationFormattingTests: XCTestCase {
         XCTAssertEqual(settings(90).formattedDuration, "1m 30s")
     }
 }
+
+// MARK: - UserStats invariants
+
+final class UserStatsInvariantTests: XCTestCase {
+
+    /// A longest run shorter than the current one renders as "3, longest 0".
+    /// Stored data can carry that: the key was `longestStreak` before the
+    /// rename, and CandleService writes `daysLit` on its own.
+    func testDecodingClampsLongestToAtLeastCurrent() throws {
+        // Wire names are the pre-rename ones — see UserStats.CodingKeys.
+        let json = #"{"currentStreak": 6, "longestStreak": 2, "totalSessions": 6}"#
+        let stats = try JSONDecoder().decode(UserStats.self, from: Data(json.utf8))
+        XCTAssertEqual(stats.daysLit, 6)
+        XCTAssertEqual(stats.longestDaysLit, 6, "longest must never trail current")
+    }
+
+    func testDecodingLeavesAHealthyLongestAlone() throws {
+        let json = #"{"currentStreak": 2, "longestStreak": 9, "totalSessions": 20}"#
+        let stats = try JSONDecoder().decode(UserStats.self, from: Data(json.utf8))
+        XCTAssertEqual(stats.longestDaysLit, 9)
+    }
+}

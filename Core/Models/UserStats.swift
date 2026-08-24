@@ -40,7 +40,13 @@ struct UserStats: Codable, Equatable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         daysLit = try container.decodeIfPresent(Int.self, forKey: .daysLit) ?? 0
-        longestDaysLit = try container.decodeIfPresent(Int.self, forKey: .longestDaysLit) ?? 0
+        // Clamped, not just decoded. `recordSession` maintains the invariant
+        // going forward, but this key was `longestStreak` before the rename
+        // and CandleService writes `daysLit` on its own during relight and
+        // gap validation — so stored data can arrive with a longest run
+        // shorter than the current one, which renders as "3, longest 0".
+        let storedLongest = try container.decodeIfPresent(Int.self, forKey: .longestDaysLit) ?? 0
+        longestDaysLit = max(storedLongest, daysLit)
         totalSessions = try container.decodeIfPresent(Int.self, forKey: .totalSessions) ?? 0
         lastSessionDate = try container.decodeIfPresent(Date.self, forKey: .lastSessionDate)
         relitDates = try container.decodeIfPresent([Date].self, forKey: .relitDates) ?? []

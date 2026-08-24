@@ -227,6 +227,10 @@ struct LibraryView: View {
     }
 
     private var weekDeltaCaption: String {
+        // The tile redacts its value behind The Golden Age; the caption must
+        // not then hand the same information over. "-9 min vs last week" is
+        // the comparison the locked number exists to give.
+        guard !isStatsLocked else { return "vs last week" }
         let summary = viewModel.timeReclaimed
         if summary.lastWeekSeconds == 0 && summary.weekSeconds == 0 { return "no pages yet" }
         let delta = summary.weekDeltaMinutes
