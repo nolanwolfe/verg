@@ -27,4 +27,4 @@ fastlane/test_output
 
 # StoreKit config files can be tracked if you want; comment out if needed
 # **/*.storekit
-download/
+verg.app/download/
