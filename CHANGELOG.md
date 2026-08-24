@@ -51,6 +51,15 @@ What it found, all now fixed:
   out of a smaller box rather than shrinking into it.
 - RevenueCat offerings were fetched twice on every launch.
 
+**Known and not fixed: the app ignores Dynamic Type.** `Theme.Typography` is
+built from `Font.system(size:)`, a fixed point size, so a person who has set
+larger text sees no change anywhere — screenshots at AccessibilityL are
+pixel-identical to the default. Every entry in the scale maps to a semantic
+style that would scale, but swapping them reflows every screen at once, and
+the layouts tuned hardest against fixed sizes are the ones that matter most:
+the iPhone SE fit and the paywall's single screen. Left for after 2.2, with
+UI tests already in place to catch what it breaks.
+
 Two unreachable screens deleted: `StatsView` (the tab LibraryView replaced)
 and `CandleAmbientView` (superseded by VergFlameView). Both still compiled,
 so both still had to be kept correct.

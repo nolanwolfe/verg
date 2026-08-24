@@ -23,13 +23,17 @@ final class VergUIFlowTests: XCTestCase {
         appearance: String,
         seeded: Bool = false,
         onboarding: Bool = false,
-        large: Bool = false
+        large: Bool = false,
+        textSize: String? = nil
     ) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-VergUITest", "-VergAppearance", appearance]
         if seeded { app.launchArguments.append("-VergSeedData") }
         if onboarding { app.launchArguments.append("-VergOnboarding") }
         if large { app.launchArguments.append("-VergSeedLarge") }
+        if let textSize {
+            app.launchArguments += ["-UIPreferredContentSizeCategoryName", textSize]
+        }
         app.launch()
         return app
     }
@@ -490,6 +494,57 @@ final class VergUIFlowTests: XCTestCase {
         shoot(app, "large-journal-deep")
         XCTAssertTrue(app.scrollViews.buttons.allElementsBoundByIndex.contains { $0.isHittable },
                       "The grid stopped drawing pages while scrolling")
+    }
+
+    // MARK: - Dynamic Type
+    //
+    // These pass, and today that means almost nothing: `Theme.Typography` is
+    // built from `Font.system(size:)`, which is a fixed point size and does
+    // not respond to the text-size setting at all. Screenshots at
+    // AccessibilityL are pixel-identical to the default.
+    //
+    // They are here as the guard for when that changes. Every entry in the
+    // scale maps to a semantic style that *would* scale — 17 semibold is
+    // `.headline`, 15 regular is `.subheadline`, and so on — but swapping
+    // them reflows every screen at once, and the layouts that matter most
+    // (the SE fit, the paywall's single screen) are tuned against the fixed
+    // sizes. That is a deliberate piece of work, not a find-and-replace.
+
+    func testLargeTextDoesNotBreakTheTabs() {
+        let app = launch(
+            appearance: "light",
+            seeded: true,
+            textSize: "UICTContentSizeCategoryAccessibilityL"
+        )
+        XCTAssertTrue(tab(app, "write").waitForExistence(timeout: 10),
+                      "The tab bar did not survive large text")
+
+        for name in ["write", "journal", "library", "settings"] {
+            XCTAssertTrue(open(app, tab: name), "Could not reach \(name) at large text")
+            shoot(app, "xl-\(name)")
+        }
+
+        // The tab bar still has to be usable — it is how you leave.
+        XCTAssertTrue(tab(app, "settings").isHittable,
+                      "The tab bar stopped being tappable at large text")
+    }
+
+    func testLargeTextOnThePaywall() {
+        let app = launch(
+            appearance: "light",
+            seeded: true,
+            textSize: "UICTContentSizeCategoryAccessibilityL"
+        )
+        open(app, tab: "settings")
+        let row = app.buttons["settings.The Golden Age"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        row.tap()
+        settle(1.0)
+        shoot(app, "xl-paywall")
+
+        // Whatever else reflows, the way to buy and the way out must remain.
+        XCTAssertTrue(app.buttons["The Golden Age"].waitForExistence(timeout: 5),
+                      "The paywall lost its CTA at large text")
     }
 
     // MARK: - Sound is one switch in two places
