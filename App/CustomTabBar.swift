@@ -183,6 +183,7 @@ struct CustomTabBar: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("tab.\(tab.rawValue)")
     }
 
     // MARK: - Write Tab
@@ -206,6 +207,7 @@ struct CustomTabBar: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("tab.write")
     }
 }
 

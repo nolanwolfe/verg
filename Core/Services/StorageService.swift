@@ -81,7 +81,32 @@ final class StorageService: ObservableObject {
         // Candle gap validation (including premium relights) now runs in
         // CandleService.refreshDaysLit(), which needs PurchaseService's
         // entitlement state — not available at this layer.
+
+        #if DEBUG
+        applyUITestOverridesIfNeeded()
+        #endif
     }
+
+    #if DEBUG
+    /// UI tests launch with `-VergUITest` to start from a known state —
+    /// past onboarding and the coach mark, so a test reaches the app itself
+    /// rather than the first-run sequence. `-VergAppearance light|dark|system`
+    /// pins the theme for a screenshot pass.
+    ///
+    /// DEBUG-only and inert without the flag, so it cannot affect a release
+    /// build or a real launch.
+    private func applyUITestOverridesIfNeeded() {
+        let args = ProcessInfo.processInfo.arguments
+        guard args.contains("-VergUITest") else { return }
+        settings.hasSeenOnboarding = true
+        settings.hasSeenSetTimerNotice = true
+        if let index = args.firstIndex(of: "-VergAppearance"),
+           index + 1 < args.count,
+           let mode = AppearanceMode(rawValue: args[index + 1]) {
+            settings.appearance = mode
+        }
+    }
+    #endif
 
     private func loadSessions() {
         guard let data = userDefaults.data(forKey: sessionsKey),

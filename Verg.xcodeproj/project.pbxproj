@@ -22,6 +22,7 @@
 		6B7C68B371EBE84982E1B033 /* ambient_earth.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 80E5C6FB39AC9EA3518C0D3B /* ambient_earth.m4a */; };
 		84D808917CA182531D07412E /* AppStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0037D8A48FC68AECADF0E328 /* AppStrings.swift */; };
 		89CFE2F8A3ACB70A9B60AC08 /* PageCaptureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DABEE012D4572BC7AFA1F71 /* PageCaptureTests.swift */; };
+		8F3BEBBF89D78C454624EEA2 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7AEEAEB60B010E7D6255DEF1 /* Foundation.framework */; };
 		9362AFD0F21ECF56B7936C4D /* ambient_movement.m4a in Resources */ = {isa = PBXBuildFile; fileRef = BF931F0B81C02B6A9E991A0A /* ambient_movement.m4a */; };
 		95F6805D2F1D205D00B93C28 /* 27421__kerri__zenbell_1.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 95F6805B2F1D205D00B93C28 /* 27421__kerri__zenbell_1.mp3 */; };
 		95F6805E2F1D205D00B93C28 /* 185822__lloydevans09__single-chime.wav in Resources */ = {isa = PBXBuildFile; fileRef = 95F6805C2F1D205D00B93C28 /* 185822__lloydevans09__single-chime.wav */; };
@@ -92,9 +93,17 @@
 		EBE50F474E89A8361C62810C /* TerraceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACC785888D739156328E98A1 /* TerraceTests.swift */; };
 		F481BCFEB8A889E1905AEDA2 /* TimeReclaimedCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 898AD9244BCD3A4014BB05AC /* TimeReclaimedCardView.swift */; };
 		FDA2A4020948DF89A7806BE7 /* BookLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04EC071F00E1D30084A3F7A3 /* BookLogicTests.swift */; };
+		FE21BE39C77080DB4C472ED2 /* VergUIFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E603CD9BF9C89C51682CB985 /* VergUIFlowTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		0AD2EE5524B296C5AB67C36A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A80000010000000000000001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A50000010000000000000001;
+			remoteInfo = Verg;
+		};
 		75181FD09E2C0CCB2F43F700 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = A80000010000000000000001 /* Project object */;
@@ -116,6 +125,7 @@
 		52D18BD1737C0BA640157030 /* ambient_stream.m4a */ = {isa = PBXFileReference; includeInIndex = 1; name = ambient_stream.m4a; path = Sounds/ambient_stream.m4a; sourceTree = "<group>"; };
 		5A3B42F81731303223482210 /* CandleRelightTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CandleRelightTests.swift; sourceTree = "<group>"; };
 		5FEA8350AEF2EA9FB71E7A9F /* WritingPrompt.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WritingPrompt.swift; sourceTree = "<group>"; };
+		678AE28650CE08196318789C /* VergUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VergUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6D95EF34BEA0EECAB4880F8D /* ProductIdentifiers.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProductIdentifiers.swift; path = Core/Constants/ProductIdentifiers.swift; sourceTree = "<group>"; };
 		7AEEAEB60B010E7D6255DEF1 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		80E5C6FB39AC9EA3518C0D3B /* ambient_earth.m4a */ = {isa = PBXFileReference; includeInIndex = 1; name = ambient_earth.m4a; path = Sounds/ambient_earth.m4a; sourceTree = "<group>"; };
@@ -188,6 +198,7 @@
 		D66B0478F0B1B87D3C18A0C6 /* ambient_motion.m4a */ = {isa = PBXFileReference; includeInIndex = 1; name = ambient_motion.m4a; path = Sounds/ambient_motion.m4a; sourceTree = "<group>"; };
 		DBBD1D40F4DC353098590A98 /* BrightnessService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BrightnessService.swift; path = Core/Services/BrightnessService.swift; sourceTree = "<group>"; };
 		E0E9AAF30597470AE40B5615 /* SessionGatingService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionGatingService.swift; path = Core/Services/SessionGatingService.swift; sourceTree = "<group>"; };
+		E603CD9BF9C89C51682CB985 /* VergUIFlowTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VergUIFlowTests.swift; sourceTree = "<group>"; };
 		F363E01CA80309C00CBFA394 /* SessionGatingServiceTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SessionGatingServiceTests.swift; path = SessionGatingServiceTests.swift; sourceTree = "<group>"; };
 		FADBFB1EA0CFE9BA340C3877 /* ambient_deep.m4a */ = {isa = PBXFileReference; includeInIndex = 1; name = ambient_deep.m4a; path = Sounds/ambient_deep.m4a; sourceTree = "<group>"; };
 		FD0A20F00D8D4B1B5CE0E2AA /* PageCapture.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PageCapture.swift; path = Core/Constants/PageCapture.swift; sourceTree = "<group>"; };
@@ -200,6 +211,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				40A9B4E8536EC83BCC001F96 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8CF5552E1DC6FA086FFD3901 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8F3BEBBF89D78C454624EEA2 /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -250,6 +269,15 @@
 			name = Constants;
 			sourceTree = "<group>";
 		};
+		6456885E3D4517ABCED73173 /* UITests */ = {
+			isa = PBXGroup;
+			children = (
+				E603CD9BF9C89C51682CB985 /* VergUIFlowTests.swift */,
+			);
+			name = UITests;
+			path = UITests;
+			sourceTree = "<group>";
+		};
 		A40000010000000000000001 = {
 			isa = PBXGroup;
 			children = (
@@ -265,6 +293,7 @@
 				CF7535432AF5C063A8B78555 /* Tests */,
 				02090A7E99DB6005712609EE /* Frameworks */,
 				52019627854D25B472BACF07 /* PromptsView.swift */,
+				6456885E3D4517ABCED73173 /* UITests */,
 			);
 			sourceTree = "<group>";
 		};
@@ -342,6 +371,7 @@
 			children = (
 				A20000010000000000000000 /* Verg.app */,
 				BA85F0D61ED1E6AE8A4E80C4 /* VergTests.xctest */,
+				678AE28650CE08196318789C /* VergUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -595,6 +625,24 @@
 			productReference = A20000010000000000000000 /* Verg.app */;
 			productType = "com.apple.product-type.application";
 		};
+		C7AEA0C42B4E78C7BA6464E7 /* VergUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 032927DEA631A3B8408F65D1 /* Build configuration list for PBXNativeTarget "VergUITests" */;
+			buildPhases = (
+				16A95BA9697352C7A5E37BEF /* Sources */,
+				8CF5552E1DC6FA086FFD3901 /* Frameworks */,
+				A516C9F9777B54E65A912C58 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A0F5410E67F21AB19C50D84E /* PBXTargetDependency */,
+			);
+			name = VergUITests;
+			productName = VergUITests;
+			productReference = 678AE28650CE08196318789C /* VergUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -628,11 +676,19 @@
 			targets = (
 				A50000010000000000000001 /* Verg */,
 				7CBE340CE31456303EDE0B35 /* VergTests */,
+				C7AEA0C42B4E78C7BA6464E7 /* VergUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		A516C9F9777B54E65A912C58 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		A60000010000000000000002 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -664,6 +720,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		16A95BA9697352C7A5E37BEF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FE21BE39C77080DB4C472ED2 /* VergUIFlowTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		9062CBDD05C8DF0325BC2565 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -749,6 +813,12 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		A0F5410E67F21AB19C50D84E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Verg;
+			target = A50000010000000000000001 /* Verg */;
+			targetProxy = 0AD2EE5524B296C5AB67C36A /* PBXContainerItemProxy */;
+		};
 		D9315BE28FDE1EA90FA1E9F4 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = Verg;
@@ -758,6 +828,23 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		18EE744068F0BEE4F1685E61 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGNING_ALLOWED = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = VergUITests;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.verg.app.uitests;
+				PRODUCT_NAME = VergUITests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = Verg;
+			};
+			name = Debug;
+		};
 		727202215263E8FC5245CE3C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -775,6 +862,24 @@
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Verg.app/Verg";
 			};
 			name = Debug;
+		};
+		94197C46177CED9257AE6115 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGNING_ALLOWED = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = VergUITests;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.verg.app.uitests;
+				PRODUCT_NAME = VergUITests;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_TARGET_NAME = Verg;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
 		};
 		A90000010000000000000001 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -993,6 +1098,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		032927DEA631A3B8408F65D1 /* Build configuration list for PBXNativeTarget "VergUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				94197C46177CED9257AE6115 /* Release */,
+				18EE744068F0BEE4F1685E61 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		0683CB82F0E8B7DE5BCEEA9C /* Build configuration list for PBXNativeTarget "VergTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

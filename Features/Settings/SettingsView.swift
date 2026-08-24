@@ -480,6 +480,7 @@ struct SettingsView: View {
                             .background(Theme.Colors.cardBackground)
                             .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small, style: .continuous))
                         }
+                        .accessibilityIdentifier("appearance.\(mode.rawValue)")
                     }
 
                     Text("The candle screens stay dark either way — they dim your screen on purpose.")
@@ -514,6 +515,7 @@ struct SettingsView: View {
                 VStack(spacing: Theme.Spacing.sm) {
                     ForEach(CalendarStyle.allCases) { style in
                         Button {
+                            AudioService.shared.playUITick()
                             viewModel.calendarStyle = style
                             viewModel.showCalendarStylePicker = false
                         } label: {
@@ -531,11 +533,14 @@ struct SettingsView: View {
                             .background(Theme.Colors.cardBackground)
                             .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small, style: .continuous))
                         }
+                        .accessibilityIdentifier("history.\(style.rawValue)")
                     }
                 }
                 .padding(Theme.Spacing.md)
             }
-            .navigationTitle("Calendar Style")
+            // "Calendar Style" was left over from when the setting was named
+            // for one of its own options; the row says History, so does this.
+            .navigationTitle("History")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -719,6 +724,7 @@ struct SettingsRow: View {
             }
             .padding(.vertical, Theme.Spacing.xxs)
         }
+        .accessibilityIdentifier("settings.\(title)")
     }
 }
 
@@ -744,6 +750,7 @@ struct SettingsToggleRow: View {
 
             Toggle("", isOn: $isOn)
                 .tint(Theme.Colors.toggleTint)
+                .accessibilityIdentifier("settings.toggle.\(title)")
                 // Every switch ticks. Haptic always; the sound follows the
                 // Sound setting, which this row may itself be flipping — so
                 // turning sound off is silent and turning it on is not.
@@ -826,6 +833,7 @@ struct SettingsButtonRow: View {
             }
             .padding(.vertical, Theme.Spacing.xxs)
         }
+        .accessibilityIdentifier("settings.\(title)")
     }
 }
 
@@ -856,6 +864,7 @@ struct SettingsLinkRow: View {
             }
             .padding(.vertical, Theme.Spacing.xxs)
         }
+        .accessibilityIdentifier("settings.\(title)")
     }
 }
 

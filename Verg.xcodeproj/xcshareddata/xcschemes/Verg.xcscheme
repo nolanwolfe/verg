@@ -54,6 +54,16 @@
                ReferencedContainer = "container:Verg.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "C7AEA0C42B4E78C7BA6464E7"
+               BuildableName = "VergUITests.xctest"
+               BlueprintName = "VergUITests"
+               ReferencedContainer = "container:Verg.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
