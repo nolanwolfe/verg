@@ -111,6 +111,75 @@ final class StorageService: ObservableObject {
            let mode = AppearanceMode(rawValue: args[index + 1]) {
             settings.appearance = mode
         }
+        if args.contains("-VergSeedData") { seedForUITesting() }
+    }
+
+    /// Build a journal out of nothing so the screens that only exist once
+    /// there are pages — the grid, the fullscreen viewer, a book — can be
+    /// reached by a test. Without this those screens can only ever be seen by
+    /// a person with a real journal, which is how they went unverified.
+    ///
+    /// Pages are drawn, not photographed: ruled lines on paper at the page
+    /// aspect, each numbered so a test can tell one from another.
+    private func seedForUITesting() {
+        sessions = []
+        books = []
+        stats = UserStats()
+
+        let made: [Session] = (0..<9).compactMap { index in
+            guard let data = Self.ruledPage(number: index + 1).jpegData(compressionQuality: 0.7) else { return nil }
+            let filename = "uitest-\(index).jpg"
+            try? data.write(to: imagesDirectory.appendingPathComponent(filename), options: [.atomic])
+            let day = Calendar.current.date(byAdding: .day, value: -index, to: Date()) ?? Date()
+            return Session(
+                date: day,
+                duration: 600,
+                activeDuration: 540,
+                imagePath: filename,
+                prompt: index.isMultiple(of: 3) ? "Name the thing you keep almost doing." : nil,
+                createdAt: day
+            )
+        }
+        sessions = made.sorted { $0.createdAt > $1.createdAt }
+        stats.totalSessions = made.count
+        stats.daysLit = 4
+        saveSessions()
+        saveStats()
+
+        // Archive the older half so there is a book on the shelf too.
+        let archived = Array(sessions.suffix(4))
+        if let book = Book.make(title: "Shiloh", archiving: archived, coverStyle: 0) {
+            books = [book]
+            saveBooks()
+        }
+    }
+
+    /// A page of ruled paper with a number on it.
+    private static func ruledPage(number: Int) -> UIImage {
+        let size = CGSize(width: 900, height: 900 / PageCapture.aspectRatio)
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        return UIGraphicsImageRenderer(size: size, format: format).image { ctx in
+            UIColor(white: 0.94, alpha: 1).setFill()
+            ctx.fill(CGRect(origin: .zero, size: size))
+            UIColor(red: 0.55, green: 0.60, blue: 0.72, alpha: 1).setStroke()
+            let path = UIBezierPath()
+            var y: CGFloat = 60
+            while y < size.height - 30 {
+                path.move(to: CGPoint(x: 50, y: y))
+                path.addLine(to: CGPoint(x: size.width - 50, y: y))
+                y += 42
+            }
+            path.lineWidth = 1
+            path.stroke()
+            ("\(number)" as NSString).draw(
+                at: CGPoint(x: 60, y: 12),
+                withAttributes: [
+                    .font: UIFont.boldSystemFont(ofSize: 44),
+                    .foregroundColor: UIColor(white: 0.35, alpha: 1)
+                ]
+            )
+        }
     }
     #endif
 

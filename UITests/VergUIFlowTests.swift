@@ -19,9 +19,10 @@ final class VergUIFlowTests: XCTestCase {
 
     // MARK: - Launch
 
-    private func launch(appearance: String) -> XCUIApplication {
+    private func launch(appearance: String, seeded: Bool = false) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-VergUITest", "-VergAppearance", appearance]
+        if seeded { app.launchArguments.append("-VergSeedData") }
         app.launch()
         return app
     }
@@ -213,6 +214,68 @@ final class VergUIFlowTests: XCTestCase {
         XCTAssertTrue(pill.waitForExistence(timeout: 5), "The duration pill is missing from Write")
         pill.tap()
         shoot(app, "duration-picker")
+    }
+
+    // MARK: - Screens that need a journal to exist
+    //
+    // The grid, the fullscreen viewer and a book only appear once there are
+    // pages, which is why they were the least-verified part of 2.2.
+
+    func testJournalGridAndFullscreenViewer() {
+        let app = launch(appearance: "light", seeded: true)
+        open(app, tab: "journal")
+        shoot(app, "seeded-journal-grid")
+
+        // Tapping a thumbnail opens the viewer, which pins itself dark.
+        let firstPage = app.scrollViews.buttons.firstMatch
+        XCTAssertTrue(firstPage.waitForExistence(timeout: 5), "The journal grid drew no pages")
+        firstPage.tap()
+        settle()
+        shoot(app, "seeded-fullscreen-viewer")
+
+        // The page counter proves the viewer opened on a real page.
+        XCTAssertTrue(app.staticTexts.matching(
+            NSPredicate(format: "label CONTAINS ' / '")
+        ).firstMatch.waitForExistence(timeout: 5), "The viewer has no page counter")
+    }
+
+    func testBookDetailOpens() {
+        let app = launch(appearance: "light", seeded: true)
+        open(app, tab: "library")
+        shoot(app, "seeded-archive")
+
+        let book = app.buttons.containing(.staticText, identifier: "Shiloh").firstMatch
+        guard book.waitForExistence(timeout: 5) else {
+            return XCTFail("No book on the Archive shelf")
+        }
+        book.tap()
+        settle()
+        shoot(app, "seeded-book-detail")
+        XCTAssertTrue(app.buttons["+ Add a note"].waitForExistence(timeout: 5),
+                      "Book detail did not render its note affordance")
+        XCTAssertTrue(app.staticTexts["4 pages"].exists,
+                      "Book detail did not render its page count")
+    }
+
+    func testArchiveShowsRealNumbers() {
+        let app = launch(appearance: "light", seeded: true)
+        open(app, tab: "library")
+        XCTAssertTrue(app.staticTexts["Archive"].waitForExistence(timeout: 5))
+        shoot(app, "seeded-archive-numbers")
+    }
+
+    func testPaywallOpensFromGoldenAge() {
+        let app = launch(appearance: "light", seeded: true)
+        open(app, tab: "settings")
+        let row = app.buttons["settings.The Golden Age"]
+        guard row.waitForExistence(timeout: 5) else {
+            return XCTFail("Settings has no Golden Age row")
+        }
+        row.tap()
+        settle()
+        shoot(app, "paywall")
+        XCTAssertTrue(app.staticTexts["The Golden Age"].waitForExistence(timeout: 5),
+                      "The paywall did not open")
     }
 
     // MARK: - Sound is one switch in two places

@@ -807,6 +807,7 @@ struct SettingsSwitchButtonRow: View {
             }
             .padding(.vertical, Theme.Spacing.xxs)
         }
+        .accessibilityIdentifier("settings.\(title)")
     }
 }
 
