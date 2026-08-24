@@ -23,6 +23,15 @@ struct CandleView: View {
     @State private var burnoutAnimating: Bool = false
     @State private var emberOpacity: Double = 0.0
 
+    /// What the candle actually draws, top of glow to bottom of wax:
+    /// 160 glow + 50 flame + 15 wick + 200 wax at its tallest.
+    ///
+    /// Published because `.frame(height:)` on this view changes only what it
+    /// *claims* — the internals are fixed sizes and overflow a smaller box
+    /// rather than shrinking into it. Anything laying the candle out next to
+    /// other content has to scale it against this, not frame it.
+    static let intrinsicHeight: CGFloat = 425
+
     private let candleWidth: CGFloat = 80
     private let wickLength: CGFloat = 15
 

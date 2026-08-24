@@ -19,21 +19,37 @@ struct HomeView: View {
 
     private let gatingService = SessionGatingService.shared
 
+    /// Roughly what the days-lit line, the button, the pills and the tab bar
+    /// occupy at the bottom. Only used to decide how much room the candle
+    /// has; a few points either way just changes the scale slightly.
+    private static let bottomBlockHeight: CGFloat = 300
+
     var body: some View {
         ZStack {
             // Background
             Theme.Colors.background
                 .ignoresSafeArea()
 
-            // Candle — anchored to top, respects status bar
-            VStack(spacing: 0) {
+            // Candle — anchored to top, respects status bar.
+            //
+            // Scaled, not framed. CandleView draws `intrinsicHeight` from
+            // fixed internal sizes and overflows a smaller box instead of
+            // shrinking into it, so the old `.frame(height: 320)` let it
+            // spill ~100pt past what it claimed. A tall phone has the slack
+            // to hide that; on an SE the wax ran straight through the
+            // "days lit" line below. Scale against the room actually left.
+            GeometryReader { geo in
+                let available = max(160, geo.size.height - 44 - Self.bottomBlockHeight)
+                let scale = min(1, available / CandleView.intrinsicHeight)
+
                 CandleView(progress: 1.0, isBurning: true, daysLit: viewModel.daysLit)
+                    .scaleEffect(scale, anchor: .top)
                     .frame(maxWidth: .infinity)
-                    .frame(height: 320)
+                    .frame(height: CandleView.intrinsicHeight * scale, alignment: .top)
                     .shadow(color: Theme.Colors.flameOuter.opacity(0.4), radius: 30)
-                Spacer()
+                    .padding(.top, 44)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             }
-            .padding(.top, 44)
 
             // Days lit + button — anchored well below candle
             VStack(spacing: 0) {
