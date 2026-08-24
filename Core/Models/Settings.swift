@@ -181,15 +181,30 @@ struct AppSettings: Codable, Equatable {
     ]
 
     /// Formatted duration text
+    /// Long form, matching `SettingsViewModel.formattedDuration` — which had
+    /// the correct implementation while this one said "1 minutes" and
+    /// "0 minutes".
     var formattedDuration: String {
-        let minutes = Int(timerDuration / 60)
-        return "\(minutes) minutes"
+        let total = Int(timerDuration.rounded())
+        if total < 60 { return total == 1 ? "1 sec" : "\(total) sec" }
+        if total % 60 == 0 {
+            let minutes = total / 60
+            return minutes == 1 ? "1 minute" : "\(minutes) minutes"
+        }
+        return "\(total / 60)m \(total % 60)s"
     }
 
     /// Short formatted duration
+    /// The Write screen's duration pill.
+    ///
+    /// Integer-divided by 60 this read "0 min" for any duration under a
+    /// minute and "1 min" for ninety seconds — the pill disagreed with the
+    /// Settings row beside it, which formats the same value correctly.
     var shortFormattedDuration: String {
-        let minutes = Int(timerDuration / 60)
-        return "\(minutes) min"
+        let total = Int(timerDuration.rounded())
+        if total < 60 { return "\(total) sec" }
+        if total % 60 == 0 { return "\(total / 60) min" }
+        return "\(total / 60)m \(total % 60)s"
     }
 
     /// Formatted notification time

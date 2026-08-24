@@ -311,3 +311,32 @@ final class TimerServiceActiveDurationTests: XCTestCase {
         XCTAssertEqual(service.activeDuration, durationAtCompletion, accuracy: 0.05)
     }
 }
+
+// MARK: - Duration formatting
+
+/// The Write pill and the Settings row show the same setting and disagreed:
+/// integer division made a one-second timer read "0 min" on the pill.
+final class DurationFormattingTests: XCTestCase {
+
+    private func settings(_ seconds: TimeInterval) -> AppSettings {
+        AppSettings(timerDuration: seconds)
+    }
+
+    func testSubMinuteReadsInSeconds() {
+        XCTAssertEqual(settings(1).shortFormattedDuration, "1 sec")
+        XCTAssertEqual(settings(1).formattedDuration, "1 sec")
+        XCTAssertEqual(settings(30).shortFormattedDuration, "30 sec")
+    }
+
+    func testWholeMinutes() {
+        XCTAssertEqual(settings(600).shortFormattedDuration, "10 min")
+        XCTAssertEqual(settings(600).formattedDuration, "10 minutes")
+        XCTAssertEqual(settings(60).formattedDuration, "1 minute", "not '1 minutes'")
+    }
+
+    func testRemainderIsNotSilentlyDropped() {
+        // Ninety seconds used to read as one minute on both.
+        XCTAssertEqual(settings(90).shortFormattedDuration, "1m 30s")
+        XCTAssertEqual(settings(90).formattedDuration, "1m 30s")
+    }
+}
