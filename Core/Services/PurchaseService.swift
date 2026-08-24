@@ -223,13 +223,7 @@ final class PurchaseService: ObservableObject {
             }
 
             #if DEBUG
-            let yearlyProduct = products.first { $0.id == ProductIdentifiers.yearly }
-            print("""
-            [Trial] offer=\(yearlyIntroOffer ?? "nil") \
-            eligible=\(yearlyIntroEligible) \
-            storeKitTrial=\(yearlyProduct?.freeTrialPeriod ?? "nil") \
-            productFound=\(yearlyProduct != nil)
-            """)
+            logTrialDiagnosis()
             #endif
 
             guard isUsingStoreKitTesting else { return }
@@ -252,6 +246,61 @@ final class PurchaseService: ObservableObject {
             #endif
         }
     }
+
+    #if DEBUG
+    /// Why the trial badge is or is not showing, in enough detail to tell a
+    /// propagation delay apart from a misconfiguration.
+    ///
+    /// Read this from the Xcode console on a real device with a sandbox
+    /// tester signed in. A simulator cannot settle the question: it will
+    /// resolve the product and its price, but introductory-offer metadata and
+    /// `isEligibleForIntroOffer` both depend on a signed-in App Store account.
+    @MainActor
+    private func logTrialDiagnosis() {
+        let product = products.first { $0.id == ProductIdentifiers.yearly }
+
+        var lines = ["[Trial] ── why the trial badge is/isn't showing ──"]
+        lines.append("  shown to user   : \(yearlyIntroOffer != nil && yearlyIntroEligible)")
+        lines.append("  product found   : \(product != nil) (\(ProductIdentifiers.yearly))")
+        lines.append("  product price   : \(product?.displayPrice ?? "—")")
+
+        if let intro = product?.subscription?.introductoryOffer {
+            lines.append("  StoreKit offer  : YES — \(intro.paymentMode) "
+                         + "\(intro.period.value) \(intro.period.unit)")
+        } else {
+            lines.append("  StoreKit offer  : none on the product")
+        }
+
+        if let rcDiscount = currentOffering?
+            .availablePackages
+            .first(where: { $0.storeProduct.productIdentifier == ProductIdentifiers.yearly })?
+            .storeProduct.introductoryDiscount {
+            lines.append("  RevenueCat offer: YES — \(rcDiscount.paymentMode)")
+        } else {
+            lines.append("  RevenueCat offer: none (offering: "
+                         + "\(currentOffering?.identifier ?? "not loaded"))")
+        }
+
+        lines.append("  eligible        : \(yearlyIntroEligible)")
+
+        let verdict: String
+        if product == nil {
+            verdict = "product not resolving — check the ID and the paid-apps agreement"
+        } else if product?.subscription?.introductoryOffer == nil {
+            verdict = "no offer on the product. Either App Store Connect has not "
+                + "propagated yet (often hours), the offer is not in an Approved "
+                + "state, or this is a simulator with no sandbox account signed in."
+        } else if !yearlyIntroEligible {
+            verdict = "the offer exists but THIS account is not eligible — it has "
+                + "already used the trial. Try a fresh sandbox tester."
+        } else {
+            verdict = "all clear — the badge should be showing"
+        }
+        lines.append("  verdict         : \(verdict)")
+
+        print(lines.joined(separator: "\n"))
+    }
+    #endif
 
     // MARK: - Subscription Status
 
