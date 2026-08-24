@@ -84,13 +84,18 @@ struct PageThumbnail: View {
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                         .frame(minWidth: 0, maxWidth: .infinity)
-                        .aspectRatio(1, contentMode: .fit)
+                        // The cell is the page's own shape. Square cells
+                        // centre-cropped a 3:2 page to about two thirds of
+                        // its width — on a written page that is the start and
+                        // the end of every line, which is most of what makes
+                        // one page recognisable from another.
+                        .aspectRatio(PageCapture.aspectRatio, contentMode: .fit)
                         .clipped()
                         .opacity(isLocked ? 0.35 : 1)
                 } else {
                     Rectangle()
                         .fill(Theme.Colors.cardBackground)
-                        .aspectRatio(1, contentMode: .fit)
+                        .aspectRatio(PageCapture.aspectRatio, contentMode: .fit)
                         .overlay(
                             Image(systemName: "photo")
                                 .foregroundColor(Theme.Colors.secondaryText.opacity(0.4))

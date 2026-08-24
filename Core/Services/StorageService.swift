@@ -100,6 +100,11 @@ final class StorageService: ObservableObject {
         guard args.contains("-VergUITest") else { return }
         settings.hasSeenOnboarding = true
         settings.hasSeenSetTimerNotice = true
+        // Reset the display choices too, or a run inherits whatever the last
+        // one picked and test order starts to matter.
+        settings.calendarStyle = .heatmap
+        settings.soundEnabled = true
+        settings.timerDuration = AppSettings.defaultTimerDuration
         // Clean slate: a previous run's scripts and folders would otherwise
         // still be here, and a test that creates one then looks for it finds
         // two.
