@@ -146,6 +146,14 @@ struct FullScreenImageView: View {
     let onDismiss: () -> Void
     let onDelete: (Session) -> Void
     let allowsDelete: Bool
+    /// Gating follows the page into the viewer.
+    ///
+    /// It used to stop at the grid: a locked thumbnail refused to open, but
+    /// the viewer was handed the *whole* session list, so opening any recent
+    /// page and swiping walked straight through every page in the archive.
+    /// The lock guarded one door and left the corridor open.
+    let isLocked: (Session) -> Bool
+    let onLockedTap: (Session) -> Void
 
     @State private var showDeleteConfirmation = false
     @State private var dismissDragProgress: CGFloat = 0
@@ -158,7 +166,9 @@ struct FullScreenImageView: View {
         peekThumbnail: @escaping (Session) -> UIImage? = { _ in nil },
         onDismiss: @escaping () -> Void,
         onDelete: @escaping (Session) -> Void = { _ in },
-        allowsDelete: Bool = true
+        allowsDelete: Bool = true,
+        isLocked: @escaping (Session) -> Bool = { _ in false },
+        onLockedTap: @escaping (Session) -> Void = { _ in }
     ) {
         self._sessions = State(initialValue: sessions)
         self._currentIndex = State(initialValue: min(initialIndex, max(0, sessions.count - 1)))
@@ -168,6 +178,8 @@ struct FullScreenImageView: View {
         self.onDismiss = onDismiss
         self.onDelete = onDelete
         self.allowsDelete = allowsDelete
+        self.isLocked = isLocked
+        self.onLockedTap = onLockedTap
     }
 
     private var currentSession: Session? {
@@ -196,6 +208,8 @@ struct FullScreenImageView: View {
                     // changes.
                     FullScreenPageView(
                         session: session,
+                        isLocked: isLocked(session),
+                        onLockedTap: { onLockedTap(session) },
                         // Hold on to a page's picture well past the two
                         // neighbours that can be on screen. Releasing at ±2
                         // meant a fast flick outran the window: pages were
@@ -330,6 +344,8 @@ struct FullScreenImageView: View {
 /// the (cheap, cached) thumbnail so opening the viewer stays fast at any count.
 private struct FullScreenPageView: View {
     let session: Session
+    let isLocked: Bool
+    var onLockedTap: () -> Void = {}
     /// Within the swipe window. Outside it the page holds no image at all,
     /// which is what keeps memory bounded however far the user swipes.
     let isWindowed: Bool
@@ -349,10 +365,43 @@ private struct FullScreenPageView: View {
         let near: Bool
     }
 
+    /// The page is still here — it was never deleted or hidden — but reading
+    /// it needs The Golden Age. Same promise the grid makes with its dimmed
+    /// thumbnail and lock badge.
+    private var lockedPage: some View {
+        VStack(spacing: Theme.Spacing.md) {
+            Image(systemName: "lock.fill")
+                .font(.system(size: 34, weight: .light))
+                .foregroundColor(.white.opacity(0.6))
+
+            Text(session.formattedDate)
+                .font(Theme.Typography.headline)
+                .foregroundColor(.white)
+
+            Text("This page is still here.\nThe Golden Age opens it.")
+                .font(Theme.Typography.subheadline)
+                .foregroundColor(.white.opacity(0.65))
+                .multilineTextAlignment(.center)
+
+            Button(action: onLockedTap) {
+                Text("The Golden Age")
+                    .font(Theme.Typography.headline)
+                    .foregroundColor(.black)
+                    .padding(.horizontal, Theme.Spacing.lg)
+                    .frame(height: 44)
+                    .background(Capsule().fill(Color(hex: "E8B53A")))
+            }
+            .padding(.top, Theme.Spacing.xs)
+        }
+        .padding(Theme.Spacing.xl)
+    }
+
     var body: some View {
         ZStack {
             Color.black
-            if let image = image {
+            if isLocked {
+                lockedPage
+            } else if let image = image {
                 ZoomableImageView(
                     image: image,
                     pageID: session.id,
@@ -366,6 +415,13 @@ private struct FullScreenPageView: View {
             }
         }
         .task(id: LoadKey(id: session.id, windowed: isWindowed, near: isNearCurrent)) {
+            // A locked page is never decoded — nothing will be shown, and
+            // reading it off disk would be work done to display a lock.
+            guard !isLocked else {
+                image = nil
+                hasFullRes = false
+                return
+            }
             guard isWindowed else {
                 // Outside the window: release the image. Nothing is on screen
                 // here, and this is what bounds memory across a long journal.

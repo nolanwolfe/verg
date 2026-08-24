@@ -167,7 +167,12 @@ struct BookDetailView: View {
                 loadThumbnail: { await viewModel.loadThumbnailAsync(for: $0) },
                 peekThumbnail: { viewModel.cachedThumbnail(for: $0) },
                 onDismiss: { viewerStart = nil },
-                allowsDelete: false
+                allowsDelete: false,
+                isLocked: { !gatingService.canViewPage(dated: $0.date) },
+                onLockedTap: { session in
+                    viewerStart = nil
+                    lockedPage = LockedPage(date: session.date)
+                }
             )
         }
         .fullScreenCover(item: $lockedPage) { page in

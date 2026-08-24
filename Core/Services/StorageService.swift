@@ -119,7 +119,7 @@ final class StorageService: ObservableObject {
            let mode = AppearanceMode(rawValue: args[index + 1]) {
             settings.appearance = mode
         }
-        if args.contains("-VergSeedData") { seedForUITesting() }
+        if args.contains("-VergSeedData") { seedForUITesting(large: args.contains("-VergSeedLarge")) }
     }
 
     /// Build a journal out of nothing so the screens that only exist once
@@ -129,7 +129,7 @@ final class StorageService: ObservableObject {
     ///
     /// Pages are drawn, not photographed: ruled lines on paper at the page
     /// aspect, each numbered so a test can tell one from another.
-    private func seedForUITesting() {
+    private func seedForUITesting(large: Bool) {
         sessions = []
         books = []
         stats = UserStats()
@@ -169,6 +169,33 @@ final class StorageService: ObservableObject {
         if let book = Book.make(title: "Shiloh", archiving: bookPages, coverStyle: 0) {
             books = [book]
             saveBooks()
+        }
+
+        // `-VergSeedLarge` pads the journal out to a real one's size. The
+        // page files are reused rather than redrawn — the point is to load
+        // the grid, the thumbnail cache and the viewer's swipe window, not
+        // the JPEG encoder.
+        if large {
+            let template = journalPages + bookPages
+            var padded = sessions
+            for index in 0..<200 {
+                guard let source = template[index % template.count] as Session? else { continue }
+                let day = Calendar.current.date(byAdding: .day, value: -(index + 30), to: Date()) ?? Date()
+                padded.append(
+                    Session(
+                        date: day,
+                        duration: 600,
+                        activeDuration: 540,
+                        imagePath: source.imagePath,
+                        prompt: nil,
+                        createdAt: day
+                    )
+                )
+            }
+            sessions = padded.sorted { $0.createdAt > $1.createdAt }
+            stats.totalSessions = sessions.count
+            saveSessions()
+            saveStats()
         }
     }
 

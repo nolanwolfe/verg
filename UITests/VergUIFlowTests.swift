@@ -22,12 +22,14 @@ final class VergUIFlowTests: XCTestCase {
     private func launch(
         appearance: String,
         seeded: Bool = false,
-        onboarding: Bool = false
+        onboarding: Bool = false,
+        large: Bool = false
     ) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-VergUITest", "-VergAppearance", appearance]
         if seeded { app.launchArguments.append("-VergSeedData") }
         if onboarding { app.launchArguments.append("-VergOnboarding") }
+        if large { app.launchArguments.append("-VergSeedLarge") }
         app.launch()
         return app
     }
@@ -427,6 +429,67 @@ final class VergUIFlowTests: XCTestCase {
         shoot(app, "archive-achievements")
         XCTAssertTrue(app.staticTexts["ACHIEVEMENTS"].waitForExistence(timeout: 5),
                       "The achievements ladder never came into view")
+    }
+
+    // MARK: - A real-sized journal
+    //
+    // Two hundred-odd pages, which is what a committed user actually has.
+    // The grid, the thumbnail cache and the viewer's swipe window all behave
+    // differently at that size than at nine.
+
+    /// Opening a page you *are* allowed to see and swiping must not walk you
+    /// through the ones you are not. The lock used to guard the grid only.
+    func testSwipingInTheViewerCannotWalkPastTheLock() {
+        let app = launch(appearance: "light", seeded: true, large: true)
+        open(app, tab: "journal")
+
+        let first = app.scrollViews.buttons.firstMatch
+        XCTAssertTrue(first.waitForExistence(timeout: 15), "The journal drew no pages")
+        first.tap()   // newest page, inside the free window
+        settle(1.2)
+
+        // Swipe past the seven-day boundary.
+        for _ in 0..<8 { app.swipeLeft() }
+        settle()
+        shoot(app, "viewer-swiped-into-locked")
+
+        XCTAssertTrue(app.buttons["The Golden Age"].waitForExistence(timeout: 5),
+                      "Swiping in the viewer showed a locked page's contents")
+    }
+
+    func testLargeJournalScrollsAndOpens() {
+        let app = launch(appearance: "light", seeded: true, large: true)
+        open(app, tab: "journal")
+
+        XCTAssertTrue(app.scrollViews.buttons.firstMatch.waitForExistence(timeout: 15),
+                      "A large journal never finished drawing its grid")
+        shoot(app, "large-journal-top")
+
+        // Open a recent page — deep in the grid every page is gated, and a
+        // locked tap correctly goes to the paywall instead of the viewer.
+        app.scrollViews.buttons.firstMatch.tap()
+        settle(1.2)
+        shoot(app, "large-journal-viewer")
+
+        // Swipe a short run, which is where the viewer used to blank pages
+        // and re-decode them.
+        for _ in 0..<4 { app.swipeLeft() }
+        settle()
+        shoot(app, "large-journal-swiped")
+        XCTAssertTrue(app.staticTexts.matching(
+            NSPredicate(format: "label CONTAINS ' / '")
+        ).firstMatch.exists, "The viewer lost its page counter while swiping")
+
+        app.buttons.matching(identifier: "xmark").firstMatch.tap()
+        settle()
+
+        // Scrolling a long way in is its own check: lazy loading and cache
+        // eviction meet somewhere past two hundred pages.
+        for _ in 0..<12 { app.swipeUp(velocity: .fast) }
+        settle()
+        shoot(app, "large-journal-deep")
+        XCTAssertTrue(app.scrollViews.buttons.allElementsBoundByIndex.contains { $0.isHittable },
+                      "The grid stopped drawing pages while scrolling")
     }
 
     // MARK: - Sound is one switch in two places

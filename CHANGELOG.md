@@ -40,6 +40,16 @@ What it found, all now fixed:
 - **`longestDaysLit` could trail `daysLit`**, rendering as "3, longest 0".
   Now clamped on decode, where pre-rename keys and CandleService's own writes
   can produce it.
+- **The free archive window could be walked straight past.** Gating stopped
+  at the grid: a locked thumbnail refused to open, but the fullscreen viewer
+  was handed the *whole* session list, so opening any page inside the free
+  window and swiping read every page in the archive. The lock guarded one
+  door and left the corridor open. Locked pages now show the lock in the
+  viewer too, and are never decoded.
+- **The candle overflowed its frame on small screens**, running through the
+  days-lit line on an iPhone SE. `CandleView` draws a fixed 425pt and spills
+  out of a smaller box rather than shrinking into it.
+- RevenueCat offerings were fetched twice on every launch.
 
 Two unreachable screens deleted: `StatsView` (the tab LibraryView replaced)
 and `CandleAmbientView` (superseded by VergFlameView). Both still compiled,

@@ -63,6 +63,11 @@ struct JournalView: View {
                 onDismiss: { viewerStart = nil },
                 onDelete: { session in
                     viewModel.deleteSession(session)
+                },
+                isLocked: { !gatingService.canViewPage(dated: $0.date) },
+                onLockedTap: { session in
+                    viewerStart = nil
+                    lockedPage = LockedPage(date: session.date)
                 }
             )
         }
