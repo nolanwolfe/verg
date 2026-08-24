@@ -316,7 +316,7 @@ struct SettingsView: View {
             SettingsButtonRow(
                 icon: "book",
                 iconColor: Theme.Colors.accent,
-                title: "How to write with Verg 🕯️",
+                title: "How to journal with Verg 🕯️",
                 action: {
                     AudioService.shared.playUITick()
                     NotificationCenter.default.post(name: .onboardingReplayRequested, object: nil)

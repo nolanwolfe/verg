@@ -69,6 +69,28 @@ final class VergUIFlowTests: XCTestCase {
         _ = XCTWaiter.wait(for: [expectation(description: "settle")], timeout: seconds)
     }
 
+    /// Mean brightness of the whole screen, 0 (black) to 1 (white).
+    ///
+    /// Which theme a screen is actually wearing is invisible to every other
+    /// kind of assertion here — labels and identifiers are identical in light
+    /// and dark, so a screen that flips theme passes a structural test and a
+    /// screenshot test alike, and only a person looking at the image notices.
+    /// Averaging the frame down to a single pixel turns that into a number a
+    /// test can fail on.
+    private func screenBrightness(_ app: XCUIApplication) -> CGFloat {
+        guard let cg = app.screenshot().image.cgImage else { return -1 }
+        var pixel = [UInt8](repeating: 0, count: 4)
+        let context = CGContext(
+            data: &pixel,
+            width: 1, height: 1,
+            bitsPerComponent: 8, bytesPerRow: 4,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        )
+        context?.draw(cg, in: CGRect(x: 0, y: 0, width: 1, height: 1))
+        return (CGFloat(pixel[0]) + CGFloat(pixel[1]) + CGFloat(pixel[2])) / (3 * 255)
+    }
+
     // MARK: - Every tab, both themes
 
     func testWalkEveryTabInLight() { walkEveryTab(appearance: "light") }
@@ -289,6 +311,27 @@ final class VergUIFlowTests: XCTestCase {
         XCTAssertTrue(app.buttons.matching(
             NSPredicate(format: "label BEGINSWITH 'The Golden Age'")
         ).firstMatch.waitForExistence(timeout: 5), "The paywall did not open from a dark app")
+
+        // …and it is actually daylight, not merely present. Structure alone
+        // cannot tell the two themes apart.
+        let brightness = screenBrightness(app)
+        XCTAssertGreaterThan(brightness, 0.6,
+                             "The paywall came up dark (brightness \(brightness))")
+    }
+
+    /// The mirror of the paywall rule: onboarding is a dark room with a
+    /// candle in it, whatever the Appearance setting says — and it runs
+    /// before anyone has set one. Launched light on purpose.
+    func testOnboardingIsDarkEvenInLightMode() {
+        let app = launch(appearance: "light", onboarding: true)
+        XCTAssertTrue(app.buttons["Continue"].waitForExistence(timeout: 10),
+                      "Onboarding never appeared")
+        settle()
+        shoot(app, "onboarding-dark-in-light-mode")
+
+        let brightness = screenBrightness(app)
+        XCTAssertLessThan(brightness, 0.35,
+                          "Onboarding came up light (brightness \(brightness))")
     }
 
     func testPaywallOpensFromGoldenAge() {

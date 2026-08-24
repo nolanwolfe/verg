@@ -36,7 +36,7 @@ struct ContentView: View {
 
             // Onboarding overlay (first launch, or replayed from
             // Settings → Guide)
-            if showOnboarding && !storageService.settings.hasSeenOnboarding {
+            if isOnboardingVisible {
                 OnboardingView(onComplete: {
                     // Defer state changes to avoid "Publishing changes from within view updates"
                     DispatchQueue.main.async {
@@ -211,8 +211,22 @@ struct ContentView: View {
     /// dark, and they are the two that earn it — the timer dims the display
     /// for the length of a session, and a photo viewer is dark in every app
     /// there is. The tabs themselves are just rooms, and they can be lit.
+    ///
+    /// Onboarding is the third: it is a dark room with a candle in it, which
+    /// is the whole pitch, and it has to read that way before anyone has an
+    /// Appearance setting to their name. It has to be decided *here* rather
+    /// than inside `OnboardingView` — `preferredColorScheme` is a window
+    /// preference, and this modifier sits above the overlay in the hierarchy,
+    /// so anything the overlay set for itself would be overridden on the way
+    /// up. (The paywall is the mirror of this and pins itself light, but it
+    /// is a `fullScreenCover` — its own presentation, out of reach of this.)
     private var resolvedColorScheme: ColorScheme? {
-        storageService.settings.appearance.colorScheme
+        if isOnboardingVisible { return .dark }
+        return storageService.settings.appearance.colorScheme
+    }
+
+    private var isOnboardingVisible: Bool {
+        showOnboarding && !storageService.settings.hasSeenOnboarding
     }
 
     @ViewBuilder
