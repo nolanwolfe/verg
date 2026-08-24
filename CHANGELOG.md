@@ -12,6 +12,44 @@ pages. Journal becomes just the current journal. Books gain rename and
 cover-color customization. The tab bar hides on scroll-down and returns
 on scroll-up on the Library screen.
 
+### Added — a UI test target, and the six bugs it found
+
+Nineteen XCUITests that drive the real app, plus a seeded journal so the
+screens that only exist once there are pages can be reached. The unit suite
+cannot open a sheet, switch a tab, or notice a label going invisible against
+its own background, and every defect of that kind this cycle had been caught
+by eye — which is why so much of 2.2 shipped unverified.
+
+What it found, all now fixed:
+
+- **Settings showed a stale Sound switch.** `SettingsViewModel` snapshots
+  storage at init and outlives a tab switch, so flipping the Sound pill on
+  Write left the Settings row reading the old value — the two doorways to one
+  setting disagreed.
+- **The paywall stopped naming the locked page that opened it.** A `Date?`
+  set beside a boolean, presented on the boolean: the same non-atomic pairing
+  that once made the page viewer open page one. The cover was built before
+  the date landed, so "Aug 11 is still here." fell back to the generic line.
+- **The journal grid cropped a third off every page.** Square cells against a
+  3:2 page cut the start and end of every line — most of what makes one page
+  recognisable at thumbnail size.
+- **The duration pill read "0 min"** for a one-second timer, "1 min" for
+  ninety seconds, and "1 minutes" in long form.
+- **A locked stat leaked its own number**: This Week redacted its value and
+  then printed "-9 min vs last week" beneath it.
+- **`longestDaysLit` could trail `daysLit`**, rendering as "3, longest 0".
+  Now clamped on decode, where pre-rename keys and CandleService's own writes
+  can produce it.
+
+Two unreachable screens deleted: `StatsView` (the tab LibraryView replaced)
+and `CandleAmbientView` (superseded by VergFlameView). Both still compiled,
+so both still had to be kept correct.
+
+Supporting: accessibility identifiers on the tab bar, settings rows and
+picker options; DEBUG-only `-VergUITest`, `-VergSeedData` and
+`-VergOnboarding` launch flags, inert without them.
+
+
 ### Changed — pages are landscape
 
 The page format goes from portrait 3:4 to landscape **3:2**. A notebook open
