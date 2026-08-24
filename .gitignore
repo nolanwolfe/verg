@@ -27,3 +27,9 @@ fastlane/test_output
 
 # StoreKit config files can be tracked if you want; comment out if needed
 # **/*.storekit
+
+# Sound source files — 35MB of MP3/WAV/CAF masters at the repo root. The
+# leading slash matters: written bare as `download/` this also matches
+# site/download/, which would silently exclude the website's download page
+# from the Pages build.
+/download/
