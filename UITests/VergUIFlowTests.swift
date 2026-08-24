@@ -376,7 +376,14 @@ final class VergUIFlowTests: XCTestCase {
         settle(1.2)
         shoot(app, "locked-page-tapped")
 
-        XCTAssertTrue(app.buttons["The Golden Age"].waitForExistence(timeout: 5),
+        // Matched by prefix: the CTA becomes "The Golden Age — 3 days free"
+        // whenever a trial is live and this subscriber is eligible, so an
+        // exact match passes or fails on App Store Connect's configuration
+        // rather than on the app.
+        let cta = app.buttons.matching(
+            NSPredicate(format: "label BEGINSWITH 'The Golden Age'")
+        ).firstMatch
+        XCTAssertTrue(cta.waitForExistence(timeout: 5),
                       "Tapping a locked page did not open the paywall")
 
         // And it should name the page they reached for, not fall back to the
@@ -457,8 +464,10 @@ final class VergUIFlowTests: XCTestCase {
         settle()
         shoot(app, "viewer-swiped-into-locked")
 
-        XCTAssertTrue(app.buttons["The Golden Age"].waitForExistence(timeout: 5),
-                      "Swiping in the viewer showed a locked page's contents")
+        XCTAssertTrue(app.buttons.matching(
+            NSPredicate(format: "label BEGINSWITH 'The Golden Age'")
+        ).firstMatch.waitForExistence(timeout: 5),
+        "Swiping in the viewer showed a locked page's contents")
     }
 
     func testLargeJournalScrollsAndOpens() {
@@ -543,8 +552,10 @@ final class VergUIFlowTests: XCTestCase {
         shoot(app, "xl-paywall")
 
         // Whatever else reflows, the way to buy and the way out must remain.
-        XCTAssertTrue(app.buttons["The Golden Age"].waitForExistence(timeout: 5),
-                      "The paywall lost its CTA at large text")
+        XCTAssertTrue(app.buttons.matching(
+            NSPredicate(format: "label BEGINSWITH 'The Golden Age'")
+        ).firstMatch.waitForExistence(timeout: 5),
+        "The paywall lost its CTA at large text")
     }
 
     // MARK: - Sound is one switch in two places

@@ -127,7 +127,10 @@ final class PaywallViewModel: ObservableObject {
     /// shown a free trial they'd be refused at the till.
     var yearlyTrialHeadline: String? {
         guard yearlyTrialAvailable, let offer = yearlyIntroOffer else { return nil }
-        return "\(offer) free trial"
+        // "3 days free", not "3 days free trial": it has to sit beside the
+        // word Yearly and a price on one row, and the longer phrase squeezed
+        // "Yearly" into three stacked letters. It also matches the CTA.
+        return "\(offer) free"
     }
 
     /// What they will actually be charged, and when.

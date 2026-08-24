@@ -12,6 +12,27 @@ pages. Journal becomes just the current journal. Books gain rename and
 cover-color customization. The tab bar hides on scroll-down and returns
 on scroll-up on the Library screen.
 
+### Fixed — the trial badge, now that there is a trial
+
+App Store Connect now carries the introductory offer and Monthly is $7.99, so
+the paywall showed its trial for the first time — and showed two faults with
+it.
+
+- **"3 days free free trial."** The two sources still disagreed on format.
+  `StoreProductDiscount.localizedSubscriptionPeriod` appends "free" to the
+  period, and the earlier fix for this only corrected the StoreKit path —
+  leaving RevenueCat, which is the path a real device actually takes. Both
+  now yield the bare period and the paywall composes the words. The CTA had
+  the same doubling: "The Golden Age — 3 days free free".
+- **"Yearly" was squeezed into three stacked letters** by the badge beside
+  it. The plan name no longer compresses, and the badge reads "3 days free"
+  rather than "3 days free trial" — shorter, and the same phrase as the CTA.
+
+UI tests match the CTA by prefix now. An exact match passed or failed on App
+Store Connect's configuration rather than on the app, which is exactly what
+happened the moment the trial went live.
+
+
 ### Added — a UI test target, and the six bugs it found
 
 Nineteen XCUITests that drive the real app, plus a seeded journal so the

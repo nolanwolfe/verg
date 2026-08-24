@@ -456,12 +456,18 @@ struct PlanCard: View {
                         Text(title)
                             .font(Theme.Typography.headline)
                             .foregroundColor(GoldenPalette.primaryText)
+                            // The plan name never compresses. Beside a trial
+                            // badge and a price it was squeezed to a column
+                            // of single letters — "Ye / ar / ly".
+                            .fixedSize(horizontal: true, vertical: false)
 
                         // The trial sits on the title line, immediately after
                         // the plan name — the first thing read on the row
                         // rather than a footnote under it.
                         if let trialHeadline {
                             ShinyGoldText(trialHeadline)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.8)
                                 .padding(.horizontal, 7)
                                 .padding(.vertical, 3)
                                 .background(

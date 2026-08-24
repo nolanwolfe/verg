@@ -149,8 +149,10 @@ final class PurchaseService: ObservableObject {
                 // Free trials only. A paid introductory price is still an
                 // "introductory discount", and calling one a free trial on
                 // the paywall would be a straightforward false claim.
-                if let intro = storeProduct.introductoryDiscount, intro.paymentMode == .freeTrial {
-                    yearlyIntroOffer = intro.localizedSubscriptionPeriod
+                if let intro = storeProduct.introductoryDiscount {
+                    // Bare period, like the StoreKit path — the paywall adds
+                    // the words.
+                    yearlyIntroOffer = intro.freeTrialPeriod
                 }
                 await refreshYearlyIntroEligibility()
             }
@@ -553,6 +555,24 @@ extension Product {
 
 // MARK: - StoreProductDiscount Extensions
 extension StoreProductDiscount {
+    /// The free-trial length alone — "3 days" — matching `Product.freeTrialPeriod`.
+    ///
+    /// `localizedSubscriptionPeriod` below appends "free", so the two sources
+    /// disagreed and the paywall, which composes its own sentence around the
+    /// value, rendered "3 days free free trial". Fixing only the StoreKit
+    /// side left this one, and RevenueCat is the path a real device takes.
+    var freeTrialPeriod: String? {
+        guard paymentMode == .freeTrial else { return nil }
+        let value = subscriptionPeriod.value
+        switch subscriptionPeriod.unit {
+        case .day:   return value == 1 ? "1 day" : "\(value) days"
+        case .week:  return value == 1 ? "1 week" : "\(value) weeks"
+        case .month: return value == 1 ? "1 month" : "\(value) months"
+        case .year:  return value == 1 ? "1 year" : "\(value) years"
+        @unknown default: return nil
+        }
+    }
+
     var localizedSubscriptionPeriod: String {
         let unit: String
         switch subscriptionPeriod.unit {
