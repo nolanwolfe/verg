@@ -1,40 +1,78 @@
 # Verg 2.2 — Release Notes
 
-## App Store "What's New" draft
+## Promotional text (App Store, 170 characters max)
 
-**Verg 2.2 — Light a candle. Write until it burns out.**
+Updatable without a new build, so this is the line to change if the pitch
+moves.
 
-- **Library** — a new tab that holds the whole record of your writing:
-  year-by-year totals, finished books, every stat, and the full
-  milestone ladder out to one million pages.
-- **Days lit heatmap** — a full year of writing at a glance, in ink.
-  Scroll back through the months; brighter cells mean more pages that day.
-- **Books, customized** — rename any book and choose its cover color.
-  Books live on the Library tab now; the Journal tab is just your current
-  journal.
-- **Milestones** — the whole ladder listed plainly: 10 pages to
-  1,000,000. Earned rows stay lit; the next one shows how far you have to go.
-- **Time Reclaimed** — see the minutes you spent writing instead of
-  scrolling, this week and all-time.
-- **Ambient sounds (The Golden Age)** — rain, fireplace, or deep focus while you write.
-- **+5 more minutes** — candle burned out but you're still flowing? Relight it.
-- **5, 10, or 15 minute sessions**, or set your own length.
-- **Sharper page photos** — tap to focus; close-up focus is fixed.
-- **Pinch to zoom** — zoom and pan any page; swipe down to dismiss.
-- **Faster journal** — smooth scrolling and instant page browsing, even
-  with hundreds of pages.
-- **New onboarding** — the Dante/Virgil epigraph, then five quick screens
-  ending in an honest projection of a year at your pace.
-- **Write and save as much as you want, always free** — the last 7 days
-  of pages, days lit, and the heatmap are free forever, no account.
-  **The Golden Age** unlocks your full archive, stats, prompts, ambient
-  sound, custom session length, and relights ($7.99/month or $59.99/year,
-  3-day free trial on yearly).
-- **Days lit, not streaks** — a missed day means the candle went out,
-  not a "streak broken." The Golden Age includes one relight a week, marked on
-  the calendar as its own thing — never shown as if you wrote.
-- **Quiet milestones for days lit** — marked with a line of text after
-  the bell. No badges, no points.
+> Light a candle. Put the phone down. Write until the bell. Photograph the page — your own handwriting, kept.
+
+*107 characters.*
+
+Alternates, same voice, if a shorter line reads better in the listing:
+
+> Pen, paper, ten minutes. Light a candle, write until the bell, and photograph the page.
+
+> A journal you write by hand. Light a candle, set the phone face down, and write until the bell.
+
+## What's New in This Version (1819 / 4000 characters)
+
+```
+The archive, rebuilt.
+
+ARCHIVE
+A new tab holding the whole record of your writing: this year and every year before it, your finished books, and the numbers underneath — time reclaimed, total pages, longest run.
+
+DAYS LIT
+A full year at a glance. Brighter squares are the days you wrote more. Switch to a month calendar in Settings if you'd rather read it that way. A missed day means the candle went out. You light it again.
+
+BOOKS
+Finish a journal and it becomes a book on the shelf. Rename it, choose from twenty-one cover colours, and write a line to remember it by.
+
+THE ORACLE
+Twenty-four scripts to write toward when the page is blank. Write your own, keep them in folders, change them whenever. Or take no script at all — that is a choice, not a missing setting.
+
+LIGHT AND DARK
+Verg follows your phone, or you can pin it to one. Settings, then Appearance.
+
+THE CAMERA
+Close-up focus is fixed: hold the phone over the page and it comes sharp. Tap to focus, zoom, and a light for a dark room. Every page is saved in the same frame now, whether you photograph it or choose it from your library.
+
+TIME RECLAIMED
+After the bell, the minutes you spent writing instead of scrolling.
+
+ALSO
+- Ambient sound while you write: eleven tracks
+- Five, ten, or fifteen minutes, or set your own
+- Five more minutes when the bell comes too soon
+- Pinch to zoom any page, swipe down to close
+- A faster journal, however many pages you have
+- New onboarding, ending in the honest arithmetic of a year at your pace
+
+FREE, AND THE GOLDEN AGE
+Writing and saving pages is free, always, with no account. Your last seven days stay open. The Golden Age opens the whole archive, the stats, the scripts, ambient sound, custom session lengths, and a weekly relight. $7.99 a month or $59.99 a year, with the first three days free on the year.
+```
+
+### Notes on the copy
+
+Written against VOICE.md: no exclamation marks, no questions, no emoji, one
+person addressed directly, "The Golden Age" in full with the article, and
+no streak, journey, unlock, or level language. Grepped clean.
+
+Two deliberate calls:
+
+- **"until the bell", not "until it burns out".** VOICE.md §5 still records
+  the 2.2 headline as "Light a candle. Write until it burns out." That
+  predates the in-app rule — a candle going out is what a *missed day*
+  means, so the phrase overloads the metaphor. The store copy follows the
+  app, and §5 should be corrected rather than the copy matched to it.
+- **The page format is described, not measured.** "Every page is saved in
+  the same frame" is true whichever aspect ratio it settles on, so the copy
+  does not need rewriting if the format changes before submission.
+
+Every number in the copy was checked against the source: 24 built-in
+scripts, 21 cover colours, 11 ambient tracks, a 7-day free window,
+$7.99/month, $59.99/year, 3 days free.
 
 ## QA before submission
 
