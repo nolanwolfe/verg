@@ -100,6 +100,12 @@ final class StorageService: ObservableObject {
         guard args.contains("-VergUITest") else { return }
         settings.hasSeenOnboarding = true
         settings.hasSeenSetTimerNotice = true
+        // Clean slate: a previous run's scripts and folders would otherwise
+        // still be here, and a test that creates one then looks for it finds
+        // two.
+        customPrompts = []
+        promptFolders = []
+        savePrompts()
         if let index = args.firstIndex(of: "-VergAppearance"),
            index + 1 < args.count,
            let mode = AppearanceMode(rawValue: args[index + 1]) {

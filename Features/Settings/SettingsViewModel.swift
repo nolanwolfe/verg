@@ -99,6 +99,31 @@ final class SettingsViewModel: ObservableObject {
         appearance = settings.appearance
     }
 
+    /// Re-read from storage, assigning only what actually differs.
+    ///
+    /// The published properties here are a *snapshot* taken at init, and the
+    /// object outlives a tab switch — so a setting changed anywhere else went
+    /// unnoticed. The Sound pill on Write is the same switch as the Sound row
+    /// here, and flipping it there left this row showing the old value.
+    ///
+    /// Only-if-different matters: each property has a `dropFirst` sink that
+    /// writes back to storage, and assigning an identical value would spend a
+    /// save and, for notifications, re-schedule them for nothing.
+    func refresh() {
+        let settings = storageService.settings
+        if timerDuration != settings.timerDuration { timerDuration = settings.timerDuration }
+        if soundEnabled != settings.soundEnabled { soundEnabled = settings.soundEnabled }
+        if notificationsEnabled != settings.notificationsEnabled { notificationsEnabled = settings.notificationsEnabled }
+        if notificationTime != settings.notificationTime { notificationTime = settings.notificationTime }
+        if ambientSoundEnabled != settings.ambientSoundEnabled { ambientSoundEnabled = settings.ambientSoundEnabled }
+        if ambientSoundID != settings.ambientSoundID { ambientSoundID = settings.ambientSoundID }
+        if weeklySummaryNotificationsEnabled != settings.weeklySummaryNotificationsEnabled {
+            weeklySummaryNotificationsEnabled = settings.weeklySummaryNotificationsEnabled
+        }
+        if calendarStyle != settings.calendarStyle { calendarStyle = settings.calendarStyle }
+        if appearance != settings.appearance { appearance = settings.appearance }
+    }
+
     private func setupBindings() {
         // Save changes automatically
         $timerDuration

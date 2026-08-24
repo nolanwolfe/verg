@@ -97,6 +97,10 @@ struct SettingsView: View {
             })
             .environmentObject(purchaseService)
         }
+        // Settings can be changed from outside this screen — Sound has a pill
+        // on Write — and this view model holds a snapshot, so it re-reads
+        // whenever the tab comes back into view.
+        .onAppear { viewModel.refresh() }
     }
 
     // MARK: - Header Section

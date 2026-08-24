@@ -37,13 +37,24 @@ final class VergUIFlowTests: XCTestCase {
         app.buttons["tab.\(name)"]
     }
 
-    /// Switch tabs and wait for the bar to settle.
+    /// Switch tabs, then let the cross-fade finish.
+    ///
+    /// SwiftUI dissolves between tabs, so a screenshot taken the instant
+    /// after a tap catches both screens at once — the first screenshot pass
+    /// showed Archive's headings ghosting through Settings, which reads as a
+    /// rendering bug and is not one. Settling makes the captures trustworthy.
     @discardableResult
     private func open(_ app: XCUIApplication, tab name: String) -> Bool {
         let button = tab(app, name)
         guard button.waitForExistence(timeout: 5) else { return false }
         button.tap()
+        settle()
         return true
+    }
+
+    /// Longer than the tab dissolve, shorter than a person would notice.
+    private func settle(_ seconds: TimeInterval = 0.9) {
+        _ = XCTWaiter.wait(for: [expectation(description: "settle")], timeout: seconds)
     }
 
     // MARK: - Every tab, both themes
