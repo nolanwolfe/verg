@@ -84,9 +84,10 @@ final class PurchaseService: ObservableObject {
             Purchases.logLevel = .error
             #endif
             Purchases.configure(withAPIKey: revenueCatAPIKey)
-            Task {
-                await fetchOfferingsFromRevenueCat()
-            }
+            // Deliberately no offerings fetch here: `fetchProducts()` below
+            // already calls it whenever there is an API key. Doing both meant
+            // two concurrent passes writing the same published price
+            // properties on every launch, for one set of prices.
         }
 
         if isUsingStoreKitTesting {
