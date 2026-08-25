@@ -20,20 +20,20 @@ struct SettingsView: View {
                     // Header
                     headerSection
 
-                    // Candle — how a session runs
-                    candleSection
+                    // App — the app itself: who can open it, how it looks
+                    appSection
 
                     // Guide — how it's taught, drawn from, and shown back
                     guideSection
 
-                    // Notifications
-                    notificationsSection
-
                     // Account
                     accountSection
 
-                    // App — appearance and the lock
-                    appSection
+                    // Candle — how a session runs
+                    candleSection
+
+                    // Notifications
+                    notificationsSection
 
                     // About
                     aboutSection
@@ -275,11 +275,14 @@ struct SettingsView: View {
     /// it has nothing to do with a subscription.
     private var appSection: some View {
         SettingsSection(title: "App") {
-            SettingsButtonRow(
-                icon: "star",
+            // A real `Toggle`, not the switch-shaped button used for The
+            // Golden Age: this one owns a local bool and both directions run
+            // a flow, so it can be driven straight from the binding.
+            SettingsToggleRow(
+                icon: "lock",
                 iconColor: Theme.Colors.accent,
-                title: "Rate Verg",
-                action: { viewModel.rateApp() }
+                title: "Lock App",
+                isOn: $viewModel.appLockEnabled
             )
 
             settingsDivider
@@ -297,14 +300,11 @@ struct SettingsView: View {
 
             settingsDivider
 
-            // A real `Toggle`, not the switch-shaped button used for The
-            // Golden Age: this one owns a local bool and both directions run
-            // a flow, so it can be driven straight from the binding.
-            SettingsToggleRow(
-                icon: "lock",
+            SettingsButtonRow(
+                icon: "star",
                 iconColor: Theme.Colors.accent,
-                title: "Lock App",
-                isOn: $viewModel.appLockEnabled
+                title: "Rate Verg",
+                action: { viewModel.rateApp() }
             )
         }
     }
@@ -325,18 +325,6 @@ struct SettingsView: View {
 
             settingsDivider
 
-            SettingsButtonRow(
-                icon: "text.quote",
-                iconColor: Theme.Colors.accent,
-                title: "The Oracle",
-                action: {
-                    AudioService.shared.playUITick()
-                    showPromptLibrary = true
-                }
-            )
-
-            settingsDivider
-
             SettingsRow(
                 icon: "calendar",
                 iconColor: .blue,
@@ -345,6 +333,18 @@ struct SettingsView: View {
                 action: {
                     AudioService.shared.playUITick()
                     viewModel.showCalendarStylePicker = true
+                }
+            )
+
+            settingsDivider
+
+            SettingsButtonRow(
+                icon: "text.quote",
+                iconColor: Theme.Colors.accent,
+                title: "The Oracle",
+                action: {
+                    AudioService.shared.playUITick()
+                    showPromptLibrary = true
                 }
             )
 

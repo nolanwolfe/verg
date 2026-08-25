@@ -677,11 +677,17 @@ struct HeatmapCell: View {
     /// GitHub's own contribution-graph greens, empty to brightest.
     static func fill(forLevel level: Int) -> Color {
         switch level {
+        // GitHub ships two palettes, and only the dark one was here. Its
+        // greens run #0E4429 (nearly black) up to #39D353 (bright) — correct
+        // against near-black paper, and exactly backwards on light, where
+        // the emptiest week was the darkest thing on the page and a full one
+        // nearly vanished. Each level is a pair now: light goes pale to deep,
+        // dark stays deep to bright, and both read less → more.
         case 0: return Theme.Colors.adaptive(light: "E6E1D6", dark: "1A1A1A")
-        case 1: return Color(hex: "0E4429")
-        case 2: return Color(hex: "006D32")
-        case 3: return Color(hex: "26A641")
-        default: return Color(hex: "39D353")
+        case 1: return Theme.Colors.adaptive(light: "9BE9A8", dark: "0E4429")
+        case 2: return Theme.Colors.adaptive(light: "40C463", dark: "006D32")
+        case 3: return Theme.Colors.adaptive(light: "30A14E", dark: "26A641")
+        default: return Theme.Colors.adaptive(light: "216E39", dark: "39D353")
         }
     }
 

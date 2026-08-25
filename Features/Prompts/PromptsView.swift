@@ -35,7 +35,7 @@ struct PromptSheetView: View {
                 VStack(spacing: Theme.Spacing.xl) {
                     Spacer()
 
-                    Text(draft?.text ?? "No script selected. Tap to see more.")
+                    Text(draft?.text ?? "No question yet. Tap to draw.")
                         .font(.system(size: 24, weight: .regular, design: .serif))
                         .foregroundColor(Theme.Colors.primaryText)
                         .multilineTextAlignment(.center)
@@ -75,25 +75,27 @@ struct PromptSheetView: View {
                         // sheet look broken on the first open, which is the
                         // glitch this replaces.
                         Button {
-                            if draft == nil {
-                                shuffle()
-                            } else {
-                                AudioService.shared.playUITick()
-                                selection = draft
-                                dismiss()
-                            }
+                            // Commits what is showing — always, and only.
+                            // It briefly drew when nothing was up, which
+                            // meant the confirm button sometimes dealt a
+                            // card instead of accepting one. With no script
+                            // drawn, what is showing *is* "no script", so
+                            // that is what it commits.
+                            AudioService.shared.playUITick()
+                            selection = draft
+                            dismiss()
                         } label: {
-                            Text("Select Guidance")
+                            Text("Take this one")
                         }
                         .buttonStyle(PrimaryButtonStyle())
                         .accessibilityIdentifier("oracle.select")
 
                         HStack(spacing: Theme.Spacing.sm) {
                             Button {
-                                AudioService.shared.playImpact(.light)
+                                AudioService.shared.playUITick()
                                 showLibrary = true
                             } label: {
-                                secondaryLabel("Your scripts")
+                                secondaryLabel("Your questions")
                             }
                             .buttonStyle(.plain)
                             .accessibilityIdentifier("oracle.mine")
@@ -103,7 +105,7 @@ struct PromptSheetView: View {
                                 selection = nil
                                 dismiss()
                             } label: {
-                                secondaryLabel("No script")
+                                secondaryLabel("No question")
                             }
                             .buttonStyle(.plain)
                             .accessibilityIdentifier("oracle.none")
@@ -125,8 +127,13 @@ struct PromptSheetView: View {
                 }
             }
             .sheet(isPresented: $showLibrary) {
-                PromptLibraryView()
-                    .environmentObject(storageService)
+                // Chosen, not committed: one of your own scripts lands in
+                // the same draft a drawn one does, and Select Guidance is
+                // still what accepts it.
+                PromptLibraryView(onSelect: { picked in
+                    draft = picked
+                })
+                .environmentObject(storageService)
             }
             // Resume from whatever the session already has, so reopening
             // shows your current script rather than a blank card.
@@ -172,6 +179,15 @@ struct PromptLibraryView: View {
     @EnvironmentObject private var storageService: StorageService
     @Environment(\.dismiss) private var dismiss
 
+    /// Set when this list is being used to *choose* a script — from the
+    /// Oracle. Nil when it is being browsed from Settings, where there is no
+    /// session to choose into and a tap can only mean edit.
+    ///
+    /// Without this the whole row opened the editor, so picking one of your
+    /// own scripts was impossible: every attempt to select put you in
+    /// editing instead.
+    var onSelect: ((WritingPrompt) -> Void)?
+
     @State private var showAddPrompt = false
     @State private var showAddFolder = false
     @State private var newFolderName = ""
@@ -204,7 +220,7 @@ struct PromptLibraryView: View {
                                     promptRow(prompt)
                                 }
                             } header: {
-                                Text(storageService.promptFolders.isEmpty ? "YOUR SCRIPTS" : "NO FOLDER")
+                                Text(storageService.promptFolders.isEmpty ? "YOUR QUESTIONS" : "NO FOLDER")
                                     .foregroundColor(Theme.Colors.secondaryText)
                             }
                         }
@@ -213,7 +229,7 @@ struct PromptLibraryView: View {
                     .scrollContentBackground(.hidden)
                 }
             }
-            .navigationTitle("Your scripts")
+            .navigationTitle("Your questions")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -225,7 +241,7 @@ struct PromptLibraryView: View {
                         Button {
                             showAddPrompt = true
                         } label: {
-                            Label("New script", systemImage: "plus")
+                            Label("New question", systemImage: "plus")
                         }
                         Button {
                             newFolderName = ""
@@ -284,31 +300,58 @@ struct PromptLibraryView: View {
             storageService.deletePromptFolder(id: folder.id)
         } label: {
             // Says what it does: the prompts inside survive the folder.
-            Text("Delete folder — keeps its scripts")
+            Text("Delete folder — keeps its questions")
                 .font(Theme.Typography.footnote)
         }
         .listRowBackground(Theme.Colors.cardBackground)
     }
 
     private func promptRow(_ prompt: WritingPrompt) -> some View {
-        // Tapping opens the editor. There was previously no way at all to
-        // change a script once written — only delete it and start again.
-        Button {
-            editingPrompt = prompt
-        } label: {
-            HStack {
-                Text(prompt.text)
-                    .font(Theme.Typography.body)
-                    .foregroundColor(Theme.Colors.primaryText)
-                    .multilineTextAlignment(.leading)
-                Spacer(minLength: Theme.Spacing.xs)
+        // Two targets, because the row means two things. The words select
+        // the script; the chevron on the right opens the editor. When there
+        // is nothing to select into — browsing from Settings — the words
+        // open the editor too, so the row is never inert.
+        HStack(spacing: 0) {
+            Button {
+                AudioService.shared.playUITick()
+                if let onSelect {
+                    onSelect(prompt)
+                    dismiss()
+                } else {
+                    editingPrompt = prompt
+                }
+            } label: {
+                HStack {
+                    Text(prompt.text)
+                        .font(Theme.Typography.body)
+                        .foregroundColor(Theme.Colors.primaryText)
+                        .multilineTextAlignment(.leading)
+                    Spacer(minLength: Theme.Spacing.xs)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            // No identifier here on purpose. An identifier on a container
+            // promotes it to a single accessibility element and hides what
+            // is inside — putting one here made the script's own text
+            // invisible to VoiceOver and to every query that looks for it.
+            // The button carries the script's text as its label already,
+            // which is a better handle than an identifier anyway.
+
+            Button {
+                AudioService.shared.playUITick()
+                editingPrompt = prompt
+            } label: {
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(Theme.Colors.secondaryText.opacity(0.5))
+                    .padding(.leading, Theme.Spacing.sm)
+                    .padding(.vertical, Theme.Spacing.xxs)
+                    .contentShape(Rectangle())
             }
-            .contentShape(Rectangle())
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("script.edit")
         }
-        .buttonStyle(.plain)
             .listRowBackground(Theme.Colors.cardBackground)
             .swipeActions(edge: .trailing) {
                 Button(role: .destructive) {
@@ -351,7 +394,7 @@ struct PromptLibraryView: View {
                 .font(Theme.Typography.headline)
                 .foregroundColor(Theme.Colors.primaryText)
 
-            Text("Add your own scripts and sort them into folders.")
+            Text("Add your own questions and sort them into folders.")
                 .font(Theme.Typography.subheadline)
                 .foregroundColor(Theme.Colors.secondaryText)
                 .multilineTextAlignment(.center)
@@ -380,7 +423,7 @@ struct PromptEditorView: View {
 
                 VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
                     VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
-                        Text("SCRIPT")
+                        Text("QUESTION")
                             .font(.system(size: 11, weight: .semibold))
                             .foregroundColor(Theme.Colors.secondaryText)
 
@@ -419,7 +462,7 @@ struct PromptEditorView: View {
                 text = editing.text
                 folderID = editing.folderID
             }
-            .navigationTitle(editing == nil ? "New script" : "Edit script")
+            .navigationTitle(editing == nil ? "New question" : "Edit question")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {

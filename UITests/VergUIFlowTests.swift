@@ -226,18 +226,67 @@ final class VergUIFlowTests: XCTestCase {
         field.typeText("A first line")
         app.buttons["Save"].tap()
 
-        XCTAssertTrue(app.staticTexts["A first line"].waitForExistence(timeout: 5),
+        // A row is now two buttons — the words select, the chevron edits —
+        // so the script's text is a button label rather than a loose
+        // static text. From Settings there is nothing to select into, so
+        // the words still open the editor.
+        let row = app.buttons["A first line"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5),
                       "A saved script did not appear in the library")
         shoot(app, "scripts-after-save")
 
         // Edit it
-        app.staticTexts["A first line"].tap()
+        row.tap()
         let editField = app.textFields.firstMatch
         XCTAssertTrue(editField.waitForExistence(timeout: 5),
                       "Tapping a script did not open the editor")
-        XCTAssertTrue(app.navigationBars["Edit script"].exists,
+        XCTAssertTrue(app.navigationBars["Edit question"].exists,
                       "The editor opened in create mode instead of edit mode")
         shoot(app, "scripts-editing")
+    }
+
+    /// Choosing one of your own scripts from the Oracle must choose it, not
+    /// open it for editing. The whole row was one button that opened the
+    /// editor, so selecting a script you had written was impossible.
+    func testPickingYourOwnScriptSelectsItRatherThanEditingIt() {
+        let app = launch(appearance: "light")
+
+        // Write one first — the built-ins are not listed here.
+        open(app, tab: "settings")
+        app.buttons["settings.The Oracle"].tap()
+        let add = app.buttons["Add"].exists ? app.buttons["Add"] : app.buttons.matching(identifier: "plus").firstMatch
+        if add.waitForExistence(timeout: 3) { add.tap() }
+        if app.buttons["New question"].waitForExistence(timeout: 3) { app.buttons["New question"].tap() }
+        let field = app.textFields.firstMatch
+        guard field.waitForExistence(timeout: 5) else { return XCTFail("No script editor") }
+        field.tap(); field.typeText("Mine to choose")
+        app.buttons["Save"].tap()
+        settle()
+        app.buttons["Done"].tap()
+        settle()
+
+        // Now pick it from the Oracle.
+        open(app, tab: "write")
+        app.buttons["write.scriptPill"].tap()
+        let mine = app.buttons["oracle.mine"]
+        XCTAssertTrue(mine.waitForExistence(timeout: 5), "The Oracle has no Your scripts button")
+        mine.tap()
+
+        let row = app.buttons["Mine to choose"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5), "The script is not listed")
+        row.tap()
+        settle()
+
+        XCTAssertFalse(app.navigationBars["Edit question"].exists,
+                       "Selecting a script opened the editor instead")
+        XCTAssertTrue(app.staticTexts["oracle.script"].waitForExistence(timeout: 5),
+                      "Selecting did not return to the Oracle")
+        shoot(app, "script-picked-from-library")
+
+        app.buttons["oracle.select"].tap()
+        settle()
+        XCTAssertTrue(app.buttons["write.scriptPill"].label.contains("Your question"),
+                      "A question of your own did not register as Your question")
     }
 
     // MARK: - The Oracle sheet
@@ -247,7 +296,7 @@ final class VergUIFlowTests: XCTestCase {
         XCTAssertTrue(tab(app, "write").waitForExistence(timeout: 10))
         open(app, tab: "write")
 
-        let pill = app.buttons.containing(.staticText, identifier: "No script").firstMatch
+        let pill = app.buttons.containing(.staticText, identifier: "No question").firstMatch
         XCTAssertTrue(pill.waitForExistence(timeout: 5), "The Oracle pill is missing from Write")
         pill.tap()
 
@@ -673,7 +722,7 @@ final class VergUIFlowTests: XCTestCase {
 
         let pill = app.buttons["write.scriptPill"]
         XCTAssertTrue(pill.waitForExistence(timeout: 5), "Write has no script pill")
-        XCTAssertTrue(pill.label.contains("No script"), "A session started with a script already set")
+        XCTAssertTrue(pill.label.contains("No question"), "A session started with a question already set")
         pill.tap()
 
         let card = app.staticTexts["oracle.script"]
@@ -696,16 +745,20 @@ final class VergUIFlowTests: XCTestCase {
 
         app.buttons["write.scriptPill"].tap()
 
-        // Always live: with nothing drawn it draws, and only then commits.
-        // It used to be disabled here, which read as a broken button.
-        let select = app.buttons["oracle.select"]
-        XCTAssertTrue(select.waitForExistence(timeout: 5), "The Oracle did not open")
-        XCTAssertTrue(select.isEnabled, "Select Guidance was inert with nothing drawn")
+        // Select Guidance commits what is showing and never deals. It
+        // briefly drew when the card was empty, which meant the confirm
+        // button sometimes dealt a card instead of accepting one.
+        let card = app.staticTexts["oracle.script"]
+        XCTAssertTrue(card.waitForExistence(timeout: 5), "The Oracle did not open")
+        card.tap()          // the card deals
+        settle()
+        let shown = card.label
 
-        select.tap()        // draws
+        let select = app.buttons["oracle.select"]
+        XCTAssertTrue(select.isEnabled, "Take this one was inert")
+        select.tap()
         settle()
-        select.tap()        // commits
-        settle()
+        XCTAssertFalse(shown.isEmpty, "Nothing was drawn to commit")
         shoot(app, "oracle-selected")
 
         // "Oracle", not "Script set": a drawn script comes from the fixed

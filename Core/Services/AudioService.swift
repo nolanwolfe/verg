@@ -170,17 +170,20 @@ final class AudioService: ObservableObject {
         play(.bellEnd)
     }
 
-    /// The Oracle dealing a script.
+    /// The Oracle dealing a script: a gust of wind.
     ///
-    /// Not the system tick every other control uses — drawing a script is
-    /// the one gesture in the app that is supposed to feel like the app
-    /// answering, and a keyboard click undercuts that. It is the session
-    /// chime trimmed to half a second, lifted, and taken down to a third of
-    /// its volume: recognisably the same instrument as the bells that open
-    /// and close a session, small enough to fire repeatedly without becoming
-    /// the thing you notice. Derived from the same CC0 recording rather than
-    /// synthesised, since synthesised audio has already been tried here and
-    /// replaced.
+    /// The *only* sound in the app that isn't a standard control click.
+    /// Every button in the Oracle — Take this one, Your questions, No question
+    /// — uses the same tick as the rest of the app, because they are
+    /// buttons. Turning the card over is the one gesture that isn't, so it
+    /// gets the one sound: a page turning in a draught, the room answering
+    /// rather than the interface acknowledging.
+    ///
+    /// Cut from `ambient_motion`, the wind track already shipped as
+    /// ambience, and shaped with a gust envelope — quick rise, longer fall —
+    /// so it reads as a single passing gust rather than a fragment of a
+    /// loop. A chime was tried first and was wrong: it competed with the
+    /// session bells, which are the app's actual voice.
     ///
     /// Haptic first and unconditionally: the tick belongs to the gesture,
     /// and someone who has turned sound off still gets the answer.
