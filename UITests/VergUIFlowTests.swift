@@ -328,7 +328,7 @@ final class VergUIFlowTests: XCTestCase {
         settle(1.0)
         shoot(app, "paywall-from-dark-app")
         XCTAssertTrue(app.buttons.matching(
-            NSPredicate(format: "label BEGINSWITH 'Enter the Golden Age'")
+            NSPredicate(format: "label BEGINSWITH 'Enter The Golden Age'")
         ).firstMatch.waitForExistence(timeout: 5), "The paywall did not open from a dark app")
 
         // …and it is actually daylight, not merely present. Structure alone
@@ -454,12 +454,12 @@ final class VergUIFlowTests: XCTestCase {
         settle(1.2)
         shoot(app, "locked-page-tapped")
 
-        // Matched by prefix: the CTA becomes "Enter the Golden Age — 3 Days Free"
+        // Matched by prefix: the CTA becomes "Enter The Golden Age — 3 Days Free"
         // whenever a trial is live and this subscriber is eligible, so an
         // exact match passes or fails on App Store Connect's configuration
         // rather than on the app.
         let cta = app.buttons.matching(
-            NSPredicate(format: "label BEGINSWITH 'Enter the Golden Age'")
+            NSPredicate(format: "label BEGINSWITH 'Enter The Golden Age'")
         ).firstMatch
         XCTAssertTrue(cta.waitForExistence(timeout: 5),
                       "Tapping a locked page did not open the paywall")
@@ -634,7 +634,7 @@ final class VergUIFlowTests: XCTestCase {
 
         // Whatever else reflows, the way to buy and the way out must remain.
         XCTAssertTrue(app.buttons.matching(
-            NSPredicate(format: "label BEGINSWITH 'Enter the Golden Age'")
+            NSPredicate(format: "label BEGINSWITH 'Enter The Golden Age'")
         ).firstMatch.waitForExistence(timeout: 5),
         "The paywall lost its CTA at large text")
     }

@@ -130,7 +130,7 @@ enum AppStrings {
         /// Left unfinished on purpose: naming the thing (it was "Becoming")
         /// answered the question for the reader. The blank hands it back, and
         /// whatever they fill in is what they'd be paying for.
-        static let lead = "Write what you are."
+        static let lead = "Write what you are"
         static let title = "On the Verg 🕯️ of ______"
         /// Kept for the context-aware case, where the paywall opened from a
         /// specific locked page and says so instead.
@@ -142,7 +142,7 @@ enum AppStrings {
         /// The paywall's own button, which asks for an action rather than
         /// naming a product. Split from `ctaTitle` after renaming that one
         /// silently renamed the product on the locked page too.
-        static let ctaAction = "Enter the Golden Age"
+        static let ctaAction = "Enter The Golden Age"
         static let contextSubtitleFormat = "%@ is still here."
         static let footerAssurance = "Writing is free. It always will be."
         static let restorePurchases = "Restore Purchases"

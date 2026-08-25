@@ -235,7 +235,7 @@ struct NativePaywallView: View {
             // below — made the blank read as a headline with a caption under
             // it rather than a thought completing.
             Text(viewModel.leadText)
-                .font(Theme.Typography.footnote)
+                .font(Theme.Typography.footnote.italic())
                 .foregroundColor(GoldenPalette.secondaryText)
                 .multilineTextAlignment(.center)
                 // Three commands, one size, wrapping to at most two lines.
@@ -470,11 +470,17 @@ struct PlanCard: View {
                     }
 
                     if let subtitle {
+                        // Two lines. It carries the real renewal price *and*
+                        // the cancellation note now, which is more than fits
+                        // beside a large price on one line — at `lineLimit(1)`
+                        // it truncated to "cancel anyt…", which is worse than
+                        // either place the words could have gone.
                         Text(subtitle)
                             .font(Theme.Typography.caption)
                             .foregroundColor(GoldenPalette.secondaryText)
-                            .lineLimit(1)
+                            .lineLimit(2)
                             .minimumScaleFactor(0.85)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                 }
 

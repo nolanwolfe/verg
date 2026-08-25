@@ -54,8 +54,8 @@ final class PaywallViewModel: ObservableObject {
         // the row read as three unrelated marks; outlined, they read as a set
         // and the eye goes to the words instead of the icons.
         Feature(icon: "books.vertical", text: "A private library of your becoming. Every page and every book, kept private to you."),
-        Feature(icon: "doc.text", text: "Insights that prove your progress. Year-by-year history of what you are working towards."),
-        Feature(icon: "slider.horizontal.3", text: "Your own ritual. Customization, ambience, scripts, candle wicks, session length & more.")
+        Feature(icon: "doc.text", text: "Insights that show who you're becoming, year-by-year."),
+        Feature(icon: "slider.horizontal.3", text: "Your own ritual. Customization, ambience, scripts, wicks, session length & more.")
     ]
 
     // MARK: - Dependencies
@@ -127,11 +127,13 @@ final class PaywallViewModel: ObservableObject {
     /// shown a free trial they'd be refused at the till.
     var yearlyTrialHeadline: String? {
         guard yearlyTrialAvailable, let offer = yearlyIntroOffer else { return nil }
-        // "3 days free, cancel anytime" — the reassurance belongs next to
-        // the offer, not in fine print underneath it. Still not the words
-        // "free trial": the row also carries "Yearly" and a price, and that
-        // phrase squeezed "Yearly" into three stacked letters.
-        return "\(offer) free, cancel anytime"
+        // Short, because this pill is rendered in shiny gold at one line
+        // with a 0.8 minimum scale — "3 days free, cancel anytime" shrank it
+        // to the point where the gradient ate the letters. "cancel anytime"
+        // moved to the subtitle below, which is flat, full-contrast text and
+        // can actually be read. Still not the words "free trial": the row
+        // also carries "Yearly" and a price.
+        return "\(offer) free"
     }
 
     /// What they will actually be charged, and when.
@@ -143,7 +145,7 @@ final class PaywallViewModel: ObservableObject {
     /// this line and the real figure appears nowhere.
     var yearlySubtitle: String {
         if yearlyTrialAvailable {
-            return "then \(yearlyPrice)/year"
+            return "then \(yearlyPrice)/year, cancel anytime"
         }
         return "\(yearlyPrice)/year"
     }
