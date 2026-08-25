@@ -121,6 +121,11 @@ final class StorageService: ObservableObject {
         if !args.contains("-VergAppLock") {
             MainActor.assumeIsolated { AppLockService.shared.disable() }
         }
+        // Same reasoning as the lock above: this outlives the app's own
+        // storage, so a redeemed code would silently make every later run
+        // premium — and the tests that notice are the paywall ones, which
+        // fail looking exactly like a bypass.
+        MainActor.assumeIsolated { PurchaseService.shared.resetGrantedAccessForUITesting() }
         if let index = args.firstIndex(of: "-VergAppearance"),
            index + 1 < args.count,
            let mode = AppearanceMode(rawValue: args[index + 1]) {

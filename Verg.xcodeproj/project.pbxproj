@@ -94,6 +94,7 @@
 		EBE50F474E89A8361C62810C /* TerraceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACC785888D739156328E98A1 /* TerraceTests.swift */; };
 		F481BCFEB8A889E1905AEDA2 /* TimeReclaimedCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 898AD9244BCD3A4014BB05AC /* TimeReclaimedCardView.swift */; };
 		FDA2A4020948DF89A7806BE7 /* BookLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04EC071F00E1D30084A3F7A3 /* BookLogicTests.swift */; };
+		FE010E0A085A8821668E2EB4 /* AccessCodeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45840E03A94B56147976922D /* AccessCodeTests.swift */; };
 		FE21BE39C77080DB4C472ED2 /* VergUIFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E603CD9BF9C89C51682CB985 /* VergUIFlowTests.swift */; };
 /* End PBXBuildFile section */
 
@@ -122,6 +123,7 @@
 		2B3EA26F8AEF44C05BFDF756 /* TimeReclaimedTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TimeReclaimedTests.swift; path = TimeReclaimedTests.swift; sourceTree = "<group>"; };
 		2FB0870FBFDAE6781C712AC6 /* ambient_storm.m4a */ = {isa = PBXFileReference; includeInIndex = 1; name = ambient_storm.m4a; path = Sounds/ambient_storm.m4a; sourceTree = "<group>"; };
 		3DABEE012D4572BC7AFA1F71 /* PageCaptureTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PageCaptureTests.swift; path = PageCaptureTests.swift; sourceTree = "<group>"; };
+		45840E03A94B56147976922D /* AccessCodeTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AccessCodeTests.swift; sourceTree = "<group>"; };
 		4925EC5E8BD87481343A7029 /* oracle_draw.wav */ = {isa = PBXFileReference; includeInIndex = 1; path = Sounds/oracle_draw.wav; sourceTree = "<group>"; };
 		4C3F6D131429DF832DEC156D /* MilestoneLogicTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MilestoneLogicTests.swift; path = MilestoneLogicTests.swift; sourceTree = "<group>"; };
 		52019627854D25B472BACF07 /* PromptsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptsView.swift; path = Features/Prompts/PromptsView.swift; sourceTree = "<group>"; };
@@ -577,6 +579,7 @@
 				ACC785888D739156328E98A1 /* TerraceTests.swift */,
 				85EC2041E044532B57A5617A /* CandleDaysLitStateTests.swift */,
 				3DABEE012D4572BC7AFA1F71 /* PageCaptureTests.swift */,
+				45840E03A94B56147976922D /* AccessCodeTests.swift */,
 			);
 			name = Tests;
 			path = Tests;
@@ -745,6 +748,7 @@
 				EBE50F474E89A8361C62810C /* TerraceTests.swift in Sources */,
 				B8D3EDEFD64E0B0FFDB2309A /* CandleDaysLitStateTests.swift in Sources */,
 				89CFE2F8A3ACB70A9B60AC08 /* PageCaptureTests.swift in Sources */,
+				FE010E0A085A8821668E2EB4 /* AccessCodeTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1013,7 +1017,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 37;
+				CURRENT_PROJECT_VERSION = 38;
 				DEVELOPMENT_TEAM = 9GHNQ3ZYX9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1049,7 +1053,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 37;
+				CURRENT_PROJECT_VERSION = 38;
 				DEVELOPMENT_TEAM = 9GHNQ3ZYX9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;

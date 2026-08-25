@@ -130,7 +130,7 @@ enum AppStrings {
         /// answered the question for the reader. The blank hands it back, and
         /// whatever they fill in is what they'd be paying for.
         static let lead = "Write what you are"
-        static let title = "On the Verg of ______"
+        static let title = "On the Verg 🕯️ of ______"
         /// Kept for the context-aware case, where the paywall opened from a
         /// specific locked page and says so instead.
         static let subtitle = "Put the phone down. Light the candle. Write what you are."

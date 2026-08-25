@@ -1,4 +1,5 @@
 import Foundation
+import CryptoKit
 import StoreKit
 import RevenueCat
 
@@ -8,14 +9,39 @@ final class PurchaseService: ObservableObject {
     // MARK: - Constants
     static let entitlementID = "premium"
 
-    // Friends & Family / UGC partner access codes
-    // Share these codes with friends, family, and UGC marketing partners
-    // Add new codes here as needed; existing codes never expire
-    static let validAccessCodes: Set<String> = [
-        "VERGFAM",      // friends & family (legacy)
-        "VERGVIP",      // UGC / marketing partners
-        "ONTHEVERG"     // Verg 2.0 launch campaign
+    // Friends & Family / UGC partner access codes.
+    //
+    // Digests, not codes. The codes themselves were plain strings here
+    // until 2.2, in a public repository — anyone browsing GitHub could read
+    // them and grant themselves permanent access, and they remain readable
+    // in this file's history, which is why the codes were rotated rather
+    // than merely moved. The old ones no longer work.
+    //
+    // What is stored is SHA-256 of `accessCodeSalt + code`. That keeps the
+    // repository safe to publish and keeps the codes out of `strings` on
+    // the shipped binary. It is obfuscation, not cryptography: the digests
+    // ship in the app, so someone determined enough to extract them could
+    // brute-force short codes offline. The random suffix on each code is
+    // what makes that expensive. The real fix is server-side validation —
+    // RevenueCat's own promotional entitlements or App Store offer codes —
+    // and this should move there before the codes are shared widely.
+    //
+    // To add one: hash `accessCodeSalt + CODE` and paste the digest here.
+    // Keep the plaintext somewhere that is not this repository.
+    private static let accessCodeSalt = "verg.access.v2"
+    static let validAccessCodeDigests: Set<String> = [
+        "66c04fda514fa97102d25a13246b16a086dc92337c038a6dbd8fa04277b68aef",  // friends & family
+        "430af88ef11d12929c3ea0500d432fef34ceaed2558dde2d11581e16da3d8264",  // UGC / marketing partners
+        "1412ec2a2095625422924112a03018cb6a87ccf30efaef71864dbd6e675dfb71"   // launch campaign
     ]
+
+    /// Hex SHA-256 of the salted code, matching how the digests above were
+    /// generated.
+    private static func accessCodeDigest(_ normalized: String) -> String {
+        SHA256.hash(data: Data((accessCodeSalt + normalized).utf8))
+            .map { String(format: "%02x", $0) }
+            .joined()
+    }
     private let friendsAndFamilyKey = "verg.isFriendsAndFamily"
 
     // MARK: - Published Properties
@@ -428,16 +454,34 @@ final class PurchaseService: ObservableObject {
     @discardableResult
     func redeemAccessCode(_ code: String) -> Bool {
         let normalized = code.uppercased().trimmingCharacters(in: .whitespacesAndNewlines)
-        guard Self.validAccessCodes.contains(normalized) else {
+        guard Self.validAccessCodeDigests.contains(Self.accessCodeDigest(normalized)) else {
             return false
         }
         isFriendsAndFamily = true
         UserDefaults.standard.set(true, forKey: friendsAndFamilyKey)
         #if DEBUG
-        print("[PurchaseService] Friends & Family access granted via code: \(normalized)")
+        // The code itself is deliberately not logged — a console line is
+        // one screen-share away from being public again.
+        print("[PurchaseService] Friends & Family access granted")
         #endif
         return true
     }
+
+    #if DEBUG
+    /// Clear granted access, for UI tests.
+    ///
+    /// Friends & Family is persisted, so anything that redeems a code —
+    /// including a unit test, which runs hosted by the app and writes to the
+    /// app's own defaults — grants premium to the simulator permanently. The
+    /// gating tests then fail reporting that locked pages open, which reads
+    /// as a paywall bypass and is not one. That happened; this is so it
+    /// cannot happen twice.
+    @MainActor
+    func resetGrantedAccessForUITesting() {
+        isFriendsAndFamily = false
+        UserDefaults.standard.removeObject(forKey: friendsAndFamilyKey)
+    }
+    #endif
 
     // MARK: - Restore Purchases
 
