@@ -54,7 +54,7 @@ final class PaywallViewModel: ObservableObject {
         // the row read as three unrelated marks; outlined, they read as a set
         // and the eye goes to the words instead of the icons.
         Feature(icon: "books.vertical", text: "Every page, every book, kept private."),
-        Feature(icon: "doc.text", text: "Insights that show how you become, year by year."),
+        Feature(icon: "doc.text", text: "Insights that show how you write, year by year."),
         Feature(icon: "slider.horizontal.3", text: "Customization, ambience, questions, wicks, session length, & more.")
     ]
 
