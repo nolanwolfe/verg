@@ -450,20 +450,22 @@ struct SettingsView: View {
     private var footerSection: some View {
         VStack(spacing: Theme.Spacing.sm) {
             // The square 1024 icon under a squircle, not the loose candle
-            // cutout: it sits in a rounded container exactly as the two
-            // social marks do, so the three read as a set rather than one
-            // illustration beside two buttons.
-            Image("VergIcon")
-                .resizable()
-                .renderingMode(.original)
-                .aspectRatio(contentMode: .fill)
-                .frame(width: 58, height: 58)
-                .clipShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 13, style: .continuous)
-                        .strokeBorder(Theme.Colors.hairline, lineWidth: 0.5)
-                )
-                .accessibilityLabel("Verg")
+            // cutout: it sits in a rounded container exactly as the social
+            // marks do, so the set reads as one family. Tapping it opens
+            // verg.app — the icon is where the site lives.
+            Link(destination: URL(string: "https://www.verg.app")!) {
+                Image("VergIcon")
+                    .resizable()
+                    .renderingMode(.original)
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 58, height: 58)
+                    .clipShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 13, style: .continuous)
+                            .strokeBorder(Theme.Colors.hairline, lineWidth: 0.5)
+                    )
+            }
+            .accessibilityLabel("Verg — verg.app")
 
             Text("Write on paper")
                 .font(Theme.Typography.subheadline)
