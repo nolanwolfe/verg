@@ -176,7 +176,7 @@ struct AppLockSetupSheet: View {
                     if stage == .enter {
                         Picker("Code style", selection: $style) {
                             Text("4 digits").tag(AppLockService.CodeStyle.fourDigit)
-                            Text("Written").tag(AppLockService.CodeStyle.passphrase)
+                            Text("Text").tag(AppLockService.CodeStyle.passphrase)
                         }
                         .pickerStyle(.segmented)
                         .onChange(of: style) { _, _ in
@@ -196,9 +196,13 @@ struct AppLockSetupSheet: View {
                         onSubmit: advance
                     )
                     .frame(maxWidth: style == .fourDigit ? 180 : .infinity)
-                    // A fresh field per stage, so the number pad's
-                    // submit-on-fourth-digit doesn't fire against stale text.
-                    .id(stage)
+                    // A fresh field per stage and per style: each new
+                    // identity runs its own onAppear focus, which is what
+                    // brings the keyboard up. Without the style in the id,
+                    // flipping 4 digits → Text left the same unfocused field
+                    // sitting there, silently asking for a tap that did
+                    // nothing — the keyboard never came.
+                    .id("\(style)-\(stage)")
 
                     if let error {
                         Text(error)
