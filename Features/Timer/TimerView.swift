@@ -320,7 +320,14 @@ struct TimerView: View {
             ZStack {
                 Theme.Colors.background.ignoresSafeArea()
 
-                VStack(spacing: Theme.Spacing.sm) {
+                // Scrolling, and not only half height. Twelve rows — Off
+                // plus eleven tracks — in a fixed VStack at `.medium` ran
+                // off the bottom of the sheet with no way to reach them, so
+                // most of the ambience library was unreachable from the
+                // timer. Settings' copy of this picker always scrolled; this
+                // one never did.
+                ScrollView {
+                  VStack(spacing: Theme.Spacing.sm) {
                     Button {
                         viewModel.setAmbienceEnabled(false)
                     } label: {
@@ -339,8 +346,9 @@ struct TimerView: View {
                             )
                         }
                     }
+                  }
+                  .padding(Theme.Spacing.md)
                 }
-                .padding(Theme.Spacing.md)
             }
             .navigationTitle("Ambience")
             .navigationBarTitleDisplayMode(.inline)
@@ -351,7 +359,7 @@ struct TimerView: View {
                 }
             }
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
     }
 
     private func ambienceRow(icon: String, iconColor: Color, title: String, isSelected: Bool) -> some View {
