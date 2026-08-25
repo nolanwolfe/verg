@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		2327A2B0F046CC33DBE68D02 /* BrightnessService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBBD1D40F4DC353098590A98 /* BrightnessService.swift */; };
+		2A53449D3D5C82D352CF4E5D /* oracle_draw.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4925EC5E8BD87481343A7029 /* oracle_draw.wav */; };
 		37BC8986C09C76DD05F7410C /* PromptsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52019627854D25B472BACF07 /* PromptsView.swift */; };
 		37EA337057ECBB624B85FDF6 /* OnboardingProjectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0EB2EA2468FDCFA22B69538 /* OnboardingProjectionTests.swift */; };
 		40A9B4E8536EC83BCC001F96 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7AEEAEB60B010E7D6255DEF1 /* Foundation.framework */; };
@@ -121,6 +122,7 @@
 		2B3EA26F8AEF44C05BFDF756 /* TimeReclaimedTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TimeReclaimedTests.swift; path = TimeReclaimedTests.swift; sourceTree = "<group>"; };
 		2FB0870FBFDAE6781C712AC6 /* ambient_storm.m4a */ = {isa = PBXFileReference; includeInIndex = 1; name = ambient_storm.m4a; path = Sounds/ambient_storm.m4a; sourceTree = "<group>"; };
 		3DABEE012D4572BC7AFA1F71 /* PageCaptureTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PageCaptureTests.swift; path = PageCaptureTests.swift; sourceTree = "<group>"; };
+		4925EC5E8BD87481343A7029 /* oracle_draw.wav */ = {isa = PBXFileReference; includeInIndex = 1; path = Sounds/oracle_draw.wav; sourceTree = "<group>"; };
 		4C3F6D131429DF832DEC156D /* MilestoneLogicTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MilestoneLogicTests.swift; path = MilestoneLogicTests.swift; sourceTree = "<group>"; };
 		52019627854D25B472BACF07 /* PromptsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptsView.swift; path = Features/Prompts/PromptsView.swift; sourceTree = "<group>"; };
 		52D18BD1737C0BA640157030 /* ambient_stream.m4a */ = {isa = PBXFileReference; includeInIndex = 1; name = ambient_stream.m4a; path = Sounds/ambient_stream.m4a; sourceTree = "<group>"; };
@@ -354,6 +356,7 @@
 				BF931F0B81C02B6A9E991A0A /* ambient_movement.m4a */,
 				2FB0870FBFDAE6781C712AC6 /* ambient_storm.m4a */,
 				52D18BD1737C0BA640157030 /* ambient_stream.m4a */,
+				4925EC5E8BD87481343A7029 /* oracle_draw.wav */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -707,6 +710,7 @@
 				9362AFD0F21ECF56B7936C4D /* ambient_movement.m4a in Resources */,
 				44FDD276577C647B5EFE0C18 /* ambient_storm.m4a in Resources */,
 				667CA47039B7D924E46CC693 /* ambient_stream.m4a in Resources */,
+				2A53449D3D5C82D352CF4E5D /* oracle_draw.wav in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

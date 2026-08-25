@@ -170,6 +170,32 @@ final class AudioService: ObservableObject {
         play(.bellEnd)
     }
 
+    /// The Oracle dealing a script.
+    ///
+    /// Not the system tick every other control uses — drawing a script is
+    /// the one gesture in the app that is supposed to feel like the app
+    /// answering, and a keyboard click undercuts that. It is the session
+    /// chime trimmed to half a second, lifted, and taken down to a third of
+    /// its volume: recognisably the same instrument as the bells that open
+    /// and close a session, small enough to fire repeatedly without becoming
+    /// the thing you notice. Derived from the same CC0 recording rather than
+    /// synthesised, since synthesised audio has already been tried here and
+    /// replaced.
+    ///
+    /// Haptic first and unconditionally: the tick belongs to the gesture,
+    /// and someone who has turned sound off still gets the answer.
+    func playOracleDraw() {
+        playImpact(.soft)
+        guard soundEnabled else { return }
+        guard let url = Bundle.main.url(forResource: "oracle_draw", withExtension: "wav") else {
+            #if DEBUG
+            print("AudioService: missing oracle_draw.wav")
+            #endif
+            return
+        }
+        playSound(at: url)
+    }
+
     /// Stop any playing sound
     func stop() {
         audioPlayer?.stop()

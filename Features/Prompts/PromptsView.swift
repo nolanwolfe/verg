@@ -21,9 +21,11 @@ struct PromptSheetView: View {
     /// What is on screen, which is not yet what you have chosen.
     @State private var draft: WritingPrompt?
     @State private var showLibrary = false
-    /// Nudges the card as it changes, so a swipe reads as dealing a card
-    /// rather than the text silently replacing itself.
-    @State private var cardOffset: CGFloat = 0
+    /// Bumped on every draw so the card can be re-identified, which is what
+    /// drives the deal transition. Not an offset animated by hand: setting
+    /// one and unsetting it in the same pass raced the implicit animation on
+    /// the text and made a single tap look like two switches.
+    @State private var drawCount: Int = 0
 
     var body: some View {
         NavigationView {
@@ -39,8 +41,13 @@ struct PromptSheetView: View {
                         .multilineTextAlignment(.center)
                         .lineSpacing(6)
                         .padding(.horizontal, Theme.Spacing.lg)
-                        .offset(x: cardOffset)
                         .accessibilityIdentifier("oracle.script")
+                        // One identity per draw, one transition per identity.
+                        .id(drawCount)
+                        .transition(.asymmetric(
+                            insertion: .move(edge: .trailing).combined(with: .opacity),
+                            removal: .move(edge: .leading).combined(with: .opacity)
+                        ))
                         // Swipe to deal the next one. Horizontal only, and
                         // only past a real threshold — the sheet itself is
                         // dismissed by a downward drag, and a lazy diagonal
@@ -55,7 +62,6 @@ struct PromptSheetView: View {
                                     shuffle()
                                 }
                         )
-                        .animation(Theme.Animation.quick, value: draft?.id)
 
                     Spacer()
 
@@ -84,6 +90,7 @@ struct PromptSheetView: View {
 
                         HStack(spacing: Theme.Spacing.sm) {
                             Button {
+                                AudioService.shared.playImpact(.light)
                                 showLibrary = true
                             } label: {
                                 secondaryLabel("Your scripts")
@@ -148,10 +155,13 @@ struct PromptSheetView: View {
     }
 
     private func shuffle() {
-        AudioService.shared.playUITick()
-        withAnimation(.easeIn(duration: 0.10)) { cardOffset = -18 }
-        draft = WritingPrompt.next(from: storageService.allPrompts, after: draft)
-        withAnimation(.spring(response: 0.32, dampingFraction: 0.72)) { cardOffset = 0 }
+        AudioService.shared.playOracleDraw()
+        // One animation, one state change. The card leaves left and the next
+        // arrives from the right — a deal, not a redraw.
+        withAnimation(.easeInOut(duration: 0.26)) {
+            draft = WritingPrompt.next(from: storageService.allPrompts, after: draft)
+            drawCount += 1
+        }
     }
 }
 

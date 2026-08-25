@@ -142,6 +142,37 @@ extension View {
 
 // MARK: - Custom Button Styles
 
+/// Fires a haptic the moment a button goes down, for any style that adopts
+/// it.
+///
+/// Put here rather than in each `action:` closure so it cannot be forgotten
+/// on the next button somebody adds — several already had a tick and several
+/// didn't, with no rule about which. On press, not on release: the feedback
+/// belongs to the finger landing, and firing it in the action means nothing
+/// happens when a press is cancelled by dragging off, which feels broken.
+///
+/// Deliberately silent. This is touch, not sound — the app has exactly two
+/// voices (the session bells and the Oracle) and buttons are not one of
+/// them.
+private struct PressHaptic: ViewModifier {
+    let isPressed: Bool
+    let style: UIImpactFeedbackGenerator.FeedbackStyle
+
+    func body(content: Content) -> some View {
+        content.onChange(of: isPressed) { _, pressed in
+            guard pressed else { return }
+            AudioService.shared.playImpact(style)
+        }
+    }
+}
+
+private extension View {
+    func pressHaptic(_ isPressed: Bool,
+                     _ style: UIImpactFeedbackGenerator.FeedbackStyle = .light) -> some View {
+        modifier(PressHaptic(isPressed: isPressed, style: style))
+    }
+}
+
 struct PrimaryButtonStyle: ButtonStyle {
     var isEnabled: Bool = true
 
@@ -164,6 +195,7 @@ struct PrimaryButtonStyle: ButtonStyle {
             .opacity(configuration.isPressed ? 0.8 : 1.0)
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
             .animation(Theme.Animation.quick, value: configuration.isPressed)
+            .pressHaptic(configuration.isPressed, isEnabled ? .medium : .light)
             .buttonGlow()
     }
 }
@@ -184,6 +216,7 @@ struct SecondaryButtonStyle: ButtonStyle {
             .opacity(configuration.isPressed ? 0.8 : 1.0)
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
             .animation(Theme.Animation.quick, value: configuration.isPressed)
+            .pressHaptic(configuration.isPressed)
     }
 }
 
@@ -193,6 +226,7 @@ struct TextLinkButtonStyle: ButtonStyle {
             .font(Theme.Typography.subheadline)
             .foregroundColor(Theme.Colors.secondaryText)
             .opacity(configuration.isPressed ? 0.6 : 1.0)
+            .pressHaptic(configuration.isPressed, .soft)
     }
 }
 
