@@ -54,10 +54,12 @@ The guide speaks *to* the writer, not *about* them.
    confirmations ("Delete this page?", "Delete this book?", "Finish this
    journal?"). Questions elsewhere put the app in the interrogative,
    subservient position; statements keep the guide's footing.
-3. **One emoji, and only one.** 🕯️ is permitted — it's the app's own
-   symbol, and it appears in the days-lit line and on the paywall's candle
-   stats row. No other emoji anywhere. (This rule used to read "no emoji,
-   anywhere"; the candle was carved out deliberately, not by drift.)
+3. **One emoji, and only where the words leave the app.** 🕯️ is permitted
+   — it's the app's own symbol — but only in text that travels: share
+   sheets ("Verg 🕯️ — light a candle."), notifications that leave via
+   APNs, social posts, messages. Inside the app's own screens, no emoji
+   at all. (This rule used to put the candle after every "Verg" in
+   user-visible copy; 2.2 pulled it back to outbound surfaces only.)
 4. **No streak language.** It is always "days lit"; a miss is "the candle
    went out", never "streak broken". A relight is a relight — it never
    pretends a day was written.

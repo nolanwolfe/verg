@@ -11,6 +11,7 @@ struct HomeView: View {
     @State private var showDurationPicker = false
     @State private var showPaywall = false
     @State private var showPromptSheet = false
+    @State private var showAmbiencePicker = false
     @State private var selectedPrompt: WritingPrompt?
 
     // Silent brightness control
@@ -90,6 +91,17 @@ struct HomeView: View {
             PromptSheetView(selection: $selectedPrompt)
                 .environmentObject(storageService)
         }
+        .sheet(isPresented: $showAmbiencePicker) {
+            AmbiencePickerSheet(
+                storageService: storageService,
+                isPremium: gatingService.isPremium,
+                onPaywall: {
+                    showAmbiencePicker = false
+                    showPaywall = true
+                }
+            )
+            .environmentObject(storageService)
+        }
         .sheet(isPresented: $showDurationPicker) {
             DurationPickerSheet(
                 currentDuration: storageService.settings.timerDuration,
@@ -162,7 +174,11 @@ struct HomeView: View {
         VStack(spacing: Theme.Spacing.xs) {
             HStack(spacing: Theme.Spacing.xs) {
                 if viewModel.daysLit > 0 {
-                    CandleFlameIcon()
+                    // The candle emoji, not CandleFlameIcon: the flame glyph
+                    // reads as part of the app's own chrome, while 🕯️ is the
+                    // symbol the app signs its outbound words with.
+                    Text("🕯️")
+                        .font(Theme.Typography.daysLitDisplay)
                 }
                 Text(viewModel.daysLitDisplayText)
                     .font(Theme.Typography.daysLitDisplay)
@@ -213,32 +229,67 @@ struct HomeView: View {
     /// than persisted, so membership of `customPrompts` is what separates
     /// them — an id that is not in there came from the fixed set.
     private var scriptState: String {
-        guard let selectedPrompt else { return "No script" }
+        guard let selectedPrompt else { return "No question" }
         let isOwn = storageService.customPrompts.contains { $0.id == selectedPrompt.id }
-        return isOwn ? "Your script" : "Oracle"
+        return isOwn ? "Your question" : "Oracle"
     }
 
     // MARK: - Sound Pill
+    /// Two zones in one capsule. The icon half is the mute switch — the
+    /// same master Sound switch as Settings, so the two never disagree.
+    /// The word and everything right of it opens ambience: that's the
+    /// choice you make deliberately, and it deserves its own doorway.
+    ///
+    /// The label shows which ambience is selected while one is on; with
+    /// none selected it falls back to "Sound". The pill keeps its width
+    /// behaviour honest by truncating hard — a reminder, not a display.
     private var soundPill: some View {
-        // The same switch as Settings → Candle → Sound, in the place you
-        // actually want it: one setting, two doorways. It used to toggle
-        // *ambience* while wearing the word "Sound", so flipping it here left
-        // the Sound row in Settings unchanged and the two looked broken.
-        //
-        // The icon carries the state: crossed out when off, open when on.
-        // Nothing changes colour — all three pills stay the same weight so
-        // the candle is still the only thing lit on this screen.
-        pill(
-            icon: storageService.settings.soundEnabled ? "speaker.wave.2" : "speaker.slash",
-            title: "Sound"
-        ) {
-            let turningOn = !storageService.settings.soundEnabled
-            storageService.setSoundEnabled(turningOn)
-            AudioService.shared.setSoundEnabled(turningOn)
-            // Tick after the change, so switching on is audible and switching
-            // off is silent — the same rule the Settings toggle follows.
-            AudioService.shared.playUITick()
+        HStack(spacing: 0) {
+            Button {
+                let turningOn = !storageService.settings.soundEnabled
+                storageService.setSoundEnabled(turningOn)
+                AudioService.shared.setSoundEnabled(turningOn)
+                // Tick after the change, so switching on is audible and switching
+                // off is silent — the same rule the Settings toggle follows.
+                AudioService.shared.playUITick()
+            } label: {
+                Image(systemName: storageService.settings.soundEnabled ? "speaker.wave.2" : "speaker.slash")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundColor(Theme.Colors.secondaryText)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Theme.Spacing.xxs)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                AudioService.shared.playUITick()
+                showAmbiencePicker = true
+            } label: {
+                Text(soundPillLabel)
+                    .font(Theme.Typography.caption)
+                    .lineLimit(1)
+                    .foregroundColor(Theme.Colors.secondaryText)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Theme.Spacing.xxs)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
         }
+        .background(
+            Capsule()
+                .stroke(Theme.Colors.secondaryText.opacity(0.25), lineWidth: 1)
+        )
+    }
+
+    /// Selected ambience when one is playing; otherwise the plain word.
+    private var soundPillLabel: String {
+        guard storageService.settings.soundEnabled,
+              storageService.settings.ambientSoundEnabled,
+              let sound = AudioService.AmbientSound(rawValue: storageService.settings.ambientSoundID) else {
+            return "Sound"
+        }
+        return sound.displayName
     }
 
     /// One shape for all three pills so the row stays even. Deliberately no
@@ -280,4 +331,104 @@ struct HomeView: View {
 // MARK: - Preview
 #Preview {
     HomeView()
+}
+
+// MARK: - Ambience Picker Sheet (Home)
+/// The same list as Settings → Candle → Ambience, opened from the Sound
+/// pill's word half. Writes through StorageService directly so the choice
+/// is live everywhere — the Settings row reads the same settings.
+///
+/// Gated like Settings: free users see the list but choosing a sound asks
+/// for The Ascent. "Off" is always allowed.
+struct AmbiencePickerSheet: View {
+    @ObservedObject var storageService: StorageService
+    let isPremium: Bool
+    let onPaywall: () -> Void
+
+    @Environment(\.dismiss) private var dismiss
+
+    private func choose(enabled: Bool, id: String? = nil) {
+        if enabled, !isPremium {
+            onPaywall()
+            return
+        }
+        AudioService.shared.playUITick()
+        storageService.setAmbientSoundEnabled(enabled)
+        if let id { storageService.setAmbientSoundID(id) }
+    }
+
+    var body: some View {
+        NavigationView {
+            ZStack {
+                Theme.Colors.background.ignoresSafeArea()
+
+                ScrollView {
+                    VStack(spacing: Theme.Spacing.sm) {
+                        // Off
+                        Button {
+                            choose(enabled: false)
+                        } label: {
+                            ambienceRow(
+                                icon: "speaker.slash",
+                                iconColor: Theme.Colors.secondaryText,
+                                title: "Off",
+                                isSelected: !storageService.settings.ambientSoundEnabled
+                            )
+                        }
+                        .buttonStyle(.plain)
+
+                        // Sounds
+                        ForEach(AudioService.AmbientSound.allCases) { sound in
+                            Button {
+                                choose(enabled: true, id: sound.rawValue)
+                            } label: {
+                                ambienceRow(
+                                    icon: sound.icon,
+                                    iconColor: Theme.Colors.flameOuter,
+                                    title: sound.displayName,
+                                    isSelected: storageService.settings.ambientSoundEnabled
+                                        && storageService.settings.ambientSoundID == sound.rawValue
+                                )
+                            }
+                            .buttonStyle(.plain)
+                        }
+
+                        Text("Plays softly while you write.")
+                            .font(Theme.Typography.caption)
+                            .foregroundColor(Theme.Colors.secondaryText.opacity(0.7))
+                            .padding(.top, Theme.Spacing.xs)
+                    }
+                    .padding(Theme.Spacing.md)
+                }
+            }
+            .navigationTitle("Ambience")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") { dismiss() }
+                        .foregroundColor(Theme.Colors.accent)
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+    }
+
+    private func ambienceRow(icon: String, iconColor: Color, title: String, isSelected: Bool) -> some View {
+        HStack {
+            Image(systemName: icon)
+                .foregroundColor(iconColor)
+                .frame(width: 24)
+            Text(title)
+                .font(Theme.Typography.body)
+                .foregroundColor(Theme.Colors.primaryText)
+            Spacer()
+            if isSelected {
+                Image(systemName: "checkmark")
+                    .foregroundColor(Theme.Colors.accent)
+            }
+        }
+        .padding(Theme.Spacing.md)
+        .background(Theme.Colors.cardBackground)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small, style: .continuous))
+    }
 }

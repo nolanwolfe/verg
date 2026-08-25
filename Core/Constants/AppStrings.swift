@@ -40,7 +40,7 @@ enum AppStrings {
         // Step 5 — the closing note. Mentions the rating; deliberately does
         // NOT trigger the system prompt, which fires on the third saved page.
         static let ratingPromptTitle = "One more thing."
-        static let ratingPromptBody = "Ratings light the way. They help others find Verg 🕯️"
+        static let ratingPromptBody = "Ratings light the way. They help others find Verg"
 
         static let skipButton = "Skip"
         static let continueButton = "Continue"
@@ -79,19 +79,18 @@ enum AppStrings {
             switch daysLit {
             case 0: return longestDaysLit > 0 ? candleWentOut : lightCandle
             case 1: return "1 day lit"
-            default: return "\(daysLit) days lit 🕯️"
+            default: return "\(daysLit) days lit"
             }
         }
 
-        /// The candle count as a standalone badge, or nil when unlit. The
-        /// emoji arrives at two days — one day is a start, not yet a run.
-        /// Shared so the Write screen and the post-session card can never
-        /// drift apart on it.
+        /// The candle count as a standalone badge, or nil when unlit. One
+        /// day is a start, not yet a run. Shared so the Write screen and
+        /// the post-session card can never drift apart on it.
         static func daysLitBadge(_ daysLit: Int) -> String? {
             switch daysLit {
             case ..<1: return nil
             case 1: return "1 day lit"
-            default: return "\(daysLit) days lit 🕯️"
+            default: return "\(daysLit) days lit"
             }
         }
 
@@ -131,7 +130,7 @@ enum AppStrings {
         /// answered the question for the reader. The blank hands it back, and
         /// whatever they fill in is what they'd be paying for.
         static let lead = "Write what you are"
-        static let title = "On the Verg 🕯️ of ______"
+        static let title = "On the Verg of ______"
         /// Kept for the context-aware case, where the paywall opened from a
         /// specific locked page and says so instead.
         static let subtitle = "Put the phone down. Light the candle. Write what you are."

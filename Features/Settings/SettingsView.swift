@@ -20,10 +20,10 @@ struct SettingsView: View {
                     // Header
                     headerSection
 
-                    // App — the app itself: who can open it, how it looks
+                    // App — the app itself: rate, appearance, lock
                     appSection
 
-                    // Guide — how it's taught, drawn from, and shown back
+                    // Insight — how it's taught, drawn from, and shown back
                     guideSection
 
                     // Account
@@ -37,6 +37,9 @@ struct SettingsView: View {
 
                     // About
                     aboutSection
+
+                    // Footer — the sign-off: mark, name, tagline, socials
+                    footerSection
 
                     // Version
                     versionSection
@@ -130,7 +133,7 @@ struct SettingsView: View {
 
     // MARK: - Candle Section
     /// Duration, sound and ambience — everything about how a session runs.
-    /// What it records lives under Guide.
+    /// What it records lives under Insight.
     private var candleSection: some View {
         SettingsSection(title: "Candle") {
             SettingsRow(
@@ -146,19 +149,10 @@ struct SettingsView: View {
 
             settingsDivider
 
-            SettingsToggleRow(
-                icon: "speaker.wave.2",
-                iconColor: Theme.Colors.accent,
-                title: "Sound",
-                isOn: $viewModel.soundEnabled
-            )
-
-            settingsDivider
-
             SettingsRow(
                 icon: "music.note",
                 iconColor: .blue,
-                title: isPremium ? "Ambience" : "Ambience  🔒",
+                title: isPremium ? "Ambience" : "Ambience 🔒",
                 value: viewModel.ambienceLabel,
                 action: {
                     AudioService.shared.playUITick()
@@ -168,6 +162,15 @@ struct SettingsView: View {
                         viewModel.showPaywall = true
                     }
                 }
+            )
+
+            settingsDivider
+
+            SettingsToggleRow(
+                icon: "speaker.wave.2",
+                iconColor: Theme.Colors.accent,
+                title: "Sound",
+                isOn: $viewModel.soundEnabled
             )
         }
     }
@@ -275,14 +278,11 @@ struct SettingsView: View {
     /// it has nothing to do with a subscription.
     private var appSection: some View {
         SettingsSection(title: "App") {
-            // A real `Toggle`, not the switch-shaped button used for The
-            // Golden Age: this one owns a local bool and both directions run
-            // a flow, so it can be driven straight from the binding.
-            SettingsToggleRow(
-                icon: "lock",
+            SettingsButtonRow(
+                icon: "star",
                 iconColor: Theme.Colors.accent,
-                title: "Lock App",
-                isOn: $viewModel.appLockEnabled
+                title: "Rate App",
+                action: { viewModel.rateApp() }
             )
 
             settingsDivider
@@ -300,23 +300,26 @@ struct SettingsView: View {
 
             settingsDivider
 
-            SettingsButtonRow(
-                icon: "star",
+            // A real `Toggle`, not the switch-shaped button used for The
+            // Golden Age: this one owns a local bool and both directions run
+            // a flow, so it can be driven straight from the binding.
+            SettingsToggleRow(
+                icon: "lock",
                 iconColor: Theme.Colors.accent,
-                title: "Rate Verg",
-                action: { viewModel.rateApp() }
+                title: "Lock App",
+                isOn: $viewModel.appLockEnabled
             )
         }
     }
 
-    // MARK: - Guide Section
+    // MARK: - Insight Section
     /// How the ritual is taught, what it draws from, and how it's shown back.
     private var guideSection: some View {
-        SettingsSection(title: "Guide") {
+        SettingsSection(title: "Insight") {
             SettingsButtonRow(
                 icon: "book",
                 iconColor: Theme.Colors.accent,
-                title: "How to journal with Verg 🕯️",
+                title: "Guidebook",
                 action: {
                     AudioService.shared.playUITick()
                     NotificationCenter.default.post(name: .onboardingReplayRequested, object: nil)
@@ -359,7 +362,7 @@ struct SettingsView: View {
                 // Blue: sharing is a system action, and the share sheet it
                 // opens is Apple's, not ours.
                 iconColor: .blue,
-                title: "Share Verg",
+                title: "Share to a friend",
                 action: { viewModel.shareApp() }
             )
 
@@ -436,21 +439,89 @@ struct SettingsView: View {
     }
     #endif
 
+    // MARK: - Footer
+    /// The sign-off. Mark, name, tagline, socials — quiet, centred, the last
+    /// thing on the screen.
+    // MARK: - Footer
+    /// The sign-off: the mark, what the app is for, where it lives, and the
+    /// build. Three logos in a row, each in its own colours — a monochrome
+    /// Instagram glyph is not the Instagram glyph, and the same is true of
+    /// the other two.
+    private var footerSection: some View {
+        VStack(spacing: Theme.Spacing.sm) {
+            // The square 1024 icon under a squircle, not the loose candle
+            // cutout: it sits in a rounded container exactly as the two
+            // social marks do, so the three read as a set rather than one
+            // illustration beside two buttons.
+            Image("VergIcon")
+                .resizable()
+                .renderingMode(.original)
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 58, height: 58)
+                .clipShape(RoundedRectangle(cornerRadius: 13, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 13, style: .continuous)
+                        .strokeBorder(Theme.Colors.hairline, lineWidth: 0.5)
+                )
+                .accessibilityLabel("Verg")
+
+            Text("Write on paper")
+                .font(Theme.Typography.subheadline)
+                .foregroundColor(Theme.Colors.secondaryText)
+
+            HStack(spacing: Theme.Spacing.sm) {
+                socialLink(
+                    "InstagramIcon",
+                    label: "Instagram",
+                    url: "https://www.instagram.com/vergjournal"
+                )
+                socialLink(
+                    "TikTokIcon",
+                    label: "TikTok",
+                    url: "https://www.tiktok.com/@vergjournal"
+                )
+                socialLink(
+                    "XIcon",
+                    label: "X",
+                    url: "https://x.com/vergjournal"
+                )
+            }
+            .padding(.top, Theme.Spacing.xxs)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.top, Theme.Spacing.lg)
+    }
+
+    /// Sized and cornered to match the Verg mark above, scaled down — the
+    /// row is three marks of the same family, not one logo and two icons.
+    private func socialLink(_ asset: String, label: String, url: String) -> some View {
+        Link(destination: URL(string: url)!) {
+            Image(asset)
+                .resizable()
+                .renderingMode(.original)
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 30, height: 30)
+                .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+                // The same hairline the Verg mark carries. TikTok's tile is
+                // black on light and white on dark; without an edge it would
+                // dissolve into whichever ground matched it.
+                .overlay(
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                        .strokeBorder(Theme.Colors.hairline, lineWidth: 0.5)
+                )
+        }
+        .accessibilityLabel(label)
+        .accessibilityIdentifier("footer.\(label)")
+    }
+
     // MARK: - Version Section
     private var versionSection: some View {
         VStack(spacing: Theme.Spacing.xxs) {
-            Link(destination: URL(string: "https://verg.app")!) {
-                Text("verg.app")
-                    .font(Theme.Typography.caption)
-                    .foregroundColor(Theme.Colors.accent)
-            }
-            .accessibilityIdentifier("settings.website")
-
             Text(viewModel.appVersion)
                 .font(Theme.Typography.caption)
                 .foregroundColor(Theme.Colors.secondaryText)
         }
-        .padding(.top, Theme.Spacing.md)
+        .padding(.top, Theme.Spacing.xxs)
     }
 
     // MARK: - Redeem Code Sheet

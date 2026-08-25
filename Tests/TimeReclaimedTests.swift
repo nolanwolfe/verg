@@ -134,9 +134,9 @@ final class TimeReclaimedAggregationTests: XCTestCase {
         XCTAssertEqual(moment.minutes, 12)
         XCTAssertNil(moment.todayLine)
         XCTAssertEqual(moment.unit, "minutes")
-        XCTAssertEqual(moment.daysLitLine, "4 days lit 🕯️")
+        XCTAssertEqual(moment.daysLitLine, "4 days lit")
         XCTAssertEqual(moment.accessibleSentence,
-                       "Your session: 12 minutes instead of scrolling. 4 days lit 🕯️")
+                       "Your session: 12 minutes instead of scrolling. 4 days lit")
     }
 
     func testMoment_LaterSessionOfDay_ReportsSessionThenDayTotal() {

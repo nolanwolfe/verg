@@ -750,8 +750,14 @@ final class StorageService: ObservableObject {
         saveSettings()
     }
 
+    /// Sound is the master switch for anything audible: turning it off takes
+    /// ambience with it, so the two settings can never disagree. Turning it
+    /// on does NOT re-enable ambience — that stays a deliberate choice.
     func setSoundEnabled(_ enabled: Bool) {
         settings.soundEnabled = enabled
+        if !enabled {
+            settings.ambientSoundEnabled = false
+        }
         saveSettings()
     }
 

@@ -53,9 +53,9 @@ final class PaywallViewModel: ObservableObject {
         // and the candle mark were heavier than the sliders beside them, so
         // the row read as three unrelated marks; outlined, they read as a set
         // and the eye goes to the words instead of the icons.
-        Feature(icon: "books.vertical", text: "A private library of your becoming. Every page and every book, kept private to you."),
-        Feature(icon: "doc.text", text: "Insights that show who you're becoming, year-by-year."),
-        Feature(icon: "slider.horizontal.3", text: "Your own ritual. Customization, ambience, scripts, wicks, session length & more.")
+        Feature(icon: "books.vertical", text: "Nothing you wrote is gone. Every page, every book, kept."),
+        Feature(icon: "doc.text", text: "Insights that show how you change, year by year."),
+        Feature(icon: "slider.horizontal.3", text: "Your own ritual. Customization, ambience, questions, wicks, session length & more.")
     ]
 
     // MARK: - Dependencies

@@ -12,13 +12,18 @@ struct VergFlameView: View {
     @State private var phraseIndex: Int = 0
 
     private let phrases: [String] = [
-        "candlelight",
         "on the verg of greatness",
         "believe in yourself",
-        "write",
         "the page is waiting",
+        "write",
         "clarity lives in stillness",
-        "your story matters"
+        "on the verg of becoming",
+        "write",
+        "write what you are",
+        "write who you are",
+        "write where you are",
+        "write why you are",
+        "write when you are becoming"
     ]
 
     // Swipe gesture tracking
@@ -65,6 +70,9 @@ struct VergFlameView: View {
             brightness = BrightnessService.shared.levelOnAppear(default: 0.65)
             BrightnessService.shared.take(brightness)
             dragStartBrightness = brightness
+            // The phrases read as one ordered line; the sequence matters,
+            // where you enter it doesn't. Start at a random point each visit.
+            phraseIndex = Int.random(in: 0..<phrases.count)
             startGlowPulse()
             scheduleHide()
         }
@@ -137,7 +145,11 @@ struct VergFlameView: View {
     private var controls: some View {
         VStack {
             Text(phrases[phraseIndex])
+                // Back to the 2.1 size — 13pt ultraLight. Quiet again rather
+                // than tiny; the single-line rule from the 2.2 pass stays.
                 .font(.system(size: 13, weight: .ultraLight, design: .serif))
+                .minimumScaleFactor(0.6)
+                .lineLimit(1)
                 // Ember on black, but that same orange laid over a lit
                 // orange glow is invisible. On paper the word takes the
                 // room's own ink instead.

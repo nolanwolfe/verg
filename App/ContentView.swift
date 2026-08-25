@@ -83,7 +83,7 @@ struct ContentView: View {
                 // Cleared on `.active` without authenticating.
                 Theme.Colors.background
                     .ignoresSafeArea()
-                    .overlay(Text("🕯️").font(.system(size: 44)))
+                    .overlay(Text("🕯️").font(.system(size: 44)).accessibilityHidden(true))
                     .zIndex(9)
             }
         }

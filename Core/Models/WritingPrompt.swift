@@ -1,4 +1,5 @@
 import Foundation
+import CryptoKit
 
 /// A folder of the user's own prompts. Built-in prompts don't belong to a
 /// folder — they're a fixed set that always exists.
@@ -28,6 +29,24 @@ struct WritingPrompt: Identifiable, Codable, Equatable {
         self.text = text
         self.folderID = folderID
         self.createdAt = createdAt
+    }
+
+    /// Deterministic id from the text itself. Built-ins are reconstructed on
+    /// every access of `builtIn`, so a random UUID gave the same sentence a
+    /// different identity each time — which broke the shuffle's no-repeat
+    /// rule: the prompt showing on screen never matched anything in the
+    /// freshly-built pool, and could be dealt again immediately. Hashing the
+    /// text makes a built-in's identity stable across every reconstruction.
+    /// User-written prompts still get random ids, so editing a custom
+    /// prompt's words makes it a new prompt rather than colliding with its
+    /// old self.
+    init(deterministicText text: String) {
+        let digest = SHA256.hash(data: Data(text.utf8))
+        let bytes = Array(digest.prefix(16))
+        self.id = UUID(uuidString: bytes.map { String(format: "%02x", $0) }.joined())!
+        self.text = text
+        self.folderID = nil
+        self.createdAt = Date(timeIntervalSince1970: 0)
     }
 }
 
@@ -141,7 +160,7 @@ extension WritingPrompt {
         "What you want the next page to say."
     ]
 
-    static let builtIn: [WritingPrompt] = builtInTexts.map { WritingPrompt(text: $0) }
+    static let builtIn: [WritingPrompt] = builtInTexts.map { WritingPrompt(deterministicText: $0) }
 }
 
 // MARK: - Selection

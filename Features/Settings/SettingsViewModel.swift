@@ -163,6 +163,11 @@ final class SettingsViewModel: ObservableObject {
                 // AudioService keeps its own copy; without this the setting
                 // would silence the bells but not the interface ticks.
                 AudioService.shared.setSoundEnabled(enabled)
+                // Sound is the master switch: off takes ambience with it, and
+                // the ambience row must show that immediately.
+                if !enabled, self?.ambientSoundEnabled == true {
+                    self?.ambientSoundEnabled = false
+                }
             }
             .store(in: &cancellables)
 
@@ -378,7 +383,7 @@ final class SettingsViewModel: ObservableObject {
         center.removePendingNotificationRequests(withIdentifiers: [Self.weeklySummaryID])
 
         let content = UNMutableNotificationContent()
-        content.title = "Your Week in Verg"
+        content.title = "Your Week in Verg 🕯️"
         content.body = "Time reclaimed this week."
         content.sound = .default
 
@@ -438,7 +443,7 @@ final class SettingsViewModel: ObservableObject {
     func shareApp() {
         let url = URL(string: "https://apps.apple.com/app/id6758077555")!
         let activityVC = UIActivityViewController(
-            activityItems: ["Verg — light a candle. Write until it burns out.", url],
+            activityItems: ["Verg 🕯️ — light a candle. Write until it burns out.", url],
             applicationActivities: nil
         )
 

@@ -214,7 +214,7 @@ final class VergUIFlowTests: XCTestCase {
         // New script
         let add = app.buttons["Add"].exists ? app.buttons["Add"] : app.buttons.matching(identifier: "plus").firstMatch
         if add.waitForExistence(timeout: 3) { add.tap() }
-        let newScript = app.buttons["New script"]
+        let newScript = app.buttons["New question"]
         if newScript.waitForExistence(timeout: 3) { newScript.tap() }
 
         let field = app.textFields.firstMatch
@@ -731,10 +731,10 @@ final class VergUIFlowTests: XCTestCase {
         settle()
         shoot(app, "oracle-drawn")
 
-        app.buttons["Cancel"].tap()
+        app.buttons["Done"].tap()
         settle()
 
-        XCTAssertTrue(app.buttons["write.scriptPill"].label.contains("No script"),
+        XCTAssertTrue(app.buttons["write.scriptPill"].label.contains("No question"),
                       "Leaving the Oracle without confirming still set a script")
     }
 
@@ -774,7 +774,7 @@ final class VergUIFlowTests: XCTestCase {
         let app = launch(appearance: "light")
         open(app, tab: "write")
 
-        app.staticTexts["No script"].tap()
+        app.buttons["write.scriptPill"].tap()
         let card = app.staticTexts["oracle.script"]
         XCTAssertTrue(card.waitForExistence(timeout: 5), "The Oracle did not open")
         card.tap()
@@ -808,12 +808,13 @@ final class VergUIFlowTests: XCTestCase {
 
         XCTAssertTrue(app.staticTexts["APP"].waitForExistence(timeout: 5),
                       "Settings lost the APP section")
-        for row in ["Rate Verg", "Appearance", "Lock App"] {
-            XCTAssertTrue(app.staticTexts[row].exists, "APP section lost the \(row) row")
+        // Rate App leads the section; Appearance then Lock App follow.
+        for row in ["Rate App", "Appearance", "Lock App"] {
+            XCTAssertTrue(app.staticTexts[row].exists, "Settings lost the \(row) row")
         }
 
         // These sections live below the fold, so a screenshot taken here
-        // catches only Candle and Guide. Scroll so the pass actually shows
+        // catches only Candle and Insight. Scroll so the pass actually shows
         // the rows this test is about — the icon tints are the whole point
         // of reviewing them by eye.
         app.swipeUp()
@@ -822,12 +823,13 @@ final class VergUIFlowTests: XCTestCase {
         shoot(app, "settings-app-section")
 
         XCTAssertTrue(app.staticTexts["ABOUT"].exists, "Settings lost the ABOUT section")
-        for row in ["Share Verg", "Privacy Policy", "Terms of Service"] {
+        for row in ["Share to a friend", "Privacy Policy", "Terms of Service"] {
             XCTAssertTrue(app.staticTexts[row].exists, "ABOUT section lost the \(row) row")
         }
-        // A SwiftUI `Link` surfaces as a button, not `links`.
-        XCTAssertTrue(app.buttons["settings.website"].exists,
-                      "Settings footer lost the verg.app link")
+        // The footer's social links surface as buttons via their
+        // accessibility labels.
+        XCTAssertTrue(app.buttons["Instagram"].exists, "Settings footer lost the Instagram link")
+        XCTAssertTrue(app.buttons["TikTok"].exists, "Settings footer lost the TikTok link")
     }
 
     /// Backing out of the set-up sheet must leave the switch off. The bug

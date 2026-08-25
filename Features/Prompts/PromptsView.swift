@@ -35,7 +35,7 @@ struct PromptSheetView: View {
                 VStack(spacing: Theme.Spacing.xl) {
                     Spacer()
 
-                    Text(draft?.text ?? "No question yet. Tap to draw.")
+                    Text(draft?.text ?? "The oracle is silent. Tap to ask.")
                         .font(.system(size: 24, weight: .regular, design: .serif))
                         .foregroundColor(Theme.Colors.primaryText)
                         .multilineTextAlignment(.center)
@@ -85,7 +85,7 @@ struct PromptSheetView: View {
                             selection = draft
                             dismiss()
                         } label: {
-                            Text("Take this one")
+                            Text("Write this one")
                         }
                         .buttonStyle(PrimaryButtonStyle())
                         .accessibilityIdentifier("oracle.select")
@@ -118,11 +118,12 @@ struct PromptSheetView: View {
             .navigationTitle("The Oracle")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                // Cancel, not Done: leaving without pressing Select
-                // Guidance must leave the session's script as it was, or
-                // the confirm step is decorative.
+                // Done, not Cancel: the word says you're leaving, and the
+                // behaviour is unchanged — nothing is committed unless
+                // "Write this one" is pressed. The old comment's rule holds:
+                // backing out must leave the session's question as it was.
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Cancel") { dismiss() }
+                    Button("Done") { dismiss() }
                         .foregroundColor(Theme.Colors.accent)
                 }
             }
