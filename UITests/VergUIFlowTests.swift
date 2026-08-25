@@ -659,6 +659,59 @@ final class VergUIFlowTests: XCTestCase {
                        "Turning Sound off on Write left the Settings switch on")
     }
 
+    // MARK: - The Oracle
+
+    /// Drawing is not choosing. Until 2.2 the shuffle wrote straight into the
+    /// session's script, so backing out of the sheet still changed it and
+    /// there was no moment where you committed — the bug this guards.
+    func testDrawingWithoutConfirmingDoesNotChangeTheScript() {
+        let app = launch(appearance: "light")
+        open(app, tab: "write")
+
+        let pill = app.staticTexts["No script"]
+        XCTAssertTrue(pill.waitForExistence(timeout: 5), "Write has no script pill")
+        pill.tap()
+
+        let draw = app.buttons["oracle.draw"]
+        XCTAssertTrue(draw.waitForExistence(timeout: 5), "The Oracle did not open")
+        draw.tap()
+        settle()
+        shoot(app, "oracle-drawn")
+
+        app.buttons["Cancel"].tap()
+        settle()
+
+        XCTAssertTrue(app.staticTexts["No script"].exists,
+                      "Leaving the Oracle without confirming still set a script")
+    }
+
+    /// …and Select Guidance is what commits it.
+    func testSelectGuidanceCommitsTheDrawnScript() {
+        let app = launch(appearance: "light")
+        open(app, tab: "write")
+
+        app.staticTexts["No script"].tap()
+
+        let draw = app.buttons["oracle.draw"]
+        XCTAssertTrue(draw.waitForExistence(timeout: 5), "The Oracle did not open")
+
+        // Disabled until something has been drawn — arriving with no script
+        // is a real state, and the button must not commit nothing.
+        let select = app.buttons["oracle.select"]
+        XCTAssertTrue(select.waitForExistence(timeout: 5), "No Select Guidance button")
+        XCTAssertFalse(select.isEnabled, "Select Guidance was live with nothing drawn")
+
+        draw.tap()
+        settle()
+        XCTAssertTrue(select.isEnabled, "Select Guidance stayed disabled after a draw")
+        select.tap()
+        settle()
+        shoot(app, "oracle-selected")
+
+        XCTAssertTrue(app.staticTexts["Script set"].waitForExistence(timeout: 5),
+                      "Select Guidance did not commit the drawn script")
+    }
+
     // MARK: - App Lock
 
     /// The APP section and its three rows, in order.

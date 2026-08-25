@@ -10,9 +10,20 @@ struct PromptSheetView: View {
 
     /// The prompt currently shown on the Home pill, so reopening the sheet
     /// resumes where it left off instead of jumping.
+    ///
+    /// Written only by "Select Guidance". Drawing used to write here
+    /// directly, which meant every shuffle was already committed and there
+    /// was no point at which you chose — you could only stop drawing. The
+    /// draw now moves `draft`, and nothing reaches the session until the
+    /// button is pressed.
     @Binding var selection: WritingPrompt?
 
+    /// What is on screen, which is not yet what you have chosen.
+    @State private var draft: WritingPrompt?
     @State private var showLibrary = false
+    /// Nudges the card as it changes, so a swipe reads as dealing a card
+    /// rather than the text silently replacing itself.
+    @State private var cardOffset: CGFloat = 0
 
     var body: some View {
         NavigationView {
@@ -22,41 +33,75 @@ struct PromptSheetView: View {
                 VStack(spacing: Theme.Spacing.xl) {
                     Spacer()
 
-                    Text(selection?.text ?? "Writing without a script.")
+                    Text(draft?.text ?? "Writing without a script.")
                         .font(.system(size: 24, weight: .regular, design: .serif))
                         .foregroundColor(Theme.Colors.primaryText)
                         .multilineTextAlignment(.center)
                         .lineSpacing(6)
                         .padding(.horizontal, Theme.Spacing.lg)
-                        .animation(Theme.Animation.quick, value: selection?.id)
+                        .offset(x: cardOffset)
+                        .accessibilityIdentifier("oracle.script")
+                        // Swipe to deal the next one. Horizontal only, and
+                        // only past a real threshold — the sheet itself is
+                        // dismissed by a downward drag, and a lazy diagonal
+                        // shouldn't do both.
+                        .gesture(
+                            DragGesture(minimumDistance: 24)
+                                .onEnded { value in
+                                    guard abs(value.translation.width) > abs(value.translation.height),
+                                          abs(value.translation.width) > 48 else { return }
+                                    shuffle()
+                                }
+                        )
+                        .animation(Theme.Animation.quick, value: draft?.id)
 
                     Spacer()
 
                     VStack(spacing: Theme.Spacing.sm) {
+                        // The only thing that writes to `selection`. Until
+                        // this is pressed the sheet is a shuffle you can walk
+                        // away from.
                         Button {
-                            shuffle()
+                            AudioService.shared.playUITick()
+                            selection = draft
+                            dismiss()
                         } label: {
-                            Text("Draw another")
+                            Text("Select Guidance")
                         }
                         .buttonStyle(PrimaryButtonStyle())
+                        .disabled(draft == nil)
+                        .accessibilityIdentifier("oracle.select")
 
                         HStack(spacing: Theme.Spacing.sm) {
+                            Button {
+                                shuffle()
+                            } label: {
+                                secondaryLabel("Draw another")
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("oracle.draw")
+
                             Button {
                                 showLibrary = true
                             } label: {
                                 secondaryLabel("Your scripts")
                             }
                             .buttonStyle(.plain)
-
-                            Button {
-                                AudioService.shared.playUITick()
-                                selection = nil
-                                dismiss()
-                            } label: {
-                                secondaryLabel("No script")
-                            }
-                            .buttonStyle(.plain)
                         }
+
+                        Button {
+                            AudioService.shared.playUITick()
+                            selection = nil
+                            dismiss()
+                        } label: {
+                            Text("No script")
+                                .font(Theme.Typography.body)
+                                .foregroundColor(Theme.Colors.secondaryText)
+                                .frame(maxWidth: .infinity)
+                                .frame(height: Theme.Layout.buttonHeight)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("oracle.none")
                     }
                     .padding(.horizontal, Theme.Spacing.lg)
                     .padding(.bottom, Theme.Spacing.lg)
@@ -65,8 +110,11 @@ struct PromptSheetView: View {
             .navigationTitle("The Oracle")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                // Cancel, not Done: leaving without pressing Select
+                // Guidance must leave the session's script as it was, or
+                // the confirm step is decorative.
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") { dismiss() }
+                    Button("Cancel") { dismiss() }
                         .foregroundColor(Theme.Colors.accent)
                 }
             }
@@ -74,9 +122,14 @@ struct PromptSheetView: View {
                 PromptLibraryView()
                     .environmentObject(storageService)
             }
-            // Deliberately no auto-draw on appear: arriving with no script
-            // is a real state the user can choose, and silently picking one
-            // would undo "No script" every time this opened.
+            // Resume from whatever the session already has, so reopening
+            // shows your current script rather than a blank card.
+            //
+            // Deliberately no auto-draw: arriving with no script is a real
+            // state the user chose, and silently picking one would undo
+            // "No script" every time this opened. Select Guidance stays
+            // disabled until something has actually been drawn.
+            .onAppear { draft = selection }
         }
     }
 
@@ -92,7 +145,9 @@ struct PromptSheetView: View {
 
     private func shuffle() {
         AudioService.shared.playUITick()
-        selection = WritingPrompt.next(from: storageService.allPrompts, after: selection)
+        withAnimation(.easeIn(duration: 0.10)) { cardOffset = -18 }
+        draft = WritingPrompt.next(from: storageService.allPrompts, after: draft)
+        withAnimation(.spring(response: 0.32, dampingFraction: 0.72)) { cardOffset = 0 }
     }
 }
 
