@@ -163,14 +163,23 @@ final class TimerViewModel: ObservableObject {
     }
 
     /// Choosing a sound also turns ambience on — picking one is the intent.
+    ///
+    /// Routed through `startAmbienceIfEnabled()` rather than calling
+    /// `startAmbience` directly. The direct call skipped the premium check
+    /// that every other path applies, so this was the one door into ambience
+    /// that didn't ask — the picker is gated ahead of it today, which is the
+    /// only reason that never showed.
+    ///
+    /// It also no longer requires `isRunning`. Ambience is a property of the
+    /// session, and a session that is merely paused is still a session; the
+    /// old check meant picking a sound while paused chose it silently and
+    /// waited for a resume.
     func selectAmbientSound(_ sound: AudioService.AmbientSound) {
         audioService.playImpact(.light)
         storageService.setAmbientSoundID(sound.rawValue)
         storageService.setAmbientSoundEnabled(true)
         objectWillChange.send()
-        if isRunning {
-            audioService.startAmbience(sound)
-        }
+        startAmbienceIfEnabled()
     }
 
     /// Start looping ambience if the option is on and the user is Pro.

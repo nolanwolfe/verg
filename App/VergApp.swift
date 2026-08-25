@@ -41,6 +41,10 @@ struct VergApp: App {
             case .active:
                 BrightnessService.shared.reapplyAfterForeground()
                 AppLockService.shared.handleDidBecomeActive()
+                // The audio session goes inactive while backgrounded and
+                // does not come back on its own; without this, ambience is
+                // silent for the rest of the process after one trip out.
+                AudioService.shared.reactivateSession()
             case .background:
                 // `.background` only. `.inactive` also fires for a pulled-down
                 // Control Center, a notification banner, or a glance at the

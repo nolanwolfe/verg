@@ -123,6 +123,24 @@ final class AudioService: ObservableObject {
         }
     }
 
+    /// Re-activate the session after the app has been in the background.
+    ///
+    /// `.ambient` is deactivated by the system when the app backgrounds, and
+    /// nothing brought it back — it was activated once in `init` and never
+    /// again. So a single trip to the home screen or the app switcher left
+    /// the session inactive for the rest of the process, and every later
+    /// attempt at ambience played into a dead session: no error, no log,
+    /// just silence. Cheap to call, and a no-op when already active.
+    func reactivateSession() {
+        do {
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            #if DEBUG
+            print("AudioService: could not reactivate session — \(error)")
+            #endif
+        }
+    }
+
     // MARK: - Public Methods
     /// Update sound enabled state
     func setSoundEnabled(_ enabled: Bool) {

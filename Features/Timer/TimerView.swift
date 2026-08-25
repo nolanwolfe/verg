@@ -58,36 +58,6 @@ struct TimerView: View {
             .ignoresSafeArea()
             .allowsHitTesting(false)
 
-            // The script, above everything, for the length of the session.
-            //
-            // Not inside `controlsOverlay`: the controls are tap-to-toggle
-            // chrome, and this is the thing you are writing to — it has to
-            // still be there when you look up. Blended rather than stated:
-            // low-contrast, medium weight, sitting in the dark above the
-            // flame so it reads as a thought in the room rather than a
-            // heading on a screen.
-            if let prompt, !prompt.isEmpty {
-                VStack {
-                    Text(prompt)
-                        .font(.system(size: 16, weight: .medium, design: .serif))
-                        .foregroundColor(Theme.Colors.primaryText.opacity(0.42))
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(4)
-                        .fixedSize(horizontal: false, vertical: true)
-                        // Narrower than the screen and clear of the close
-                        // button, which sits top-leading in the controls
-                        // overlay — at full width a one-line script ran
-                        // straight through it.
-                        .frame(maxWidth: 300)
-                        .padding(.horizontal, Theme.Spacing.xl)
-                        .padding(.top, 76)
-                        .allowsHitTesting(false)
-                        .accessibilityIdentifier("timer.script")
-                    Spacer()
-                }
-                .ignoresSafeArea(.keyboard)
-            }
-
             // Controls: X + countdown (tap anywhere to toggle)
             if showControls {
                 controlsOverlay
@@ -248,6 +218,27 @@ struct TimerView: View {
                 }
                 .padding(.horizontal, Theme.Spacing.sm)
                 .padding(.top, Theme.Spacing.sm)
+
+                // The script, in with the chrome. It first lived outside
+                // this overlay so it would stay put while the controls came
+                // and went; the owner wants it to behave like everything
+                // else on this screen, so it now fades with the countdown
+                // and the bottom row. Same colour as the countdown, too —
+                // it is one of the readouts, not a watermark.
+                if let prompt, !prompt.isEmpty {
+                    Text(prompt)
+                        .font(.system(size: 16, weight: .medium, design: .serif))
+                        .foregroundColor(Theme.Colors.primaryText)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(4)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .frame(maxWidth: 300)
+                        .padding(.horizontal, Theme.Spacing.xl)
+                        .padding(.top, Theme.Spacing.xxs)
+                        .allowsHitTesting(false)
+                        .accessibilityIdentifier("timer.script")
+                }
+
                 Spacer()
             }
 

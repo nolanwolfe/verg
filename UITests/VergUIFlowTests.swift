@@ -673,9 +673,9 @@ final class VergUIFlowTests: XCTestCase {
         XCTAssertTrue(pill.label.contains("No script"), "A session started with a script already set")
         pill.tap()
 
-        let draw = app.buttons["oracle.draw"]
-        XCTAssertTrue(draw.waitForExistence(timeout: 5), "The Oracle did not open")
-        draw.tap()
+        let card = app.staticTexts["oracle.script"]
+        XCTAssertTrue(card.waitForExistence(timeout: 5), "The Oracle did not open")
+        card.tap()          // the card is the draw now
         settle()
         shoot(app, "oracle-drawn")
 
@@ -693,19 +693,15 @@ final class VergUIFlowTests: XCTestCase {
 
         app.buttons["write.scriptPill"].tap()
 
-        let draw = app.buttons["oracle.draw"]
-        XCTAssertTrue(draw.waitForExistence(timeout: 5), "The Oracle did not open")
-
-        // Disabled until something has been drawn — arriving with no script
-        // is a real state, and the button must not commit nothing.
+        // Always live: with nothing drawn it draws, and only then commits.
+        // It used to be disabled here, which read as a broken button.
         let select = app.buttons["oracle.select"]
-        XCTAssertTrue(select.waitForExistence(timeout: 5), "No Select Guidance button")
-        XCTAssertFalse(select.isEnabled, "Select Guidance was live with nothing drawn")
+        XCTAssertTrue(select.waitForExistence(timeout: 5), "The Oracle did not open")
+        XCTAssertTrue(select.isEnabled, "Select Guidance was inert with nothing drawn")
 
-        draw.tap()
+        select.tap()        // draws
         settle()
-        XCTAssertTrue(select.isEnabled, "Select Guidance stayed disabled after a draw")
-        select.tap()
+        select.tap()        // commits
         settle()
         shoot(app, "oracle-selected")
 
@@ -723,16 +719,14 @@ final class VergUIFlowTests: XCTestCase {
         open(app, tab: "write")
 
         app.staticTexts["No script"].tap()
-        let draw = app.buttons["oracle.draw"]
-        XCTAssertTrue(draw.waitForExistence(timeout: 5), "The Oracle did not open")
-        draw.tap()
+        let card = app.staticTexts["oracle.script"]
+        XCTAssertTrue(card.waitForExistence(timeout: 5), "The Oracle did not open")
+        card.tap()
         settle()
 
         // Remember what was drawn, so this asserts the *same* script reaches
         // the timer rather than merely that some text is up there.
-        let drawn = app.otherElements["oracle.script"].exists
-            ? app.otherElements["oracle.script"].label
-            : app.staticTexts.matching(identifier: "oracle.script").firstMatch.label
+        let drawn = card.label
         app.buttons["oracle.select"].tap()
         settle()
 

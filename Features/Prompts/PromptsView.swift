@@ -1,9 +1,9 @@
 import SwiftUI
 
 // MARK: - Oracle
-/// One script at a time, and two ways forward: draw another, or open your
-/// own collection. Deliberately not a scrolling list — a wall of scripts is
-/// a decision, and the point is to remove one.
+/// One script at a time. Tap or swipe the card to draw the next; Select
+/// Guidance commits the one showing. Deliberately not a scrolling list — a
+/// wall of scripts is a decision, and the point is to remove one.
 struct PromptSheetView: View {
     @EnvironmentObject private var storageService: StorageService
     @Environment(\.dismiss) private var dismiss
@@ -33,7 +33,7 @@ struct PromptSheetView: View {
                 VStack(spacing: Theme.Spacing.xl) {
                     Spacer()
 
-                    Text(draft?.text ?? "Writing without a script.")
+                    Text(draft?.text ?? "No script selected. Tap to see more.")
                         .font(.system(size: 24, weight: .regular, design: .serif))
                         .foregroundColor(Theme.Colors.primaryText)
                         .multilineTextAlignment(.center)
@@ -45,6 +45,8 @@ struct PromptSheetView: View {
                         // only past a real threshold — the sheet itself is
                         // dismissed by a downward drag, and a lazy diagonal
                         // shouldn't do both.
+                        .contentShape(Rectangle())
+                        .onTapGesture { shuffle() }
                         .gesture(
                             DragGesture(minimumDistance: 24)
                                 .onEnded { value in
@@ -58,50 +60,47 @@ struct PromptSheetView: View {
                     Spacer()
 
                     VStack(spacing: Theme.Spacing.sm) {
-                        // The only thing that writes to `selection`. Until
-                        // this is pressed the sheet is a shuffle you can walk
-                        // away from.
+                        // The only thing that writes to `selection`: until
+                        // it is pressed the sheet is a shuffle you can walk
+                        // away from. Never inert. With nothing drawn it draws — which
+                        // is what a person pressing the only lit button on
+                        // the screen means — and once a script is up it
+                        // commits that one. Disabling it instead made the
+                        // sheet look broken on the first open, which is the
+                        // glitch this replaces.
                         Button {
-                            AudioService.shared.playUITick()
-                            selection = draft
-                            dismiss()
+                            if draft == nil {
+                                shuffle()
+                            } else {
+                                AudioService.shared.playUITick()
+                                selection = draft
+                                dismiss()
+                            }
                         } label: {
                             Text("Select Guidance")
                         }
                         .buttonStyle(PrimaryButtonStyle())
-                        .disabled(draft == nil)
                         .accessibilityIdentifier("oracle.select")
 
                         HStack(spacing: Theme.Spacing.sm) {
-                            Button {
-                                shuffle()
-                            } label: {
-                                secondaryLabel("Draw another")
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityIdentifier("oracle.draw")
-
                             Button {
                                 showLibrary = true
                             } label: {
                                 secondaryLabel("Your scripts")
                             }
                             .buttonStyle(.plain)
-                        }
+                            .accessibilityIdentifier("oracle.mine")
 
-                        Button {
-                            AudioService.shared.playUITick()
-                            selection = nil
-                            dismiss()
-                        } label: {
-                            Text("No script")
-                                .font(Theme.Typography.body)
-                                .foregroundColor(Theme.Colors.secondaryText)
-                                .frame(maxWidth: .infinity)
-                                .frame(height: Theme.Layout.buttonHeight)
+                            Button {
+                                AudioService.shared.playUITick()
+                                selection = nil
+                                dismiss()
+                            } label: {
+                                secondaryLabel("No script")
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("oracle.none")
                         }
-                        .buttonStyle(.plain)
-                        .accessibilityIdentifier("oracle.none")
                     }
                     .padding(.horizontal, Theme.Spacing.lg)
                     .padding(.bottom, Theme.Spacing.lg)
@@ -127,8 +126,8 @@ struct PromptSheetView: View {
             //
             // Deliberately no auto-draw: arriving with no script is a real
             // state the user chose, and silently picking one would undo
-            // "No script" every time this opened. Select Guidance stays
-            // disabled until something has actually been drawn.
+            // "No script" every time this opened. The card says so and
+            // invites the tap instead.
             .onAppear { draft = selection }
         }
         // Half screen, like every other picker in the app. This is one card
