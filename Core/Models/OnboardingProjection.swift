@@ -19,16 +19,18 @@ enum OnboardingProjection {
             return "\(rounded) \(rounded == 1 ? "hour" : "hours")"
         }
 
-        /// The closing line, e.g. "Two hundred sixty pages you can touch."
-        /// Spelled out rather than repeating the numeral already shown
-        /// above it, and computed from the chosen pace — 3 days a week is
-        /// not 260 pages, so this can't be a fixed string.
+        /// The closing line, e.g. "43 hours that belong to you."
+        ///
+        /// Repeats the hours deliberately. The block above says what the
+        /// time is taken *from* — hours off your phone — and this says whose
+        /// they are; saying the number twice is what turns a subtraction
+        /// into a gain. It used to spell out the page count instead, which
+        /// restated the stat directly above it and made the same point twice
+        /// rather than the second point once.
+        ///
+        /// Computed, never fixed: three days a week is not 260 pages.
         var closingLine: String {
-            let formatter = NumberFormatter()
-            formatter.numberStyle = .spellOut
-            let words = formatter.string(from: NSNumber(value: pages)) ?? "\(pages)"
-            let capitalised = words.prefix(1).uppercased() + words.dropFirst()
-            return "\(capitalised) \(pages == 1 ? "page" : "pages") you can touch."
+            "\(formattedHours) that belong to you."
         }
     }
 

@@ -33,102 +33,110 @@ struct WritingPrompt: Identifiable, Codable, Equatable {
 
 // MARK: - Built-in prompts
 extension WritingPrompt {
-    /// Short by design — a prompt is a door, not a paragraph. Per VOICE.md:
-    /// no questions the app answers for you, no therapy framing, no praise.
-    /// These are openings, and the paper does the rest.
+    /// Oracles don't ask — they say the thing that opens the question in
+    /// you. Every line here infers its question and never closes with one;
+    /// short by design, because a prompt is a door, not a paragraph.
+    ///
+    /// VOICE.md's rule holds: no question the *app* answers for you, no
+    /// therapy framing, no praise.
+    ///
+    /// Nothing here sets a length. An earlier set said "in one sentence" and
+    /// "in three sentences", which is the opposite of the point — the whole
+    /// app is a candle burning down while you keep writing, and a prompt has
+    /// no business telling you when to stop.
     static let builtInTexts: [String] = [
-        "Name the thing you keep almost doing.",
-        "What would change if you stopped waiting to be ready.",
-        "Describe today in the words you'd use to a stranger.",
-        "What you are protecting by staying busy.",
-        "The last time you felt genuinely unhurried.",
-        "Something you believe that you have never said out loud.",
-        "Who you are when nobody needs anything from you.",
-        "What you would keep if you could keep one thing.",
-        "The advice you give that you do not take.",
-        "What you are further along in than you admit.",
-        "Describe a room you could draw from memory.",
-        "The story you tell about yourself, and where it bends.",
-        "What you would attempt at half the current stakes.",
-        "Something you outgrew without noticing.",
-        "The hour of today you would live again.",
+        "What you keep almost doing.",
+        "What would change if you stopped waiting.",
+        "Today, described to a stranger.",
+        "What staying busy protects.",
+        "The last time you were unhurried.",
+        "What you believe and have never said aloud.",
+        "Who you are when nobody needs anything.",
+        "The one thing you would keep.",
+        "Advice you give and do not take.",
+        "How far along you really are.",
+        "A room you could draw from memory.",
+        "Where the story you tell about yourself bends.",
+        "What you would attempt at half the stakes.",
+        "What you outgrew without noticing.",
+        "The hour of today worth living twice.",
         "What you are owed, and whether you want it.",
-        "A kindness you were shown and never repaid.",
-        "What you are pretending not to have decided.",
-        "The version of this year you still have time for.",
+        "Kindness shown to you and never repaid.",
+        "What you pretend not to have decided.",
+        "How much of this year is still yours.",
         "Where your attention actually went today.",
         "What silence usually interrupts.",
-        "Something true that took you years to learn.",
-        "The question you have stopped asking yourself.",
-        "What you would write if this page were burned after.",
+        "What took years to learn.",
+        "The question you stopped asking yourself.",
+        "What you would write if this page burned after.",
 
         // The day — concrete, low barrier, works on an ordinary evening.
-        "What today cost you, and what it bought.",
+        "What today cost, and what it bought.",
         "The first thing you noticed this morning.",
-        "Something small that went right.",
+        "What went right that nobody saw.",
         "Who you spoke to today, and what went unsaid.",
         "The part of today you would edit out.",
         "What you did today that no one saw.",
-        "Where you lost an hour.",
-        "Something you carried around all day.",
-        "The last thing that made you stop walking.",
+        "Where the hour went.",
+        "What you carried around all day.",
+        "The last thing that stopped you mid-walk.",
         "What you ate, where you sat, who was there.",
 
         // Stuck — for the nights the page stays empty.
-        "Write the sentence you keep deleting.",
+        "What you keep deleting.",
         "What you would say if you knew it would be read.",
-        "The reason you almost didn't sit down.",
-        "Start with the most boring true thing.",
-        "What you are avoiding by reading this.",
-        "Describe the resistance without arguing with it.",
-        "The easiest true sentence you can write.",
+        "Why you almost did not sit down.",
+        "The most boring true thing, written first.",
+        "What you avoid by reading this instead.",
+        "What the resistance feels like before the argument.",
+        "The easiest true thing you can write.",
         "What you would rather be doing, and whether you mean it.",
 
         // The work.
-        "What you are building, in one sentence.",
+        "What you are building.",
         "The part of the work you keep postponing.",
-        "Who you are doing this for.",
+        "Who this is for.",
         "What would still be worth doing if it failed.",
-        "The skill you are quietly good at.",
-        "What you have been rehearsing instead of doing.",
+        "What you are quietly good at.",
+        "What you rehearse instead of doing.",
         "The next smallest step, named exactly.",
         "What you would stop if no one noticed.",
 
         // People.
-        "Someone you think about who does not know it.",
-        "The last time you changed your mind about a person.",
-        "What you have never thanked them for.",
-        "A conversation you are still finishing in your head.",
+        "Who you think about who does not know it.",
+        "When you last changed your mind about someone.",
+        "What you never thanked them for.",
+        "The conversation you are still finishing in your head.",
         "Who you are easiest around.",
-        "The thing you would say if it were the last chance.",
-        "Someone you have outgrown, and whether that is true.",
+        "What you would say if it were the last chance.",
+        "Who you have outgrown, and whether it is true.",
         "What you inherited that you did not choose.",
 
         // Memory and time.
-        "A year you could describe in one image.",
-        "What you have kept for no practical reason.",
-        "The house you dream about.",
-        "Something you can still smell.",
-        "Who you were ten years ago, in three sentences.",
+        "One image that holds a whole year.",
+        "What you kept for no practical reason.",
+        "The house you still dream about.",
+        "What you can still smell.",
+        "Who you were ten years ago.",
         "The last thing you memorised on purpose.",
-        "A day that changed something quietly.",
-        "A warning you were given that turned out to be right.",
+        "The day something changed quietly.",
+        "The warning you were given that turned out true.",
 
         // Closer to the bone.
-        "What you want that you have not admitted wanting.",
-        "The thing you are wrong about.",
+        "What you have not admitted wanting.",
+        "Where you are wrong.",
         "What you do when you think it does not count.",
         "Where you are performing.",
         "What you would confess to a stranger on a train.",
         "The gap between how you sound and how you are.",
         "What you are afraid is true.",
-        "Something you forgive yourself for, or do not.",
+        "What you forgive yourself for, and what you do not.",
 
         // Endings.
         "What this season has been about.",
-        "Something you are ready to put down.",
+        "What you are ready to put down.",
         "What you will not carry into next year.",
-        "The chapter title for the last three months.",
+        "A name for the last three months.",
         "What ended without a ceremony.",
         "What you want the next page to say."
     ]

@@ -188,7 +188,10 @@ struct OnboardingProjectionView: View {
                 .foregroundColor(Theme.Colors.secondaryText)
 
             VStack(spacing: Theme.Spacing.xl) {
-                statBlock(value: "\(projection.pages)", unit: projection.pages == 1 ? "page" : "pages")
+                statBlock(
+                    value: "\(projection.pages)",
+                    unit: projection.pages == 1 ? "page in your hand" : "pages in your hand"
+                )
                 statBlock(
                     value: "\(Int(projection.hours.rounded()))",
                     unit: "hours off your phone"

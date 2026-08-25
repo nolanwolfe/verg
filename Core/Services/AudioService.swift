@@ -170,20 +170,28 @@ final class AudioService: ObservableObject {
         play(.bellEnd)
     }
 
-    /// The Oracle dealing a script: a gust of wind.
+    /// The Oracle dealing a question: a breath of wind.
     ///
     /// The *only* sound in the app that isn't a standard control click.
-    /// Every button in the Oracle — Take this one, Your questions, No question
+    /// Every button in the Oracle — Write this one, Your questions, No question
     /// — uses the same tick as the rest of the app, because they are
     /// buttons. Turning the card over is the one gesture that isn't, so it
-    /// gets the one sound: a page turning in a draught, the room answering
-    /// rather than the interface acknowledging.
+    /// gets the one sound: the room answering rather than the interface
+    /// acknowledging.
     ///
-    /// Cut from `ambient_motion`, the wind track already shipped as
-    /// ambience, and shaped with a gust envelope — quick rise, longer fall —
-    /// so it reads as a single passing gust rather than a fragment of a
-    /// loop. A chime was tried first and was wrong: it competed with the
-    /// session bells, which are the app's actual voice.
+    /// Cut from `ambient_storm` — real weather, already shipped as ambience —
+    /// and shaped into the gentlest envelope of the set: rising to a third
+    /// and falling away over 0.55s, barely an event.
+    ///
+    /// Two earlier attempts were wrong, and both for reasons worth keeping.
+    /// The first came from `ambient_motion`, which measures 0.026 spectral
+    /// flatness — near-pure tone, i.e. a synthesiser, and it sounded
+    /// futuristic against everything else here. The second was real weather
+    /// but *loud*: normalising by peak had made it 14-22 dB hotter in
+    /// perceived terms than the fire sounds beside it, because peak says
+    /// nothing about how loud something feels. This one is normalised by RMS
+    /// to -42.6 dB, matched against a candle-flare cut that read as right.
+    /// If this ever needs re-cutting, match the loudness, not the peak.
     ///
     /// Haptic first and unconditionally: the tick belongs to the gesture,
     /// and someone who has turned sound off still gets the answer.
