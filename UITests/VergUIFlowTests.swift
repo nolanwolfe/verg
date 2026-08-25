@@ -160,8 +160,8 @@ final class VergUIFlowTests: XCTestCase {
         let app = launch(appearance: "light")
         open(app, tab: "settings")
 
-        let row = app.buttons["settings.Theme"]
-        XCTAssertTrue(row.waitForExistence(timeout: 5), "Settings has no Theme row")
+        let row = app.buttons["settings.Appearance"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5), "Settings has no Appearance row")
         row.tap()
 
         let dark = app.buttons["appearance.dark"]

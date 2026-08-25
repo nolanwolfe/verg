@@ -37,7 +37,21 @@ final class StoreScreenshots: XCTestCase {
         settle()
     }
 
-    func testCaptureStoreScreenshots() {
+    func testCaptureStoreScreenshots() throws {
+        // Skipped unless asked for. This is a slow capture pass, not a test:
+        // it asserts nothing about correctness, it depends on a journal
+        // seeded onto the device beforehand, and running it in every suite
+        // adds a minute and a failure mode to a run that should only report
+        // defects.
+        //
+        //   VERG_SCREENSHOTS=1 xcodebuild test \
+        //     -only-testing:VergUITests/StoreScreenshots \
+        //     -destination 'id=<6.9-inch simulator>'
+        try XCTSkipUnless(
+            ProcessInfo.processInfo.environment["VERG_SCREENSHOTS"] == "1",
+            "Set VERG_SCREENSHOTS=1 to capture App Store screenshots"
+        )
+
         let app = XCUIApplication()
         // `-VergScreenshots` shows the journal as a subscriber sees it.
         // Without it the grid is mostly padlocks past the free window —
