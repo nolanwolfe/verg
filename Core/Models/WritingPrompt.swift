@@ -40,10 +40,32 @@ struct WritingPrompt: Identifiable, Codable, Equatable {
     /// User-written prompts still get random ids, so editing a custom
     /// prompt's words makes it a new prompt rather than colliding with its
     /// old self.
+    ///
+    /// The UUID is built from the digest bytes directly. An earlier version
+    /// formatted the bytes as a hex string and force-unwrapped
+    /// `UUID(uuidString:)`, which trapped at runtime — this construction
+    /// cannot fail.
     init(deterministicText text: String) {
+        // SHA-256 digest, split into the two 64-bit halves of a uuid_t.
         let digest = SHA256.hash(data: Data(text.utf8))
-        let bytes = Array(digest.prefix(16))
-        self.id = UUID(uuidString: bytes.map { String(format: "%02x", $0) }.joined())!
+        let raw = digest.map { $0 }
+        var hi: UInt64 = 0
+        var lo: UInt64 = 0
+        for i in 0..<8 {
+            hi = (hi << 8) | UInt64(raw[i])
+            lo = (lo << 8) | UInt64(raw[i + 8])
+        }
+        let u = uuid_t(
+            UInt8((hi >> 56) & 0xFF), UInt8((hi >> 48) & 0xFF),
+            UInt8((hi >> 40) & 0xFF), UInt8((hi >> 32) & 0xFF),
+            UInt8((hi >> 24) & 0xFF), UInt8((hi >> 16) & 0xFF),
+            UInt8((hi >> 8) & 0xFF), UInt8(hi & 0xFF),
+            UInt8((lo >> 56) & 0xFF), UInt8((lo >> 48) & 0xFF),
+            UInt8((lo >> 40) & 0xFF), UInt8((lo >> 32) & 0xFF),
+            UInt8((lo >> 24) & 0xFF), UInt8((lo >> 16) & 0xFF),
+            UInt8((lo >> 8) & 0xFF), UInt8(lo & 0xFF)
+        )
+        self.id = UUID(uuid: u)
         self.text = text
         self.folderID = nil
         self.createdAt = Date(timeIntervalSince1970: 0)
