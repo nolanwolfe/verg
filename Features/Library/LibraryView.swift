@@ -130,7 +130,13 @@ struct LibraryView: View {
     private var heatmapSection: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             HStack {
-                Text("DAYS LIT")
+                // Not "DAYS LIT": the summary beside it already reads
+                // "147 days this year", so the row said "days" twice, and
+                // the heading repeated the metric's name from the Write
+                // screen. "History" is what Settings calls the setting that
+                // decides what this section draws — the control and the
+                // thing it controls now share a word.
+                Text("HISTORY")
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundColor(Theme.Colors.tertiaryText)
 

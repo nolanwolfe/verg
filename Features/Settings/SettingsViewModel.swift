@@ -443,7 +443,7 @@ final class SettingsViewModel: ObservableObject {
     func shareApp() {
         let url = URL(string: "https://apps.apple.com/app/id6758077555")!
         let activityVC = UIActivityViewController(
-            activityItems: ["Verg 🕯️ — light a candle. Write until it burns out.", url],
+            activityItems: ["Verg 🕯️ — a journaling app that gets you off your phone and onto paper.", url],
             applicationActivities: nil
         )
 

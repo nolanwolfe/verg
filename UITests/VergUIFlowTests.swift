@@ -141,7 +141,7 @@ final class VergUIFlowTests: XCTestCase {
         open(app, tab: "library")
         XCTAssertTrue(app.staticTexts["Archive"].waitForExistence(timeout: 5),
                       "Archive did not render its header")
-        XCTAssertTrue(app.staticTexts["DAYS LIT"].exists, "Archive lost the heatmap section")
+        XCTAssertTrue(app.staticTexts["HISTORY"].exists, "Archive lost the heatmap section")
         XCTAssertTrue(app.staticTexts["INSIGHTS"].exists, "Archive lost the insights section")
 
         open(app, tab: "settings")
@@ -196,7 +196,7 @@ final class VergUIFlowTests: XCTestCase {
         open(app, tab: "library")
         shoot(app, "archive-calendar-style")
         // The month grid names weekdays; the heatmap does not.
-        XCTAssertTrue(app.staticTexts["DAYS LIT"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["HISTORY"].waitForExistence(timeout: 5))
     }
 
     // MARK: - Scripts
