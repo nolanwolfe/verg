@@ -397,12 +397,11 @@ struct PhotoPicker: UIViewControllerRepresentable {
             provider.loadObject(ofClass: UIImage.self) { [weak self] image, error in
                 guard let picked = image as? UIImage else { return }
                 // Library photos arrive in whatever shape they were shot or
-                // screenshotted in. Cropping to the page format here — off
-                // the main thread, before anything sees it — is what keeps a
-                // picked page the same shape as a captured one. The preview
-                // screen then shows the actual cropped result, so "Use Photo"
-                // never saves something different from what was on screen.
-                let page = PageCapture.normalized(picked)
+                // Kept whole, like a capture. A picked photo and a captured
+                // one are both stored uncropped and framed at display time,
+                // so they still end up the same shape in the journal without
+                // either of them losing what falls outside the frame.
+                let page = picked
                 DispatchQueue.main.async {
                     self?.parent.selectedImage = page
                 }

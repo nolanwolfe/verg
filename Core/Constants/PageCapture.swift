@@ -1,45 +1,53 @@
 import UIKit
 
-/// The one shape a saved page is allowed to be.
+/// The one shape a page is *shown* in — and, deliberately, not the shape it
+/// is stored in.
 ///
-/// Library photos arrive as whatever the user happened to shoot or
-/// screenshot: 16:9, square, panoramic, portrait. Saving those unchanged
-/// meant the journal held pages of several different shapes, so the grid and
-/// the fullscreen viewer framed them inconsistently. Everything that becomes
-/// a page goes through `normalized(_:)` first, camera captures included, so
-/// there is exactly one code path deciding the format.
+/// Photos are saved whole. Nothing is cropped on the way to disk; the frame
+/// is applied by `framed(_:)` at display time, every time. That costs a
+/// centre-crop per render and buys the thing that matters: the format stays
+/// a decision rather than a commitment. Change `aspectRatio` and every page
+/// ever saved re-frames itself, including the parts a previous format threw
+/// away.
 ///
-/// The camera runs at the `.photo` preset — 4:3, which held upright is a 3:4
-/// portrait frame — so a capture is now cropped to the landscape page shape
-/// like everything else.
+/// It did not work this way until 2.2. The crop ran at save time, so each
+/// format change quietly destroyed pixels and could never be walked back —
+/// pages saved under a landscape format had already lost their top and
+/// bottom by the time anyone decided portrait was right. That is the bug
+/// this arrangement exists to prevent, and it is why the viewfinder mask is
+/// a *guide* rather than a crop: what falls outside it is still captured.
 enum PageCapture {
 
-    /// Width ÷ height. Landscape 3:2.
+    /// Width ÷ height. Portrait 3:4.
     ///
-    /// A notebook open on a desk is wider than it is tall, and a page shot
-    /// from above fills a landscape frame far better than the portrait one
-    /// this used to be — the old 3:4 threw away the sides of a spread and
-    /// left dead desk above and below it.
+    /// The shape of a single page. A composition or Letter page is 0.77, A5
+    /// is 0.70, and a Moleskine is 0.62 — 3:4 (0.75) sits in the middle of
+    /// the range, so a page fills the frame instead of floating in it.
     ///
-    /// 3:2 rather than 16:9: 16:9 is a cinema crop and would slice the top
-    /// and bottom lines off a page. 3:2 is the 35mm frame — landscape enough
-    /// to hold a spread, shallow enough to keep the whole page.
-    static let aspectRatio: CGFloat = 3.0 / 2.0
+    /// This replaced a landscape 3:2, which had been chosen for an open
+    /// two-page spread. The premise was wrong: a session produces one page,
+    /// which is what the data model has always called it. Landscape cost
+    /// three things at once — the phone is portrait-locked, so framing a
+    /// portrait page through a landscape band meant backing away until the
+    /// writing was small; reviewing a 3:2 image on a portrait screen filled
+    /// about a third of it, so reading your own handwriting needed a zoom;
+    /// and a centre-crop to 3:2 discarded ~45% of a portrait library photo.
+    ///
+    /// The grid is the one argument against going tall — square tiles make a
+    /// calmer wall. It loses to capture and review, which happen daily.
+    static let aspectRatio: CGFloat = 3.0 / 4.0
 
-    /// Crop `image` to the page format, centred.
+    /// Centre-crop `image` to the page format, for display.
     ///
     /// Centre-crop rather than letterbox: bars around a page would read as
     /// part of the photo. A source already at the right shape is returned
-    /// untouched — though since the page format went landscape that no
-    /// longer includes camera captures, which arrive portrait and are cropped
-    /// like everything else. The viewfinder is masked to the same shape, so
-    /// what gets cropped away was never shown as part of the shot.
+    /// untouched.
     ///
     /// The crop is applied in *pixel* space against the oriented image, and
     /// the result is redrawn upright — cropping a `CGImage` directly ignores
     /// `imageOrientation`, which is how a sideways-EXIF photo ends up cropped
     /// along the wrong axis.
-    static func normalized(_ image: UIImage) -> UIImage {
+    static func framed(_ image: UIImage) -> UIImage {
         let width = image.size.width
         let height = image.size.height
         guard width > 0, height > 0 else { return image }

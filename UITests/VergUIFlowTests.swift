@@ -17,6 +17,25 @@ final class VergUIFlowTests: XCTestCase {
         continueAfterFailure = false
     }
 
+    /// Leave no lock behind.
+    ///
+    /// The app lock lives in the Keychain, which survives deleting the app —
+    /// deliberately, so the lock can't be shrugged off by a reinstall. The
+    /// cost is that a test which sets a passcode locks the *simulator* for
+    /// every later launch, and `StorageService`'s reset only runs when the
+    /// app is launched with `-VergUITest`, which is exactly the case that
+    /// doesn't need it. Opening the app by hand after a test run met a lock
+    /// screen with a code only the test source knew.
+    /// Once for the whole class, not per test — this costs a launch cycle,
+    /// and only the lock tests dirty anything that outlives the app.
+    override class func tearDown() {
+        let app = XCUIApplication()
+        app.launchArguments = ["-VergUITest"]   // clears the lock on launch
+        app.launch()
+        app.terminate()
+        super.tearDown()
+    }
+
     // MARK: - Launch
 
     private func launch(

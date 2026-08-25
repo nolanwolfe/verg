@@ -5,6 +5,42 @@ when the change was written, not necessarily released.
 
 ## [Unreleased] — build 19 (Library redesign, book customization, tab bar)
 
+### Changed — the page format is 3:4, and photos are no longer cropped on save
+
+Two changes that belong together.
+
+Photos are stored whole. `PageCapture.framed(_:)` now runs at display time
+instead of on the way to disk, so the format is a decision rather than a
+commitment: change `aspectRatio` and every page ever saved re-frames itself,
+including the parts a previous format discarded. Until now the crop was baked
+in at save, which meant each format change quietly destroyed pixels and could
+never be walked back. The viewfinder mask becomes a guide rather than a crop —
+what falls outside it is still captured.
+
+The format itself goes from landscape 3:2 to portrait 3:4. The 3:2 frame had
+been chosen for an open two-page spread, and the premise was wrong: a session
+produces one page, which is what the data model has always called it.
+Landscape cost three things at once. The phone is portrait-locked, so framing
+a portrait page through a landscape band meant backing away until the writing
+was small — the owner has found single pages awkward to photograph since the
+app was built, and this is why. Reviewing a 3:2 image on a portrait screen
+filled about a third of it, so reading your own handwriting needed a zoom. And
+a centre-crop to 3:2 discarded ~45% of a portrait library photo; measured
+across 35 real pages, 3:4 keeps 89.9% where 3:2 kept 54.6%.
+
+3:4 (0.75) also sits inside the range a real page occupies — Moleskine 0.62,
+A5 0.70, Letter 0.77 — so a page fills the frame instead of floating in it.
+
+The one argument against going tall is the grid: square tiles make a calmer
+wall. It loses to capture and review, which happen every day, and the wall is
+looked at occasionally. 6:7 was considered as the compromise and rejected for
+being nearer square than page.
+
+Pages saved before this build were already cropped to 3:2 on disk and cannot
+recover what that frame removed; they are re-framed from what remains. Every
+page saved from here on keeps its whole photo.
+
+
 ### Added — Lock App
 
 A passcode on the journal, for a phone that gets handed around. Four digits

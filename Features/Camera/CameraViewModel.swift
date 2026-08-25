@@ -488,10 +488,11 @@ extension CameraViewModel: AVCapturePhotoCaptureDelegate {
             return
         }
 
-        // Still on the capture queue — do the (usually free) format pass here
-        // rather than on main. A `.photo`-preset capture is already 3:4, so
-        // this normally returns the same image straight back.
-        let page = PageCapture.normalized(image)
+        // Stored whole. The viewfinder mask shows where the page frame
+        // falls, but what lands outside it is kept — the frame is applied at
+        // display time, so a future format change can reach back for the
+        // pixels this one doesn't use. See PageCapture.
+        let page = image
 
         DispatchQueue.main.async { [weak self] in
             self?.capturedImage = page

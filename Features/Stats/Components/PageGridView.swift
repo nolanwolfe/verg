@@ -402,8 +402,12 @@ private struct FullScreenPageView: View {
             if isLocked {
                 lockedPage
             } else if let image = image {
+                // Framed here, not in storage. The grid gets its crop for
+                // free from `.fill` plus a shaped cell; this one is handed a
+                // finished UIImage, so the frame has to be applied before it
+                // arrives or the viewer would show the desk around the page.
                 ZoomableImageView(
-                    image: image,
+                    image: PageCapture.framed(image),
                     pageID: session.id,
                     onDismiss: onDismiss,
                     onDragProgressChanged: onDragProgressChanged
