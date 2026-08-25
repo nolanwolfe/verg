@@ -1025,7 +1025,6 @@
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Verg uses Face ID to unlock your journal.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Verg needs photo library access to save your journal page photos.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = /Users/nous/Desktop/AppIcons/Assets.xcassets/AppIcon.appiconset;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = armv7;
 				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleLightContent;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -1062,7 +1061,6 @@
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Verg uses Face ID to unlock your journal.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Verg needs photo library access to save your journal page photos.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = /Users/nous/Desktop/AppIcons/Assets.xcassets/AppIcon.appiconset;
 				INFOPLIST_KEY_UIRequiredDeviceCapabilities = armv7;
 				INFOPLIST_KEY_UIStatusBarStyle = UIStatusBarStyleLightContent;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;

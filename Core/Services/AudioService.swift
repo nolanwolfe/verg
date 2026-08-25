@@ -119,7 +119,9 @@ final class AudioService: ObservableObject {
             )
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
+            #if DEBUG
             print("Failed to setup audio session: \(error)")
+            #endif
         }
     }
 
@@ -231,7 +233,9 @@ final class AudioService: ObservableObject {
             player.setVolume(0.55, fadeDuration: 1.5)
             ambientPlayer = player
         } catch {
+            #if DEBUG
             print("Failed to start ambience: \(error)")
+            #endif
         }
     }
 
@@ -252,7 +256,9 @@ final class AudioService: ObservableObject {
             audioPlayer?.prepareToPlay()
             audioPlayer?.play()
         } catch {
+            #if DEBUG
             print("Failed to play sound: \(error)")
+            #endif
         }
     }
 
