@@ -147,7 +147,7 @@ final class VergUIFlowTests: XCTestCase {
         open(app, tab: "settings")
         XCTAssertTrue(app.staticTexts["Settings"].waitForExistence(timeout: 5),
                       "Settings did not render its header")
-        for row in ["Duration", "Sound", "The Oracle", "History", "Theme"] {
+        for row in ["Duration", "Sound", "The Oracle", "History", "Appearance"] {
             XCTAssertTrue(app.staticTexts[row].exists, "Settings lost the \(row) row")
         }
     }
@@ -809,7 +809,7 @@ final class VergUIFlowTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["APP"].waitForExistence(timeout: 5),
                       "Settings lost the APP section")
         // Rate App leads the section; Appearance then Lock App follow.
-        for row in ["Rate App", "Theme", "Lock App"] {
+        for row in ["Rate App", "Appearance", "Lock App"] {
             XCTAssertTrue(app.staticTexts[row].exists, "Settings lost the \(row) row")
         }
 

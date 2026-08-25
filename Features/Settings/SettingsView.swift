@@ -290,7 +290,7 @@ struct SettingsView: View {
             SettingsRow(
                 icon: "circle.lefthalf.filled",
                 iconColor: .blue,
-                title: "Theme",
+                title: "Appearance",
                 value: viewModel.appearance.displayName,
                 action: {
                     AudioService.shared.playUITick()
@@ -605,18 +605,11 @@ struct SettingsView: View {
                         .accessibilityIdentifier("appearance.\(mode.rawValue)")
                     }
 
-                    Text("The candle screens stay dark either way — they dim your screen on purpose.")
-                        .font(Theme.Typography.footnote)
-                        .foregroundColor(Theme.Colors.secondaryText)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, Theme.Spacing.md)
-                        .padding(.top, Theme.Spacing.xs)
-
                     Spacer()
                 }
                 .padding(Theme.Spacing.md)
             }
-            .navigationTitle("Theme")
+            .navigationTitle("Appearance")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
