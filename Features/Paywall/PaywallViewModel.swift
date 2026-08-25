@@ -55,7 +55,7 @@ final class PaywallViewModel: ObservableObject {
         // and the eye goes to the words instead of the icons.
         Feature(icon: "books.vertical", text: "A full collection of your journals. Every page and every book, kept private to you."),
         Feature(icon: "doc.text", text: "Real progress of who you're becoming, and insights to prove it."),
-        Feature(icon: "slider.horizontal.3", text: "Customization, ambience, scripts, candle wicks, session length, year-by-year facts.")
+        Feature(icon: "slider.horizontal.3", text: "Customization, ambience, scripts, candle wicks, session length & year-by-year facts.")
     ]
 
     // MARK: - Dependencies

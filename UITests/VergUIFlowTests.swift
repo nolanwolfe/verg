@@ -668,8 +668,9 @@ final class VergUIFlowTests: XCTestCase {
         let app = launch(appearance: "light")
         open(app, tab: "write")
 
-        let pill = app.staticTexts["No script"]
+        let pill = app.buttons["write.scriptPill"]
         XCTAssertTrue(pill.waitForExistence(timeout: 5), "Write has no script pill")
+        XCTAssertTrue(pill.label.contains("No script"), "A session started with a script already set")
         pill.tap()
 
         let draw = app.buttons["oracle.draw"]
@@ -681,7 +682,7 @@ final class VergUIFlowTests: XCTestCase {
         app.buttons["Cancel"].tap()
         settle()
 
-        XCTAssertTrue(app.staticTexts["No script"].exists,
+        XCTAssertTrue(app.buttons["write.scriptPill"].label.contains("No script"),
                       "Leaving the Oracle without confirming still set a script")
     }
 
@@ -690,7 +691,7 @@ final class VergUIFlowTests: XCTestCase {
         let app = launch(appearance: "light")
         open(app, tab: "write")
 
-        app.staticTexts["No script"].tap()
+        app.buttons["write.scriptPill"].tap()
 
         let draw = app.buttons["oracle.draw"]
         XCTAssertTrue(draw.waitForExistence(timeout: 5), "The Oracle did not open")
@@ -708,8 +709,44 @@ final class VergUIFlowTests: XCTestCase {
         settle()
         shoot(app, "oracle-selected")
 
-        XCTAssertTrue(app.staticTexts["Script set"].waitForExistence(timeout: 5),
-                      "Select Guidance did not commit the drawn script")
+        // "Oracle", not "Script set": a drawn script comes from the fixed
+        // set, and the pill now says which of the three states you're in.
+        XCTAssertTrue(app.buttons["write.scriptPill"].label.contains("Oracle"),
+                      "Select Guidance did not commit the drawn script, or mislabelled its origin")
+    }
+
+    /// The script has to be on screen while you write — it was carried to
+    /// the saved page as metadata and never rendered, so the one moment it
+    /// exists for was the one moment you couldn't see it.
+    func testTheScriptIsShownOnTheTimer() {
+        let app = launch(appearance: "light")
+        open(app, tab: "write")
+
+        app.staticTexts["No script"].tap()
+        let draw = app.buttons["oracle.draw"]
+        XCTAssertTrue(draw.waitForExistence(timeout: 5), "The Oracle did not open")
+        draw.tap()
+        settle()
+
+        // Remember what was drawn, so this asserts the *same* script reaches
+        // the timer rather than merely that some text is up there.
+        let drawn = app.otherElements["oracle.script"].exists
+            ? app.otherElements["oracle.script"].label
+            : app.staticTexts.matching(identifier: "oracle.script").firstMatch.label
+        app.buttons["oracle.select"].tap()
+        settle()
+
+        app.buttons["Begin Writing"].tap()
+        settle(1.4)
+        shoot(app, "timer-with-script")
+
+        let onTimer = app.staticTexts["timer.script"]
+        XCTAssertTrue(onTimer.waitForExistence(timeout: 6),
+                      "The timer did not show the chosen script")
+        if !drawn.isEmpty {
+            XCTAssertEqual(onTimer.label, drawn,
+                           "The timer showed a different script than the one chosen")
+        }
     }
 
     // MARK: - App Lock

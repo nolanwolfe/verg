@@ -131,6 +131,11 @@ struct PromptSheetView: View {
             // disabled until something has actually been drawn.
             .onAppear { draft = selection }
         }
+        // Half screen, like every other picker in the app. This is one card
+        // and four controls; presented full-height it was mostly empty, and
+        // it read as a screen rather than a choice. Draggable up for long
+        // scripts and large text sizes.
+        .presentationDetents([.medium, .large])
     }
 
     private func secondaryLabel(_ title: String) -> some View {
@@ -239,6 +244,17 @@ struct PromptLibraryView: View {
                 Button("Cancel", role: .cancel) { }
             }
         }
+        // Sized to what is in it. A handful of scripts in a full-height
+        // sheet is mostly blank paper; a long collection in a half sheet is
+        // a scroll through a letterbox. Both detents stay available either
+        // way — the count only decides which one it opens at.
+        .presentationDetents(isLongCollection ? [.large] : [.medium, .large])
+    }
+
+    /// Enough rows that a half sheet would be scrolled immediately. Folders
+    /// count: each is a row before any of its scripts are.
+    private var isLongCollection: Bool {
+        storageService.customPrompts.count + storageService.promptFolders.count > 6
     }
 
     @ViewBuilder

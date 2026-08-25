@@ -191,15 +191,31 @@ struct HomeView: View {
     /// once there is one, truncated hard — the pill is a reminder, and the
     /// sheet is where the prompt is actually read.
     private var oraclePill: some View {
-        // Two fixed labels rather than the script text: showing the script
+        // Fixed labels rather than the script text: showing the script
         // itself made the pill change width on every shuffle, which shoved
         // the row around. The script is read in the Oracle sheet.
-        pill(
-            icon: "text.quote",
-            title: selectedPrompt == nil ? "No script" : "Script set"
-        ) {
+        //
+        // Three states, not two. "Script set" said something was chosen but
+        // not what kind, so the one thing you might want to check before
+        // starting — am I writing to my own words or the app's — was the one
+        // thing it wouldn't tell you.
+        pill(icon: "text.quote", title: scriptState) {
             showPromptSheet = true
         }
+        // Identified, because "No script" is also the label of a button
+        // inside the Oracle sheet this pill opens — matching on the text
+        // alone found whichever the query happened to reach first.
+        .accessibilityIdentifier("write.scriptPill")
+    }
+
+    /// Which of the three the session is in, decided by whether the chosen
+    /// script is one the user wrote. Built-ins are constructed fresh rather
+    /// than persisted, so membership of `customPrompts` is what separates
+    /// them — an id that is not in there came from the fixed set.
+    private var scriptState: String {
+        guard let selectedPrompt else { return "No script" }
+        let isOwn = storageService.customPrompts.contains { $0.id == selectedPrompt.id }
+        return isOwn ? "Your script" : "Oracle"
     }
 
     // MARK: - Sound Pill
