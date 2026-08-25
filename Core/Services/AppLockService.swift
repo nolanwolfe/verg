@@ -183,18 +183,30 @@ final class AppLockService: ObservableObject {
     // MARK: - Scene phase
 
     /// A real backgrounding. Locks.
+    ///
+    /// Both pieces of state are gated on `isEnabled`: with no code set there
+    /// is nothing to protect, and an unconditional cover here is what made
+    /// the "Verg is locked" card flash during swipe-between-apps gestures
+    /// for users who had never turned the lock on — the gesture hands the
+    /// app a brief `.background`, this set the cover, and the paired
+    /// `.active` could land while nobody was rendering to clear it.
     func handleDidEnterBackground() {
+        guard isEnabled else { return }
         isObscured = true
-        if isEnabled { isLocked = true }
+        isLocked = true
     }
 
     /// Momentary — Control Center, a banner, the app switcher. Covers the
     /// snapshot but does *not* lock; see the type note.
     func handleWillResignActive() {
-        if isEnabled { isObscured = true }
+        guard isEnabled else { return }
+        isObscured = true
     }
 
     func handleDidBecomeActive() {
+        // Cleared unconditionally: if the lock was disabled while a cover
+        // was up (or a pre-fix build left one behind), coming back to the
+        // front must always return the screen, not preserve the card.
         isObscured = false
     }
 
