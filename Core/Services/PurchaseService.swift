@@ -481,6 +481,18 @@ final class PurchaseService: ObservableObject {
         isFriendsAndFamily = false
         UserDefaults.standard.removeObject(forKey: friendsAndFamilyKey)
     }
+
+    /// Grant access, for the App Store screenshot pass only.
+    ///
+    /// The store shots should show the app as someone who has paid for it
+    /// sees it — a full wall of pages. Without this the journal renders
+    /// mostly padlocks, which is the gate working correctly and a poor thing
+    /// to advertise. DEBUG only, reached only by an explicit launch
+    /// argument, and it grants nothing a real build could.
+    @MainActor
+    func grantAccessForScreenshots() {
+        isFriendsAndFamily = true
+    }
     #endif
 
     // MARK: - Restore Purchases

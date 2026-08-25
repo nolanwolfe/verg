@@ -7,12 +7,12 @@ keywords — lives in `APP_STORE.md`. This file is the QA pass.
 
 ### Covered by `VergUITests` — run `xcodebuild test -only-testing:VergUITests`
 
-Twenty tests drive the real app and attach a screenshot of every state, so
-these no longer need a person:
+Thirty-four tests drive the real app and attach a screenshot of every state,
+so these no longer need a person. A further 117 unit tests cover pure logic:
 
 - Every tab renders its own content, in Light and in Dark
 - Onboarding: all six screens in order, and Skip going straight into the app
-- Appearance picker selects and persists; History switches the Archive
+- Theme picker selects and persists; History switches the Archive
   between heatmap and month grid
 - A script can be written, saved, and then edited
 - The Oracle sheet and the duration picker open
@@ -23,6 +23,15 @@ these no longer need a person:
 - The paywall opens from The Golden Age
 - The timer screen renders and counts down, in both themes
 - The achievements ladder renders below the fold
+- Onboarding is dark and the paywall is light, measured by screen brightness
+  rather than assumed — the two theme pins that structural assertions cannot
+  see
+- The app lock engages on backgrounding, opens with the code, refuses a wrong
+  one, and hides the content behind it from the accessibility tree
+- Drawing a question and cancelling does not change the session; Select
+  Guidance is what commits it
+- Choosing one of your own questions selects it rather than opening the editor
+- Swiping in the fullscreen viewer cannot walk past a locked page
 
 ### Still needs a physical device
 
@@ -35,9 +44,17 @@ exercised in a simulator.
       1x/2x selector switches lenses. The torch lights and goes out when the
       screen closes. `CameraView` compiles out to a photo-picker stub in the
       simulator, so none of this has ever run outside a device.
-- [ ] **Page format.** Pages are landscape 3:2 now, and the viewfinder is
-      masked to it. Find the angle and distance that frames a spread — an
-      upright phone crops to the middle band, which is a real change from 2.1.
+- [ ] **Page format.** Pages are portrait **3:4** now, matching a single
+      notebook page (Letter 0.77, A5 0.70, Moleskine 0.62). The camera's
+      `.photo` preset on a portrait-locked phone already produces 3:4, so a
+      capture is stored untouched — check that what the viewfinder frames is
+      exactly what lands in the journal. This replaced a landscape 3:2 that
+      had been chosen for an open spread; single pages were hard to
+      photograph through it, which is the thing to confirm is gone.
+- [ ] **Photos are stored whole now.** Nothing is cropped on save; the frame
+      is applied on display. Import a wide photo from the library and confirm
+      the journal shows it page-shaped without the file itself being
+      destroyed.
 - [ ] **Prices and the trial.** The paywall reads RevenueCat at runtime. See
       the two open items below before testing this.
 - [ ] **Purchase, restore, and the access code**, against a sandbox account.
@@ -50,19 +67,30 @@ exercised in a simulator.
 - [ ] **Reduce Motion**: the paywall flame holds still; the gold sheen on the
       trial badge holds still.
 
-### Two things that are not code
+### Two things that were not code — both now resolved
 
-Both were confirmed from the running app tonight and neither can be fixed
-here:
+Both were found by reading the running app, and both were fixed in App Store
+Connect rather than here. Kept on the record because the paywall reads
+RevenueCat at runtime, so a change there can silently undo either of them.
 
-1. **Monthly is priced $4.99, not $7.99.** The paywall shows real RevenueCat
-   data, and Monthly reads $4.99/mo — identical to Yearly's per-month figure,
-   which leaves the yearly plan with no advantage at all. The local
-   `VergProducts.storekit` says $7.99 but that file is test-only. Fix in App
-   Store Connect.
-2. **There is no free trial on the real product.** The app logs
-   `[Trial] offer=nil eligible=false storeKitTrial=nil productFound=true` —
-   StoreKit found `Verg_Yearly` and reports no introductory offer on it. The
-   trial exists only in the local test file. Configure it in App Store
-   Connect, or the trial badge will never appear.
+1. ~~**Monthly is priced $4.99, not $7.99.**~~ **Fixed.** Monthly now reads
+   **$7.99/mo** against Yearly's **$59.99/yr** — which is **$4.99/mo**
+   equivalent, so the yearly plan finally has the advantage its layout
+   implies. Confirmed on the paywall.
+2. ~~**There is no free trial on the real product.**~~ **Fixed.** The
+   introductory offer is configured and the app reports it: the Yearly row
+   shows *"3 days free"* with *"then $59.99/year, cancel anytime"* beneath
+   it, and the button reads *"Enter The Golden Age — 3 Days Free"*. The
+   duration comes from StoreKit at runtime and is never hardcoded, so
+   changing the offer in App Store Connect changes the copy automatically.
+
+**Prices as shipped (2.2)**
+
+| Plan | Price | Shown as | Trial |
+|---|---|---|---|
+| Yearly | $59.99 / year | $4.99 /mo | 3 days free |
+| Monthly | $7.99 / month | $7.99 /mo | — |
+
+`VergProducts.storekit` matches these, but it is test-only: the live figures
+come from App Store Connect and the app never hardcodes them.
 

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2121EF62BA745052689A2647 /* StoreScreenshots.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A3334EE92C75B27D64A936F /* StoreScreenshots.swift */; };
 		2327A2B0F046CC33DBE68D02 /* BrightnessService.swift in Sources */ = {isa = PBXBuildFile; fileRef = DBBD1D40F4DC353098590A98 /* BrightnessService.swift */; };
 		2A53449D3D5C82D352CF4E5D /* oracle_draw.wav in Resources */ = {isa = PBXBuildFile; fileRef = 4925EC5E8BD87481343A7029 /* oracle_draw.wav */; };
 		37BC8986C09C76DD05F7410C /* PromptsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52019627854D25B472BACF07 /* PromptsView.swift */; };
@@ -139,6 +140,7 @@
 		955D4E492F1F42A100D1B2E4 /* VergProducts.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = VergProducts.storekit; sourceTree = "<group>"; };
 		95F6805B2F1D205D00B93C28 /* 27421__kerri__zenbell_1.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = 27421__kerri__zenbell_1.mp3; sourceTree = "<group>"; };
 		95F6805C2F1D205D00B93C28 /* 185822__lloydevans09__single-chime.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = "185822__lloydevans09__single-chime.wav"; sourceTree = "<group>"; };
+		9A3334EE92C75B27D64A936F /* StoreScreenshots.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StoreScreenshots.swift; sourceTree = "<group>"; };
 		A0EB2EA2468FDCFA22B69538 /* OnboardingProjectionTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OnboardingProjectionTests.swift; sourceTree = "<group>"; };
 		A1101A3ACB7B972887D35F7F /* CoachMarkNoticeView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CoachMarkNoticeView.swift; path = Features/CoachMark/CoachMarkNoticeView.swift; sourceTree = "<group>"; };
 		A20000010000000000000000 /* Verg.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Verg.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -277,6 +279,7 @@
 			isa = PBXGroup;
 			children = (
 				E603CD9BF9C89C51682CB985 /* VergUIFlowTests.swift */,
+				9A3334EE92C75B27D64A936F /* StoreScreenshots.swift */,
 			);
 			name = UITests;
 			path = UITests;
@@ -732,6 +735,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FE21BE39C77080DB4C472ED2 /* VergUIFlowTests.swift in Sources */,
+				2121EF62BA745052689A2647 /* StoreScreenshots.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

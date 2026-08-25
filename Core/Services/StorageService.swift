@@ -125,7 +125,13 @@ final class StorageService: ObservableObject {
         // storage, so a redeemed code would silently make every later run
         // premium — and the tests that notice are the paywall ones, which
         // fail looking exactly like a bypass.
-        MainActor.assumeIsolated { PurchaseService.shared.resetGrantedAccessForUITesting() }
+        MainActor.assumeIsolated {
+            if args.contains("-VergScreenshots") {
+                PurchaseService.shared.grantAccessForScreenshots()
+            } else {
+                PurchaseService.shared.resetGrantedAccessForUITesting()
+            }
+        }
         if let index = args.firstIndex(of: "-VergAppearance"),
            index + 1 < args.count,
            let mode = AppearanceMode(rawValue: args[index + 1]) {
