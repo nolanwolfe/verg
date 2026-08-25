@@ -244,7 +244,11 @@ struct HomeView: View {
     /// none selected it falls back to "Sound". The pill keeps its width
     /// behaviour honest by truncating hard — a reminder, not a display.
     private var soundPill: some View {
-        HStack(spacing: 0) {
+        // The pair sits centred with the same 4pt gap as `pill(icon:title:)`,
+        // rather than two half-width halves that pushed the icon out to a
+        // quarter of the capsule and the label to three quarters — beside
+        // two pills whose contents are centred, it read as misaligned.
+        HStack(spacing: 4) {
             Button {
                 let turningOn = !storageService.settings.soundEnabled
                 storageService.setSoundEnabled(turningOn)
@@ -256,11 +260,15 @@ struct HomeView: View {
                 Image(systemName: storageService.settings.soundEnabled ? "speaker.wave.2" : "speaker.slash")
                     .font(.system(size: 11, weight: .medium))
                     .foregroundColor(Theme.Colors.secondaryText)
-                    .frame(maxWidth: .infinity)
                     .padding(.vertical, Theme.Spacing.xxs)
+                    .padding(.leading, Theme.Spacing.sm)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            // The pill lost its "Sound" text when it split into a toggle and
+            // an ambience label, and the test that keeps this in step with
+            // the Settings row was finding it by that word.
+            .accessibilityIdentifier("write.soundToggle")
 
             Button {
                 AudioService.shared.playUITick()
@@ -270,12 +278,13 @@ struct HomeView: View {
                     .font(Theme.Typography.caption)
                     .lineLimit(1)
                     .foregroundColor(Theme.Colors.secondaryText)
-                    .frame(maxWidth: .infinity)
                     .padding(.vertical, Theme.Spacing.xxs)
+                    .padding(.trailing, Theme.Spacing.sm)
                     .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
         }
+        .frame(maxWidth: .infinity)
         .background(
             Capsule()
                 .stroke(Theme.Colors.secondaryText.opacity(0.25), lineWidth: 1)
@@ -295,8 +304,16 @@ struct HomeView: View {
     /// One shape for all three pills so the row stays even. Deliberately no
     /// active/inactive colouring: state is carried by the label or the icon,
     /// and the candle stays the only lit thing on this screen.
+    /// Ticks before running the action, so every pill gives feedback
+    /// whether or not whoever added it remembered to. Duration and Oracle
+    /// both shipped silent: the Sound pill is hand-rolled and ticked, these
+    /// two came through here and did not, and nothing in the signature said
+    /// they had to.
     private func pill(icon: String, title: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
+        Button {
+            AudioService.shared.playUITick()
+            action()
+        } label: {
             HStack(spacing: 4) {
                 Image(systemName: icon)
                     .font(.system(size: 11, weight: .medium))

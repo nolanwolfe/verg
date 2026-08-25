@@ -209,7 +209,11 @@ struct PromptLibraryView: View {
                             Section {
                                 folderRows(for: folder)
                             } header: {
+                                // `.insetGrouped` uppercases headers by
+                                // default, which shouted a folder the user
+                                // named themselves back at them in caps.
                                 Text(folder.name)
+                                    .textCase(nil)
                                     .foregroundColor(Theme.Colors.secondaryText)
                             }
                         }
@@ -221,7 +225,11 @@ struct PromptLibraryView: View {
                                     promptRow(prompt)
                                 }
                             } header: {
-                                Text(storageService.promptFolders.isEmpty ? "YOUR QUESTIONS" : "NO FOLDER")
+                                // Was written in caps *and* uppercased again
+                                // by the list style — twice as loud as any
+                                // other heading in the app.
+                                Text(storageService.promptFolders.isEmpty ? "Your questions" : "No folder")
+                                    .textCase(nil)
                                     .foregroundColor(Theme.Colors.secondaryText)
                             }
                         }

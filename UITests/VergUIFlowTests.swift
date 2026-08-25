@@ -147,7 +147,7 @@ final class VergUIFlowTests: XCTestCase {
         open(app, tab: "settings")
         XCTAssertTrue(app.staticTexts["Settings"].waitForExistence(timeout: 5),
                       "Settings did not render its header")
-        for row in ["Duration", "Sound", "The Oracle", "History", "Appearance"] {
+        for row in ["Duration", "Sound", "The Oracle", "History", "Theme"] {
             XCTAssertTrue(app.staticTexts[row].exists, "Settings lost the \(row) row")
         }
     }
@@ -160,8 +160,8 @@ final class VergUIFlowTests: XCTestCase {
         let app = launch(appearance: "light")
         open(app, tab: "settings")
 
-        let row = app.buttons["settings.Appearance"]
-        XCTAssertTrue(row.waitForExistence(timeout: 5), "Settings has no Appearance row")
+        let row = app.buttons["settings.Theme"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5), "Settings has no Theme row")
         row.tap()
 
         let dark = app.buttons["appearance.dark"]
@@ -696,8 +696,8 @@ final class VergUIFlowTests: XCTestCase {
         let app = launch(appearance: "light")
         open(app, tab: "write")
 
-        let pill = app.buttons.containing(.staticText, identifier: "Sound").firstMatch
-        XCTAssertTrue(pill.waitForExistence(timeout: 5))
+        let pill = app.buttons["write.soundToggle"]
+        XCTAssertTrue(pill.waitForExistence(timeout: 5), "Write has no sound toggle")
         shoot(app, "sound-before-tap")
         pill.tap()   // turn Sound off
         settle()
@@ -809,7 +809,7 @@ final class VergUIFlowTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["APP"].waitForExistence(timeout: 5),
                       "Settings lost the APP section")
         // Rate App leads the section; Appearance then Lock App follow.
-        for row in ["Rate App", "Appearance", "Lock App"] {
+        for row in ["Rate App", "Theme", "Lock App"] {
             XCTAssertTrue(app.staticTexts[row].exists, "Settings lost the \(row) row")
         }
 

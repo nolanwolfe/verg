@@ -290,7 +290,7 @@ struct SettingsView: View {
             SettingsRow(
                 icon: "circle.lefthalf.filled",
                 iconColor: .blue,
-                title: "Appearance",
+                title: "Theme",
                 value: viewModel.appearance.displayName,
                 action: {
                     AudioService.shared.playUITick()
@@ -616,7 +616,7 @@ struct SettingsView: View {
                 }
                 .padding(Theme.Spacing.md)
             }
-            .navigationTitle("Appearance")
+            .navigationTitle("Theme")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
