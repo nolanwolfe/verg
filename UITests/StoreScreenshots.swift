@@ -37,6 +37,43 @@ final class StoreScreenshots: XCTestCase {
         settle()
     }
 
+    /// Creep down a scroll view until `target` sits fully above the tab bar.
+    ///
+    /// A press-and-drag carries no momentum, so each step moves exactly the
+    /// distance asked for and the loop can stop on the first step that
+    /// brings the target into view. `swipeUp()` cannot be used here: its
+    /// distance depends on the fling, which differs by device and would
+    /// land a different part of the list on screen each run.
+    private func scrollUntilVisible(
+        _ app: XCUIApplication,
+        _ target: XCUIElement,
+        maxDrags: Int = 34
+    ) {
+        let window = app.windows.firstMatch
+        // Measure the tab bar rather than guessing at a percentage of the
+        // screen. It floats above the content, so a row can sit inside the
+        // window and still be covered by it — which is what a guessed
+        // margin got wrong, stopping with the last rung behind the pill.
+        let tabBar = app.buttons["tab.write"]
+        let floor = (tabBar.exists ? tabBar.frame.minY : window.frame.maxY) - 20
+
+        for _ in 0..<maxDrags {
+            if target.exists {
+                let frame = target.frame
+                if frame.height > 0, frame.minY > window.frame.minY, frame.maxY < floor {
+                    return
+                }
+            }
+            // Small steps on purpose: the loop stops on the first one that
+            // clears the target, so a coarse step overshoots and throws away
+            // rows off the top that the shot wants to keep.
+            let from = window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.72))
+            let to = window.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.62))
+            from.press(forDuration: 0.08, thenDragTo: to)
+            settle(0.3)
+        }
+    }
+
     func testCaptureStoreScreenshots() throws {
         // Skipped unless asked for. This is a slow capture pass, not a test:
         // it asserts nothing about correctness, it depends on a journal
@@ -104,11 +141,14 @@ final class StoreScreenshots: XCTestCase {
             settle(1.0)
         }
         shoot(app, "04-archive")
-        // Far enough down for the page-milestone ladder, which is where the
-        // 500-page rung lives.
-        app.swipeUp(); settle(0.6)
-        app.swipeUp(); settle(0.6)
-        app.swipeUp()
+        // The shot has to carry the insight cards *and* the ladder as far as
+        // the 1,000-page rung. A fixed number of swipes cannot do that on
+        // both devices — the iPad is a different height and momentum makes
+        // each swipe's distance approximate — so this creeps down in small
+        // momentum-free drags and stops the moment that rung clears the tab
+        // bar. Whatever the screen is, the shot ends at the same rung with
+        // as much of the insights above it as will fit.
+        scrollUntilVisible(app, app.staticTexts["1,000 Pages"])
         settle(1.0)
         shoot(app, "05-insights")
 
