@@ -13,6 +13,27 @@ struct VergApp: App {
     init() {
         configurePurchases()
         configureAppearance()
+        warmServices()
+    }
+
+    /// Build the singletons here rather than letting a view build them.
+    ///
+    /// `CandleService.shared` was first touched by `HomeView`'s
+    /// `@StateObject private var viewModel = HomeViewModel()`, whose
+    /// autoclosure SwiftUI evaluates *during* the first view update. Its
+    /// init calls `refreshDaysLit()`, which writes `StorageService.stats`
+    /// and then its own four published properties — two objects publishing
+    /// mid-update, which is precisely the two "Publishing changes from
+    /// within view updates is not allowed" faults the app logged on every
+    /// launch.
+    ///
+    /// Constructing it before there is a view to update makes the same work
+    /// happen at the same moment in the launch sequence, just outside a
+    /// SwiftUI transaction. `CandleService` pulls `StorageService` and
+    /// `PurchaseService` in as its own dependencies, so touching it is
+    /// enough.
+    private func warmServices() {
+        _ = CandleService.shared
     }
 
     // MARK: - Purchase Configuration

@@ -391,9 +391,15 @@ struct ShinyGoldText: View {
             .font(.system(size: 12, weight: .semibold))
             .foregroundStyle(
                 LinearGradient(
+                    // Clamped, not just floored. `sweep` runs -1 to 2 so the
+                    // highlight rests off each end between passes, but a
+                    // stop at 2 sits past the final stop at 1 and SwiftUI
+                    // requires stop locations to be ordered — it logged
+                    // "Gradient stop locations must be ordered" on every
+                    // frame of the second half of the cycle.
                     stops: [
                         .init(color: GoldenPalette.flameBottom, location: 0),
-                        .init(color: Color(hex: "FFE9A8"), location: max(0, sweep)),
+                        .init(color: Color(hex: "FFE9A8"), location: min(1, max(0, sweep))),
                         .init(color: GoldenPalette.flameBottom, location: 1)
                     ],
                     startPoint: .leading,

@@ -613,25 +613,54 @@ final class StorageService: ObservableObject {
         }
     }
 
-    /// Async full-resolution image load off the main thread
+    /// Async full-resolution image load off the main thread.
+    ///
+    /// The closure handed to the queue captures nothing but a URL. The
+    /// service itself is not Sendable — it publishes `sessions`, `books`
+    /// and `stats` — and passing it to a background queue is what the
+    /// compiler was warning about. Neither the cache nor the key crosses
+    /// either: only the decode happens on the queue, and the cache is
+    /// written back here, where there is no `@Sendable` boundary to
+    /// launder `NSCache` and `NSString` across.
     func loadImageAsync(for session: Session) async -> UIImage? {
-        if let cached = imageCache.object(forKey: session.imagePath as NSString) { return cached }
-        return await withCheckedContinuation { continuation in
-            imageIOQueue.async { [weak self] in
-                continuation.resume(returning: self?.getImage(for: session))
+        let key = session.imagePath as NSString
+        if let cached = imageCache.object(forKey: key) { return cached }
+        let url = imagesDirectory.appendingPathComponent(session.imagePath)
+
+        let image: UIImage? = await withCheckedContinuation { continuation in
+            imageIOQueue.async {
+                let data = try? Data(contentsOf: url)
+                continuation.resume(returning: data.flatMap(UIImage.init(data:)))
             }
         }
+
+        if let image { imageCache.setObject(image, forKey: key, cost: image.memoryCost) }
+        return image
     }
 
-    /// Async thumbnail load off the main thread
+    /// Async thumbnail load off the main thread. Same shape as
+    /// `loadImageAsync`: the queue gets a URL and two numbers, and the
+    /// cache is written back on this side.
     func loadThumbnailAsync(for session: Session, size: CGFloat = 200) async -> UIImage? {
         let key = "\(session.imagePath)_thumb_\(Int(size))" as NSString
         if let cached = thumbnailCache.object(forKey: key) { return cached }
-        return await withCheckedContinuation { continuation in
-            imageIOQueue.async { [weak self] in
-                continuation.resume(returning: self?.getThumbnail(for: session, size: size))
+        let url = imagesDirectory.appendingPathComponent(session.imagePath)
+        let scale = displayScale
+
+        let thumbnail: UIImage? = await withCheckedContinuation { continuation in
+            imageIOQueue.async {
+                continuation.resume(returning: Self.downsample(
+                    imageAt: url,
+                    to: CGSize(width: size, height: size),
+                    scale: scale
+                ))
             }
         }
+
+        if let thumbnail {
+            thumbnailCache.setObject(thumbnail, forKey: key, cost: thumbnail.memoryCost)
+        }
+        return thumbnail
     }
 
     // MARK: - Legacy Image Migration
@@ -722,8 +751,10 @@ final class StorageService: ObservableObject {
         }
     }
 
-    private func downsample(imageAt url: URL, to pointSize: CGSize) -> UIImage? {
-        let scale = displayScale
+    /// Static, and takes the scale rather than reading `displayScale`, so a
+    /// background queue can call it without capturing the non-Sendable
+    /// service. The instance method below keeps the old call sites working.
+    private static func downsample(imageAt url: URL, to pointSize: CGSize, scale: CGFloat) -> UIImage? {
         let pixelSize = CGSize(width: pointSize.width * scale, height: pointSize.height * scale)
         let options: [CFString: Any] = [kCGImageSourceShouldCache: false]
         guard let source = CGImageSourceCreateWithURL(url as CFURL, options as CFDictionary) else { return nil }
@@ -735,6 +766,10 @@ final class StorageService: ObservableObject {
         ]
         guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, thumbnailOptions as CFDictionary) else { return nil }
         return UIImage(cgImage: cgImage)
+    }
+
+    private func downsample(imageAt url: URL, to pointSize: CGSize) -> UIImage? {
+        Self.downsample(imageAt: url, to: pointSize, scale: displayScale)
     }
 
     /// Get image URL for a session
