@@ -51,16 +51,16 @@ Spending the hook on a discount buys a worse install.
 
 ---
 
-## Description — 2383 / 4000
+## Description — 2179 / 4000
 
 The first three lines show before "more", so they carry the whole pitch on
 their own. Only what Verg is, in the active voice — the owner's direction for
 2.2: never define the app by what it is not.
 
 ```
-Verg is a journal you write by hand, on paper. The app holds the candle, keeps the time, and saves the page.
+Verg is a journal you write by hand, on paper.
 
-Light the candle. Set the phone face down. Write until the bell. Capture the page, and it is yours, dated, for good.
+The candle keeps the time, then saves it for you, dated, for good.
 
 Ten minutes a day, five days a week. In a year that is 260 pages in your hand and 43 hours off your phone.
 
@@ -108,36 +108,29 @@ Writing is free, always. Save as many pages as you like, and your last seven day
 
 The Golden Age opens the whole archive, every stat, the questions, ambient sound, custom session lengths, and one relight a week when a day gets away from you.
 
-$7.99 a month, or $59.99 a year with the first three days free.
-
 Light the candle tonight, and write one page.
 
----
-
-Named for Virgil, who walked Dante up the mountain.
-
+App: https://verg.app/download
 Terms: https://verg.app/terms
 Privacy: https://verg.app/privacy
 ```
 
 ---
 
-## What's New in This Version — 1795 / 4000
+## What's New in This Version — 1441 / 4000
 
 ```
+Verg opens light, and follows your phone if you would rather. Ambient sound while you write, eleven tracks. Five, ten or fifteen minutes, or a length of your own. Five more when the bell comes too soon. Pinch to zoom any page, swipe down to close. A faster journal, however many pages you have. New onboarding, ending in the honest arithmetic of a year at your pace.
+
 The Archive is new — a tab holding the whole record of your writing: this year and every year before it, your finished books, and the numbers underneath. Time reclaimed, total pages, longest run. A year of history at a glance, one square a day, deeper gold where you wrote more. A missed day means the candle went out. You light it again.
 
 The journal locks now. Four digits or a code of your own, opened by Face ID or Touch ID where the phone has it. Settings, then App, then Lock App. The code itself is never stored.
 
-Pages are portrait, the shape of the page you actually write on. Photographs are kept whole and framed for the screen, so what fell outside the viewfinder is still there. Close-up focus is fixed and the shutter is faster — hold the phone over the page and it comes sharp.
-
 The Oracle has eighty questions to write toward when the page is blank. Swipe to draw another, then Select Guidance to commit to it. Write your own, keep them in folders, change them whenever. Or take no question at all.
 
-Finish a journal and it becomes a book on the shelf, with twenty-one cover colours and a line to remember it by.
+Finish a journal and it becomes a book on the shelf, with twenty-one cover colors and a line to remember it by.
 
-Verg opens light now, and follows your phone if you would rather. Ambient sound while you write, eleven tracks. Five, ten or fifteen minutes, or a length of your own. Five more when the bell comes too soon. Pinch to zoom any page, swipe down to close. A faster journal, however many pages you have. New onboarding, ending in the honest arithmetic of a year at your pace.
-
-Writing and saving pages is free, always, with no account. Your last seven days stay open. The Golden Age opens the whole archive, the stats, the questions, ambient sound, custom session lengths, and a weekly relight. $7.99 a month or $59.99 a year, with the first three days free on the year.
+Writing and saving pages is free, always, with no account. Your last seven days stay open. The Golden Age opens the whole archive, the stats, the questions, ambient sound, custom session lengths, and a weekly relight.
 ```
 
 ---
@@ -173,6 +166,18 @@ the 2.2 headline as "Light a candle. Write until it burns out." That predates
 the in-app rule that a candle going out is what a *missed day* means, so the
 phrase overloads the metaphor. The store copy follows the app; §5 is the
 thing that should be corrected.
+
+**Prices are no longer in either field.** The owner cut them. Apple renders
+the real in-app purchase prices on the listing itself, so the copy was
+duplicating something the store already shows and could only go stale
+against. The trade is that the three-day trial now goes unmentioned outside
+the paywall — worth revisiting if conversion from the listing is weak.
+
+**The page format is no longer in What's New.** Portrait 3:4 and
+whole-photo storage were the largest engineering change in 2.2 and the
+owner cut them from the release note. Deliberate: a reader who has not seen
+the old format has nothing to compare against, and the benefit is already
+described in the listing where it lands on people deciding.
 
 **What's New matches 2.1's register, not a feature sheet.** The live 2.1
 note reads, in full: "Fixed crash in the journal archive and improved camera
