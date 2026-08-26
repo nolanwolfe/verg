@@ -44,7 +44,12 @@ final class StoreScreenshots: XCTestCase {
         // adds a minute and a failure mode to a run that should only report
         // defects.
         //
-        //   VERG_SCREENSHOTS=1 xcodebuild test \
+        // The prefix matters: Xcode forwards only `TEST_RUNNER_`-prefixed
+        // variables into the test runner's process, stripping the prefix.
+        // Plain `VERG_SCREENSHOTS=1` reaches xcodebuild and stops there,
+        // which reads as the pass silently skipping.
+        //
+        //   TEST_RUNNER_VERG_SCREENSHOTS=1 xcodebuild test \
         //     -only-testing:VergUITests/StoreScreenshots \
         //     -destination 'id=<6.9-inch simulator>'
         try XCTSkipUnless(
@@ -72,10 +77,15 @@ final class StoreScreenshots: XCTestCase {
         settle(2.2)
         shoot(app, "02-journal")
 
-        // 3 — one page, full bleed.
-        let firstPage = app.scrollViews.buttons.firstMatch
-        if firstPage.waitForExistence(timeout: 8) {
-            firstPage.tap()
+        // 3 — one page, full bleed. The *last* tile, not the first: the
+        // hero page sits at the foot of the grid so it does not also lead
+        // the wall shot above.
+        app.swipeUp()
+        settle()
+        let tiles = app.scrollViews.buttons.allElementsBoundByIndex
+        let page = tiles.last ?? app.scrollViews.buttons.firstMatch
+        if page.waitForExistence(timeout: 8) {
+            page.tap()
             settle(2.0)
             shoot(app, "03-page")
             // Leave the viewer the way it was opened.
@@ -83,12 +93,23 @@ final class StoreScreenshots: XCTestCase {
             settle()
         }
 
-        // 4 — the record: heatmap, insights, the ladder.
+        // 4 — the record: library, heatmap, insights.
         open(app, "library")
         settle(1.8)
+        // The shelf is newest-first, so the longest book sits last and off
+        // screen. Nudge the horizontal row along before the shot.
+        let shelf = app.scrollViews.element(boundBy: 1)
+        if shelf.exists {
+            shelf.swipeLeft()
+            settle(1.0)
+        }
         shoot(app, "04-archive")
+        // Far enough down for the page-milestone ladder, which is where the
+        // 500-page rung lives.
+        app.swipeUp(); settle(0.6)
+        app.swipeUp(); settle(0.6)
         app.swipeUp()
-        settle()
+        settle(1.0)
         shoot(app, "05-insights")
 
         // 6 — the candle screen on its own.

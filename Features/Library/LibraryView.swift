@@ -683,17 +683,27 @@ struct HeatmapCell: View {
     /// GitHub's own contribution-graph greens, empty to brightest.
     static func fill(forLevel level: Int) -> Color {
         switch level {
-        // GitHub ships two palettes, and only the dark one was here. Its
-        // greens run #0E4429 (nearly black) up to #39D353 (bright) — correct
-        // against near-black paper, and exactly backwards on light, where
-        // the emptiest week was the darkest thing on the page and a full one
-        // nearly vanished. Each level is a pair now: light goes pale to deep,
-        // dark stays deep to bright, and both read less → more.
-        case 0: return Theme.Colors.adaptive(light: "E6E1D6", dark: "1A1A1A")
-        case 1: return Theme.Colors.adaptive(light: "9BE9A8", dark: "0E4429")
-        case 2: return Theme.Colors.adaptive(light: "40C463", dark: "006D32")
-        case 3: return Theme.Colors.adaptive(light: "30A14E", dark: "26A641")
-        default: return Theme.Colors.adaptive(light: "216E39", dark: "39D353")
+        // Gold, not GitHub green. The graph borrows its shape from a
+        // contribution grid but it is counting candles, and green belonged
+        // to a different product — the ramp now runs through the same gold
+        // the rest of the app is built on.
+        //
+        // Each level is a pair, because a single ramp cannot serve both
+        // themes: light runs pale to deep so a full week is the darkest
+        // thing on the page, dark runs deep to bright so it is the
+        // brightest. Getting that backwards is the bug this replaced, where
+        // the emptiest week was the darkest mark in the light theme.
+        //
+        // Level 0 is deliberately a neutral warm grey rather than the
+        // palest gold. Most days are one page, so level 1 is nearly the
+        // whole graph — if it sat a few percent off the empty cell the
+        // year read as blank. The step from nothing to something has to be
+        // the largest one in the ramp.
+        case 0: return Theme.Colors.adaptive(light: "E8E3D7", dark: "1A1A1A")
+        case 1: return Theme.Colors.adaptive(light: "F0DC96", dark: "4A3A0E")
+        case 2: return Theme.Colors.adaptive(light: "DDB94E", dark: "7D6218")
+        case 3: return Theme.Colors.adaptive(light: "B98F22", dark: "B08F2E")
+        default: return Theme.Colors.adaptive(light: "7E6318", dark: "E6C24A")
         }
     }
 
