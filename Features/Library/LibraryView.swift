@@ -688,22 +688,30 @@ struct HeatmapCell: View {
         // to a different product — the ramp now runs through the same gold
         // the rest of the app is built on.
         //
-        // Each level is a pair, because a single ramp cannot serve both
-        // themes: light runs pale to deep so a full week is the darkest
-        // thing on the page, dark runs deep to bright so it is the
-        // brightest. Getting that backwards is the bug this replaced, where
-        // the emptiest week was the darkest mark in the light theme.
+        // The four golds are the *same four* in both themes. Only their
+        // order flips, because "less" and "more" point opposite ways
+        // against opposite grounds: on paper the fullest day is the
+        // darkest mark, on black it is the brightest. Reading the two
+        // ramps side by side, F0DC96 is level 1 on light and level 4 on
+        // dark — the same colour doing the opposite job.
         //
-        // Level 0 is deliberately a neutral warm grey rather than the
-        // palest gold. Most days are one page, so level 1 is nearly the
-        // whole graph — if it sat a few percent off the empty cell the
-        // year read as blank. The step from nothing to something has to be
-        // the largest one in the ramp.
+        // Sharing the values is what makes the graph recognisably one
+        // thing across a theme switch. The earlier dark ramp mixed its own
+        // browns, and the result read as a different, muddier palette that
+        // happened to also be yellow.
+        //
+        // Level 0 is the exception and cannot be shared: it is the absence
+        // of a mark, so it has to disappear into whatever the ground is —
+        // a warm grey on paper, near-black on black. It is deliberately
+        // not the palest gold either. Most days are one page, so level 1
+        // is nearly the whole graph; if it sat a few percent off the empty
+        // cell the year read as blank. The step from nothing to something
+        // has to be the largest one in the ramp.
         case 0: return Theme.Colors.adaptive(light: "E8E3D7", dark: "1A1A1A")
-        case 1: return Theme.Colors.adaptive(light: "F0DC96", dark: "4A3A0E")
-        case 2: return Theme.Colors.adaptive(light: "DDB94E", dark: "7D6218")
-        case 3: return Theme.Colors.adaptive(light: "B98F22", dark: "B08F2E")
-        default: return Theme.Colors.adaptive(light: "7E6318", dark: "E6C24A")
+        case 1: return Theme.Colors.adaptive(light: "F0DC96", dark: "7E6318")
+        case 2: return Theme.Colors.adaptive(light: "DDB94E", dark: "B98F22")
+        case 3: return Theme.Colors.adaptive(light: "B98F22", dark: "DDB94E")
+        default: return Theme.Colors.adaptive(light: "7E6318", dark: "F0DC96")
         }
     }
 
