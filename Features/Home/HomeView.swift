@@ -43,7 +43,7 @@ struct HomeView: View {
                 let available = max(160, geo.size.height - 44 - Self.bottomBlockHeight)
                 let scale = min(1, available / CandleView.intrinsicHeight)
 
-                CandleView(progress: 1.0, isBurning: true, daysLit: viewModel.daysLit)
+                CandleView(progress: 1.0, isBurning: !viewModel.candleWentOut, daysLit: viewModel.daysLit)
                     .scaleEffect(scale, anchor: .top)
                     .frame(maxWidth: .infinity)
                     .frame(height: CandleView.intrinsicHeight * scale, alignment: .top)

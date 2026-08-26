@@ -23,6 +23,13 @@ final class HomeViewModel: ObservableObject {
         daysLitText
     }
 
+    /// Whether the candle graphic itself should render unlit. Drives
+    /// CandleView's relight animation in HomeView once a session brings
+    /// `daysLit` back above zero.
+    var candleWentOut: Bool {
+        candleService.candleWentOut
+    }
+
     var sessionsTodayText: String {
         AppStrings.Home.sessionsTodayText(sessionsToday)
     }

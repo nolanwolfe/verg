@@ -103,6 +103,14 @@ final class CandleService: ObservableObject {
         hasWrittenToday == false && daysLit > 0
     }
 
+    /// Whether the candle is currently unlit with history behind it — same
+    /// condition `AppStrings.Home.daysLitText` uses to show "The candle
+    /// went out. Light it again." Drives the candle graphic on Home so the
+    /// visual and the copy never disagree.
+    var candleWentOut: Bool {
+        daysLit == 0 && longestDaysLit > 0
+    }
+
     /// Days until the candle goes out
     var daysUntilCandleGoesOut: Int {
         if hasWrittenToday {

@@ -23,6 +23,12 @@ struct CandleView: View {
     @State private var burnoutAnimating: Bool = false
     @State private var emberOpacity: Double = 0.0
 
+    /// Tracks the prior `isBurning` value so a false→true transition can be
+    /// told apart from the view's very first appearance already lit — only
+    /// the former is a "relight" (the candle was seen out, then caught
+    /// again) and gets the catching-flame animation below.
+    @State private var previousIsBurning: Bool?
+
     /// What the candle actually draws, top of glow to bottom of wax:
     /// 160 glow + 50 flame + 15 wick + 200 wax at its tallest.
     ///
@@ -40,25 +46,40 @@ struct CandleView: View {
     private var candleHeight: CGFloat { maxCandleHeight * progress }
     private var wickHeight: CGFloat { max(8, wickLength * progress) }
 
+    /// Glow + flame are only *visible* while burning or mid-burnout — but
+    /// they always stay in the layout. Removing them from the VStack
+    /// entirely dropped ~200pt of height and, under a top-aligned frame
+    /// (Home screen), snapped the wick and wax visibly upward whenever the
+    /// candle went unlit. Opacity keeps their footprint reserved so the
+    /// candle body never moves.
+    private var showFlame: Bool { isBurning || burnoutAnimating }
+
     var body: some View {
         VStack(spacing: 0) {
-            // Flame only shows while burning or during the burnout sequence
-            if isBurning || burnoutAnimating {
-                glowEffect
-                flameView
-                    .offset(y: 10)
-            }
+            glowEffect
+                .opacity(showFlame ? 1 : 0)
+            flameView
+                .offset(y: 10)
+                .opacity(showFlame ? 1 : 0)
             wickView
                 .offset(y: 5)
             candleBody
         }
         .task(id: isBurning) {
+            let wasBurning = previousIsBurning
+            previousIsBurning = isBurning
             if isBurning {
-                // Reset in case a previous burnout left scale at 0
-                flameScale = 1.0
-                flameOffset = 0
-                innerFlameOffset = 0
-                glowOpacity = 0.35
+                if wasBurning == false {
+                    // Seen unlit before, now lit again: catch the flame
+                    // rather than just popping it back in.
+                    await runRelightSequence()
+                } else {
+                    // Reset in case a previous burnout left scale at 0
+                    flameScale = 1.0
+                    flameOffset = 0
+                    innerFlameOffset = 0
+                    glowOpacity = 0.35
+                }
                 await runFlickerLoop()
             } else if progress <= 0.02 {
                 burnoutAnimating = true
@@ -85,6 +106,47 @@ struct CandleView: View {
             }
             try? await Task.sleep(nanoseconds: UInt64(duration * 0.75 * 1_000_000_000))
         }
+    }
+
+    // MARK: - Relight Sequence
+
+    /// The inverse of the burnout sequence: a small flame catches, sputters
+    /// unsteadily for a moment, then settles to full size before the
+    /// ordinary flicker loop takes over.
+    @MainActor
+    private func runRelightSequence() async {
+        flameScale = 0.001
+        glowOpacity = 0
+        flameOffset = 0
+        innerFlameOffset = 0
+
+        // Catch: a small, dim flame appears
+        withAnimation(.easeOut(duration: 0.15)) {
+            flameScale = 0.4
+            glowOpacity = 0.15
+        }
+        try? await Task.sleep(nanoseconds: 150_000_000)
+        guard !Task.isCancelled else { return }
+
+        // Sputter: unsteady while it takes hold
+        for _ in 0..<4 {
+            withAnimation(.easeInOut(duration: 0.09)) {
+                flameScale = CGFloat.random(in: 0.3...0.9)
+                flameOffset = CGFloat.random(in: -3...3)
+                glowOpacity = Double.random(in: 0.15...0.35)
+            }
+            try? await Task.sleep(nanoseconds: 90_000_000)
+            guard !Task.isCancelled else { return }
+        }
+
+        // Settle to a steady full flame
+        withAnimation(.easeOut(duration: 0.25)) {
+            flameScale = 1.0
+            flameOffset = 0
+            innerFlameOffset = 0
+            glowOpacity = 0.35
+        }
+        try? await Task.sleep(nanoseconds: 250_000_000)
     }
 
     // MARK: - Burnout Sequence
