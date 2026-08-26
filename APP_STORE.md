@@ -51,7 +51,7 @@ Spending the hook on a discount buys a worse install.
 
 ---
 
-## Description — 1998 / 4000
+## Description — 1983 / 4000
 
 The first three lines show before "more", so they carry the whole pitch on
 their own. Only what Verg is, in the active voice — the owner's direction for
@@ -60,7 +60,7 @@ their own. Only what Verg is, in the active voice — the owner's direction for
 ```
 Verg is a journal you write by hand.
 
-Light a candle. Set the phone face down. Write on paper until the bell. Photograph the page, and Verg keeps it.
+Light a candle. Set the phone face down. Write on paper until the bell. Capture the page, and Verg keeps it.
 
 This is Verg. A candle, paper, a bell, and your own handwriting.
 
@@ -72,7 +72,7 @@ Set the phone face down. The screen dims itself. Ambient sound if you want it: r
 
 Write until the bell. On paper, in your own hand, at whatever speed your hand goes.
 
-Photograph the page. Verg keeps it, dated, in your journal.
+Capture the page. Verg keeps it, dated, in your journal.
 
 WHAT IT KEEPS
 
@@ -86,11 +86,15 @@ Books. Finish a journal and it becomes a book on your shelf. Name it, choose its
 
 THE ORACLE
 
-Eighty questions to write toward when the page is blank. Short ones, each a door. Swipe to draw another, then commit to the one you want. Write your own and keep them in folders.
+Eighty questions to write toward when the page is blank. Short ones, each a door. Draw another if the first one isn't yours. Write your own and keep them in folders.
 
 YOURS
 
-Every page lives on your phone, in your own hand, and stays there. Lock the journal behind Face ID or a code of your own, for a phone that gets handed around. Verg guides the ritual and keeps the record. The writing is yours.
+Every page lives on this phone, in your own hand, and stays there. No account, nothing to sign up for.
+
+Lock the journal behind Face ID or a code of your own, for a phone that gets handed around.
+
+Verg guides the ritual and keeps the record. The writing is yours.
 
 FREE, AND THE GOLDEN AGE
 
@@ -112,45 +116,22 @@ Privacy: https://verg.app/privacy
 
 ---
 
-## What's New in This Version — 2266 / 4000
+## What's New in This Version — 1795 / 4000
 
 ```
-The archive, rebuilt — and a lock for the journal.
+The Archive is new — a tab holding the whole record of your writing: this year and every year before it, your finished books, and the numbers underneath. Time reclaimed, total pages, longest run. A year of history at a glance, one square a day, deeper gold where you wrote more. A missed day means the candle went out. You light it again.
 
-ARCHIVE
-A new tab holding the whole record of your writing: this year and every year before it, your finished books, and the numbers underneath — time reclaimed, total pages, longest run.
+The journal locks now. Four digits or a code of your own, opened by Face ID or Touch ID where the phone has it. Settings, then App, then Lock App. The code itself is never stored.
 
-HISTORY
-A full year at a glance, one square a day, deeper gold where you wrote more. Switch to a month calendar in Settings if you'd rather read it that way. A missed day means the candle went out. You light it again.
+Pages are portrait, the shape of the page you actually write on. Photographs are kept whole and framed for the screen, so what fell outside the viewfinder is still there. Close-up focus is fixed and the shutter is faster — hold the phone over the page and it comes sharp.
 
-LOCK APP
-A passcode on the journal, for a phone that gets handed around. Four digits or a code of your own, opened by Face ID or Touch ID where the phone has it. Settings, then App, then Lock App. The code itself is never stored — only a salted hash of it, in the Keychain, on this device alone.
+The Oracle has eighty questions to write toward when the page is blank. Swipe to draw another, then Select Guidance to commit to it. Write your own, keep them in folders, change them whenever. Or take no question at all.
 
-THE PAGE
-Pages are portrait now, the shape of the page you actually write on. Photographs are kept whole and framed for the screen, so what fell outside the viewfinder is still there. Frame the shot yourself before you save it.
+Finish a journal and it becomes a book on the shelf, with twenty-one cover colours and a line to remember it by.
 
-THE ORACLE
-Eighty questions to write toward when the page is blank. Swipe to draw another, then Select Guidance to commit to it. Write your own, keep them in folders, change them whenever. Or take no script at all — that is a choice, not a missing setting.
+Verg opens light now, and follows your phone if you would rather. Ambient sound while you write, eleven tracks. Five, ten or fifteen minutes, or a length of your own. Five more when the bell comes too soon. Pinch to zoom any page, swipe down to close. A faster journal, however many pages you have. New onboarding, ending in the honest arithmetic of a year at your pace.
 
-BOOKS
-Finish a journal and it becomes a book on the shelf. Rename it, choose from twenty-one cover colours, and write a line to remember it by.
-
-LIGHT AND DARK
-Verg opens light now. Pin it either way in Settings, then Appearance.
-
-THE CAMERA
-A faster shutter, and close-up focus is fixed: hold the phone over the page and it comes sharp. Tap to focus, zoom, and a light for a dark room.
-
-ALSO
-- Ambient sound while you write: eleven tracks
-- Five, ten, or fifteen minutes, or set your own
-- Five more minutes when the bell comes too soon
-- Pinch to zoom any page, swipe down to close
-- A faster journal, however many pages you have
-- New onboarding, ending in the honest arithmetic of a year at your pace
-
-FREE, AND THE GOLDEN AGE
-Writing and saving pages is free, always, with no account. Your last seven days stay open. The Golden Age opens the whole archive, the stats, the scripts, ambient sound, custom session lengths, and a weekly relight. $7.99 a month or $59.99 a year, with the first three days free on the year.
+Writing and saving pages is free, always, with no account. Your last seven days stay open. The Golden Age opens the whole archive, the stats, the questions, ambient sound, custom session lengths, and a weekly relight. $7.99 a month or $59.99 a year, with the first three days free on the year.
 ```
 
 ---
@@ -186,6 +167,20 @@ the 2.2 headline as "Light a candle. Write until it burns out." That predates
 the in-app rule that a candle going out is what a *missed day* means, so the
 phrase overloads the metaphor. The store copy follows the app; §5 is the
 thing that should be corrected.
+
+**What's New matches 2.1's register, not a feature sheet.** The live 2.1
+note reads, in full: "Fixed crash in the journal archive and improved camera
+quality and candle burning flicker." One plain sentence, no headings, no
+selling. 2.2 is 177 commits and cannot be one sentence, so what carries over
+is the voice rather than the length — plain declarative sentences, and none
+of the shouted section headers a release note usually reaches for. The
+description keeps its headers, because it is a document someone scans; a
+release note is read straight through.
+
+**"Capture the page", not "Photograph the page".** The app's own onboarding
+says Capture (`AppStrings.Onboarding.ritualSteps`), and the listing follows
+the app. This was fixed once in fd439f4 and silently reverted by the 2.2
+rewrite; it is worth grepping for before any future pass.
 
 **The Oracle is eighty, not twenty-four.** The previous draft said
 twenty-four, which was true when it was written. `WritingPrompt.builtInTexts`
