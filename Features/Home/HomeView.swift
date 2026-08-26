@@ -179,6 +179,10 @@ struct HomeView: View {
                     // symbol the app signs its outbound words with.
                     Text("🕯️")
                         .font(Theme.Typography.daysLitDisplay)
+                        // The emoji's own glyph carries right-padding; the
+                        // HStack spacing on top of it read as a hole. Pull
+                        // the text into the candle.
+                        .padding(.trailing, -6)
                 }
                 Text(viewModel.daysLitDisplayText)
                     .font(Theme.Typography.daysLitDisplay)
