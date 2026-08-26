@@ -40,7 +40,7 @@ enum AppStrings {
         // Step 5 — the closing note. Mentions the rating; deliberately does
         // NOT trigger the system prompt, which fires on the third saved page.
         static let ratingPromptTitle = "One more thing."
-        static let ratingPromptBody = "Ratings light the way. They help others find Verg"
+        static let ratingPromptBody = "Ratings light the way. They help others find Verg 🕯️"
 
         static let skipButton = "Skip"
         static let continueButton = "Continue"
