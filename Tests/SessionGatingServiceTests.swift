@@ -97,7 +97,7 @@ final class AppStringsTests: XCTestCase {
     func testUploadPhotoNotice_HasCorrectCopy() {
         XCTAssertEqual(AppStrings.CoachMark.UploadPhoto.title, "Save your page")
         XCTAssertEqual(AppStrings.CoachMark.UploadPhoto.body, "Take a photo of what you wrote to keep your candle lit and archive.")
-        XCTAssertEqual(AppStrings.CoachMark.UploadPhoto.primaryButton, "Upload photo")
+        XCTAssertEqual(AppStrings.CoachMark.UploadPhoto.primaryButton, "Capture page")
         XCTAssertEqual(AppStrings.CoachMark.UploadPhoto.secondaryButton, "Skip")
     }
 

@@ -58,7 +58,7 @@ enum AppStrings {
         enum UploadPhoto {
             static let title = "Save your page"
             static let body = "Take a photo of what you wrote to keep your candle lit and archive."
-            static let primaryButton = "Upload photo"
+            static let primaryButton = "Capture page"
             static let tertiaryButton = "+5 more minutes"
             static let secondaryButton = "Skip"
         }
