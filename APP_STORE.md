@@ -35,7 +35,7 @@ stay on that side of the line.
 **If the trade framing reads as a rebuke to someone who just came from a
 feed, swap to the ritual stated plainly:**
 
-> Light a candle. Set the phone face down. Write on paper until the bell. Photograph the page, and Verg keeps it.
+> Light a candle. Set the phone face down. Write on paper until the bell. Capture the page, and Verg keeps it.
 
 **Or lead with the object, which is what the videos are actually selling:**
 
@@ -56,7 +56,7 @@ their own. Only what Verg is, in the active voice — the owner's direction for
 ```
 Verg is a journal you write by hand.
 
-Light a candle. Set the phone face down. Write on paper until the bell. Photograph the page, and Verg keeps it.
+Light a candle. Set the phone face down. Write on paper until the bell. Capture the page, and Verg keeps it.
 
 This is Verg. A candle, paper, a bell, and your own handwriting.
 
@@ -68,7 +68,7 @@ Set the phone face down. The screen dims itself. Ambient sound if you want it: r
 
 Write until the bell. On paper, in your own hand, at whatever speed your hand goes.
 
-Photograph the page. Verg keeps it, dated, in your journal.
+Capture the page. Verg keeps it, dated, in your journal.
 
 WHAT IT KEEPS
 

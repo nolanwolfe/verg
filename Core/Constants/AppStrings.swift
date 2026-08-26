@@ -26,7 +26,7 @@ enum AppStrings {
             ("flame.fill", "Light the candle"),
             ("iphone.slash", "Phone face down"),
             ("pencil", "Write until the bell"),
-            ("camera.fill", "Photograph the page")
+            ("camera.fill", "Capture the page")
         ]
 
         // Step 3 — commitment
