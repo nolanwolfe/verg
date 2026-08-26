@@ -24,6 +24,7 @@
 		6B7C68B371EBE84982E1B033 /* ambient_earth.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 80E5C6FB39AC9EA3518C0D3B /* ambient_earth.m4a */; };
 		72C931788C9B814DF5E2B735 /* AppLockViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC13728B9DF36E988801AE59 /* AppLockViews.swift */; };
 		79325AD27BFFA6471C63BB58 /* PageFramingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1450B3C90DF16939FECE4C76 /* PageFramingView.swift */; };
+		7A1A05FB50DAE1A14005560C /* Links.swift in Sources */ = {isa = PBXBuildFile; fileRef = 517CC8EF72254D17CAC4AAE3 /* Links.swift */; };
 		84D808917CA182531D07412E /* AppStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0037D8A48FC68AECADF0E328 /* AppStrings.swift */; };
 		89CFE2F8A3ACB70A9B60AC08 /* PageCaptureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DABEE012D4572BC7AFA1F71 /* PageCaptureTests.swift */; };
 		8F3BEBBF89D78C454624EEA2 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7AEEAEB60B010E7D6255DEF1 /* Foundation.framework */; };
@@ -129,6 +130,7 @@
 		45840E03A94B56147976922D /* AccessCodeTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AccessCodeTests.swift; sourceTree = "<group>"; };
 		4925EC5E8BD87481343A7029 /* oracle_draw.wav */ = {isa = PBXFileReference; includeInIndex = 1; path = Sounds/oracle_draw.wav; sourceTree = "<group>"; };
 		4C3F6D131429DF832DEC156D /* MilestoneLogicTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = MilestoneLogicTests.swift; path = MilestoneLogicTests.swift; sourceTree = "<group>"; };
+		517CC8EF72254D17CAC4AAE3 /* Links.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Core/Constants/Links.swift; sourceTree = "<group>"; };
 		52019627854D25B472BACF07 /* PromptsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptsView.swift; path = Features/Prompts/PromptsView.swift; sourceTree = "<group>"; };
 		52D18BD1737C0BA640157030 /* ambient_stream.m4a */ = {isa = PBXFileReference; includeInIndex = 1; name = ambient_stream.m4a; path = Sounds/ambient_stream.m4a; sourceTree = "<group>"; };
 		5A3B42F81731303223482210 /* CandleRelightTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CandleRelightTests.swift; sourceTree = "<group>"; };
@@ -267,12 +269,20 @@
 			name = Services;
 			sourceTree = "<group>";
 		};
+		48193612D729384CC6E6DEDE /* Constants */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Constants;
+			sourceTree = "<group>";
+		};
 		5DEAE9590E6A90B9A88E76C8 /* Constants */ = {
 			isa = PBXGroup;
 			children = (
 				0037D8A48FC68AECADF0E328 /* AppStrings.swift */,
 				6D95EF34BEA0EECAB4880F8D /* ProductIdentifiers.swift */,
 				FD0A20F00D8D4B1B5CE0E2AA /* PageCapture.swift */,
+				517CC8EF72254D17CAC4AAE3 /* Links.swift */,
 			);
 			name = Constants;
 			sourceTree = "<group>";
@@ -324,6 +334,7 @@
 				A40000010000000000000009 /* Models */,
 				A40000010000000000000010 /* Services */,
 				A40000010000000000000011 /* Theme */,
+				48193612D729384CC6E6DEDE /* Constants */,
 			);
 			path = Core;
 			sourceTree = "<group>";
@@ -823,6 +834,7 @@
 				95D8597677780E873EC4BEB7 /* AppLockService.swift in Sources */,
 				72C931788C9B814DF5E2B735 /* AppLockViews.swift in Sources */,
 				79325AD27BFFA6471C63BB58 /* PageFramingView.swift in Sources */,
+				7A1A05FB50DAE1A14005560C /* Links.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1025,7 +1037,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 41;
+				CURRENT_PROJECT_VERSION = 42;
 				DEVELOPMENT_TEAM = 9GHNQ3ZYX9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1061,7 +1073,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 41;
+				CURRENT_PROJECT_VERSION = 42;
 				DEVELOPMENT_TEAM = 9GHNQ3ZYX9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;

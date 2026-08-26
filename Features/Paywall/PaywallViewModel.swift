@@ -235,14 +235,10 @@ final class PaywallViewModel: ObservableObject {
 
     // MARK: - URL Actions
     func openPrivacyPolicy() {
-        if let url = URL(string: "https://nolanwolfe.github.io/verg/privacy") {
-            UIApplication.shared.open(url)
-        }
+        UIApplication.shared.open(Links.privacy)
     }
 
     func openTermsOfService() {
-        if let url = URL(string: "https://nolanwolfe.github.io/verg/terms") {
-            UIApplication.shared.open(url)
-        }
+        UIApplication.shared.open(Links.terms)
     }
 }

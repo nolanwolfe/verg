@@ -106,8 +106,8 @@ Your pages stay yours, on your phone, waiting.
 
 Named for Virgil, who walked Dante up the mountain.
 
-Terms: https://nolanwolfe.github.io/verg/terms
-Privacy: https://nolanwolfe.github.io/verg/privacy
+Terms: https://verg.app/terms
+Privacy: https://verg.app/privacy
 ```
 
 ---

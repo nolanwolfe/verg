@@ -435,13 +435,11 @@ final class SettingsViewModel: ObservableObject {
 
     // MARK: - App Actions
     func rateApp() {
-        if let url = URL(string: "https://apps.apple.com/app/id6758077555?action=write-review") {
-            UIApplication.shared.open(url)
-        }
+        UIApplication.shared.open(Links.writeReview)
     }
 
     func shareApp() {
-        let url = URL(string: "https://apps.apple.com/app/id6758077555")!
+        let url = Links.appStore
         let activityVC = UIActivityViewController(
             activityItems: ["Verg 🕯️ — a journaling app that gets you off your phone and onto paper.", url],
             applicationActivities: nil
@@ -454,14 +452,10 @@ final class SettingsViewModel: ObservableObject {
     }
 
     func openPrivacyPolicy() {
-        if let url = URL(string: "https://nolanwolfe.github.io/verg/privacy") {
-            UIApplication.shared.open(url)
-        }
+        UIApplication.shared.open(Links.privacy)
     }
 
     func openTermsOfService() {
-        if let url = URL(string: "https://nolanwolfe.github.io/verg/terms") {
-            UIApplication.shared.open(url)
-        }
+        UIApplication.shared.open(Links.terms)
     }
 }

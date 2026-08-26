@@ -358,9 +358,9 @@ struct NativePaywallView: View {
                     viewModel.restorePurchases()
                 }
                 Text("·")
-                Link("Terms", destination: URL(string: "https://nolanwolfe.github.io/verg/terms")!)
+                Link("Terms", destination: Links.terms)
                 Text("·")
-                Link("Privacy", destination: URL(string: "https://nolanwolfe.github.io/verg/privacy")!)
+                Link("Privacy", destination: Links.privacy)
             }
             .font(Theme.Typography.caption)
             .foregroundColor(GoldenPalette.secondaryText)

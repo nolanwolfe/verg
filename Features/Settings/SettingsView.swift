@@ -377,7 +377,7 @@ struct SettingsView: View {
                 // is black on light and white on dark, so both themes read.
                 iconColor: Theme.Colors.primaryText,
                 title: "Privacy Policy",
-                url: URL(string: "https://nolanwolfe.github.io/verg/privacy")!
+                url: Links.privacy
             )
 
             settingsDivider
@@ -386,7 +386,7 @@ struct SettingsView: View {
                 icon: "doc.text",
                 iconColor: Theme.Colors.primaryText,
                 title: "Terms of Service",
-                url: URL(string: "https://nolanwolfe.github.io/verg/terms")!
+                url: Links.terms
             )
         }
     }
@@ -453,7 +453,7 @@ struct SettingsView: View {
             // cutout: it sits in a rounded container exactly as the social
             // marks do, so the set reads as one family. Tapping it opens
             // verg.app — the icon is where the site lives.
-            Link(destination: URL(string: "https://www.verg.app")!) {
+            Link(destination: Links.site) {
                 Image("VergIcon")
                     .resizable()
                     .renderingMode(.original)
