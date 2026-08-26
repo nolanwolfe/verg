@@ -89,6 +89,7 @@
 		B149AD1EF9111F56CF2898BD /* MilestoneLogicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C3F6D131429DF832DEC156D /* MilestoneLogicTests.swift */; };
 		B581A0CAD6F8EC9F16246805 /* WritingPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5FEA8350AEF2EA9FB71E7A9F /* WritingPrompt.swift */; };
 		B8D3EDEFD64E0B0FFDB2309A /* CandleDaysLitStateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 85EC2041E044532B57A5617A /* CandleDaysLitStateTests.swift */; };
+		C5735C6029D2E9F5B3721A58 /* VersionShot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5B9145A38AE1CCCF93225D83 /* VersionShot.swift */; };
 		C9F37734AEC8C334F08C503F /* ambient_motion.m4a in Resources */ = {isa = PBXBuildFile; fileRef = D66B0478F0B1B87D3C18A0C6 /* ambient_motion.m4a */; };
 		D7B1C5FD6D6E734DD931B22A /* ambient_floating.m4a in Resources */ = {isa = PBXBuildFile; fileRef = FF7A7749761A40116B7282BF /* ambient_floating.m4a */; };
 		DBF85CC00BAB63176ADB9C70 /* ProductIdentifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D95EF34BEA0EECAB4880F8D /* ProductIdentifiers.swift */; };
@@ -134,6 +135,7 @@
 		52019627854D25B472BACF07 /* PromptsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PromptsView.swift; path = Features/Prompts/PromptsView.swift; sourceTree = "<group>"; };
 		52D18BD1737C0BA640157030 /* ambient_stream.m4a */ = {isa = PBXFileReference; includeInIndex = 1; name = ambient_stream.m4a; path = Sounds/ambient_stream.m4a; sourceTree = "<group>"; };
 		5A3B42F81731303223482210 /* CandleRelightTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CandleRelightTests.swift; sourceTree = "<group>"; };
+		5B9145A38AE1CCCF93225D83 /* VersionShot.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = VersionShot.swift; path = VersionFooterTests.swift; sourceTree = "<group>"; };
 		5FEA8350AEF2EA9FB71E7A9F /* WritingPrompt.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WritingPrompt.swift; sourceTree = "<group>"; };
 		678AE28650CE08196318789C /* VergUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VergUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6D95EF34BEA0EECAB4880F8D /* ProductIdentifiers.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ProductIdentifiers.swift; path = Core/Constants/ProductIdentifiers.swift; sourceTree = "<group>"; };
@@ -292,6 +294,7 @@
 			children = (
 				E603CD9BF9C89C51682CB985 /* VergUIFlowTests.swift */,
 				9A3334EE92C75B27D64A936F /* StoreScreenshots.swift */,
+				5B9145A38AE1CCCF93225D83 /* VersionShot.swift */,
 			);
 			name = UITests;
 			path = UITests;
@@ -750,6 +753,7 @@
 			files = (
 				FE21BE39C77080DB4C472ED2 /* VergUIFlowTests.swift in Sources */,
 				2121EF62BA745052689A2647 /* StoreScreenshots.swift in Sources */,
+				C5735C6029D2E9F5B3721A58 /* VersionShot.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

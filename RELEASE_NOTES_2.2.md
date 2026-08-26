@@ -33,38 +33,42 @@ so these no longer need a person. A further 117 unit tests cover pure logic:
 - Choosing one of your own questions selects it rather than opening the editor
 - Swiping in the fullscreen viewer cannot walk past a locked page
 
-### Still needs a physical device
+### Physical-device pass — complete
+
+Run on device and confirmed passing by the owner, 26 August 2026. Everything
+below touches hardware, money, or real time, so none of it can be exercised
+in a simulator; the boxes record a human having done it, not a test run.
 
 Everything below touches hardware, money, or real time — none of it can be
 exercised in a simulator.
 
-- [ ] **Camera.** Close-up focus on a page: the app now asks for the virtual
+- [x] **Camera.** Close-up focus on a page: the app now asks for the virtual
       multi-camera device so iOS can drop to the ultra-wide for macro. Check a
       page fills the frame *and* comes sharp. Tap-to-focus ring appears. The
       1x/2x selector switches lenses. The torch lights and goes out when the
       screen closes. `CameraView` compiles out to a photo-picker stub in the
       simulator, so none of this has ever run outside a device.
-- [ ] **Page format.** Pages are portrait **3:4** now, matching a single
+- [x] **Page format.** Pages are portrait **3:4** now, matching a single
       notebook page (Letter 0.77, A5 0.70, Moleskine 0.62). The camera's
       `.photo` preset on a portrait-locked phone already produces 3:4, so a
       capture is stored untouched — check that what the viewfinder frames is
       exactly what lands in the journal. This replaced a landscape 3:2 that
       had been chosen for an open spread; single pages were hard to
       photograph through it, which is the thing to confirm is gone.
-- [ ] **Photos are stored whole now.** Nothing is cropped on save; the frame
+- [x] **Photos are stored whole now.** Nothing is cropped on save; the frame
       is applied on display. Import a wide photo from the library and confirm
       the journal shows it page-shaped without the file itself being
       destroyed.
-- [ ] **Prices and the trial.** The paywall reads RevenueCat at runtime. See
+- [x] **Prices and the trial.** The paywall reads RevenueCat at runtime. See
       the two open items below before testing this.
-- [ ] **Purchase, restore, and the access code**, against a sandbox account.
-- [ ] **Ambient sound** on speaker and headphones; silent switch stops it;
+- [x] **Purchase, restore, and the access code**, against a sandbox account.
+- [x] **Ambient sound** on speaker and headphones; silent switch stops it;
       it does not interrupt music already playing.
-- [ ] **Upgrade from 2.1** with a real journal: pages load, legacy images
+- [x] **Upgrade from 2.1** with a real journal: pages load, legacy images
       migrate in the background, nothing re-runs onboarding.
-- [ ] **Relight**, which needs a premium account and moving the device clock.
-- [ ] **Notifications** actually fire at the set time.
-- [ ] **Reduce Motion**: the paywall flame holds still; the gold sheen on the
+- [x] **Relight**, which needs a premium account and moving the device clock.
+- [x] **Notifications** actually fire at the set time.
+- [x] **Reduce Motion**: the paywall flame holds still; the gold sheen on the
       trial badge holds still.
 
 ### Two things that were not code — both now resolved

@@ -51,18 +51,24 @@ Spending the hook on a discount buys a worse install.
 
 ---
 
-## Description — 1983 / 4000
+## Description — 2383 / 4000
 
 The first three lines show before "more", so they carry the whole pitch on
 their own. Only what Verg is, in the active voice — the owner's direction for
 2.2: never define the app by what it is not.
 
 ```
-Verg is a journal you write by hand.
+Verg is a journal you write by hand, on paper. The app holds the candle, keeps the time, and saves the page.
 
-Light a candle. Set the phone face down. Write on paper until the bell. Capture the page, and Verg keeps it.
+Light the candle. Set the phone face down. Write until the bell. Capture the page, and it is yours, dated, for good.
 
-This is Verg. A candle, paper, a bell, and your own handwriting.
+Ten minutes a day, five days a week. In a year that is 260 pages in your hand and 43 hours off your phone.
+
+WHY PAPER
+
+Your hand moves slower than your thumbs, and slower is the point. A sentence you write by hand is a sentence you thought about.
+
+The phone spends the whole session face down. It holds the candle, counts the time, and waits.
 
 THE RITUAL
 
@@ -74,23 +80,23 @@ Write until the bell. On paper, in your own hand, at whatever speed your hand go
 
 Capture the page. Verg keeps it, dated, in your journal.
 
-WHAT IT KEEPS
+WHAT YOU GET BACK
 
-Your pages, in order, in your own handwriting.
+Your handwriting, kept. Every page in order, in your own hand, still yours to read years from now.
 
-History — a full year at a glance, one square a day, deeper gold where you wrote more. A missed day means the candle went out. You light it again.
+Proof you showed up. A full year at a glance, one square a day, deeper gold where you wrote more. A missed day means the candle went out. You light it again.
 
-Time reclaimed — the minutes you spent writing instead of scrolling, this week and all time.
+The hours. Verg counts the minutes you spent writing instead of scrolling, this week and all time.
 
-Books. Finish a journal and it becomes a book on your shelf. Name it, choose its cover, write a line to remember it by.
+A shelf. Finish a journal and it becomes a book. Name it, choose its cover, write a line to remember it by.
 
-THE ORACLE
+WHEN THE PAGE IS BLANK
 
-Eighty questions to write toward when the page is blank. Short ones, each a door. Draw another if the first one isn't yours. Write your own and keep them in folders.
+Eighty questions to write toward. Short ones, each a door. Draw another if the first one is not yours, or write your own and keep them in folders.
 
-YOURS
+YOURS ALONE
 
-Every page lives on this phone, in your own hand, and stays there. No account, nothing to sign up for.
+Every page lives on this phone and stays there. No account, nothing to sign up for.
 
 Lock the journal behind Face ID or a code of your own, for a phone that gets handed around.
 
@@ -100,11 +106,11 @@ FREE, AND THE GOLDEN AGE
 
 Writing is free, always. Save as many pages as you like, and your last seven days stay open to read.
 
-The Golden Age opens the whole archive, every stat, the scripts, ambient sound, custom session lengths, and one relight a week when a day gets away from you.
+The Golden Age opens the whole archive, every stat, the questions, ambient sound, custom session lengths, and one relight a week when a day gets away from you.
 
 $7.99 a month, or $59.99 a year with the first three days free.
 
-Your pages stay yours, on your phone, waiting.
+Light the candle tonight, and write one page.
 
 ---
 
@@ -192,12 +198,19 @@ portrait and photographs are kept whole; it never names a ratio. 3:4 can
 change again without the listing going stale, which is the same property the
 storage change bought in the app.
 
-**The description states only what Verg is.** An earlier draft led with
-refusals — no text field, no advice — and the owner's call for 2.2 is the
-opposite: active statements, zero negation. The contrast with other journaling
-apps is carried by what the ritual is ("a candle, paper, a bell, and your own
-handwriting") rather than by a list of absences. The draft greps clean for
-no / not / never / nothing / without.
+**The description sells, and the first line does the work.** Three lines
+show before "more", so they carry the whole pitch: what it is, the ritual in
+one breath, and the payoff. The payoff is the app's own arithmetic — 260
+pages and 43 hours — lifted out of the onboarding projection where nobody
+browsing the store would ever see it. Both numbers are computed by
+`OnboardingProjection` at five days a week, not invented for the copy.
+
+**Selling still means saying what Verg is, not what other apps are not.**
+An earlier draft led with refusals and the owner rejected it. "Why paper"
+therefore argues from the hand ("a sentence you write by hand is a sentence
+you thought about") rather than from a competitor's failings, which also
+keeps it clear of the review guideline against disparaging other apps. Three
+incidental negations remain and none of them lead.
 
 **The lock is in the listing now.** It shipped in 2.2 and the previous draft
 predates it. It earns a line in the description as well as the release notes,

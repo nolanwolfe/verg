@@ -84,10 +84,40 @@ final class SettingsViewModel: ObservableObject {
         return sound.displayName
     }
 
+    /// "Version 2.2.043" before release, "Version 2.2.0" once it ships.
+    ///
+    /// A build off the App Store carries the padded build number as a third
+    /// component, so a tester reporting something can say which build they
+    /// are on without digging through TestFlight. The released app drops it
+    /// and shows the marketing version alone, which is the only number a
+    /// customer has any use for.
+    ///
+    /// Going live is therefore one edit and no code: set `MARKETING_VERSION`
+    /// to `2.2.0`. App Store builds then read "Version 2.2.0", and a beta of
+    /// the same version still says which build it is.
+    ///
+    /// Only a real download from the store counts as released. TestFlight
+    /// is identified by its `sandboxReceipt`, and Debug and the simulator
+    /// are excluded outright — the simulator names its receipt plain
+    /// `receipt`, exactly like the App Store does, so the receipt alone
+    /// reports every local run as a shipped build.
     var appVersion: String {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
-        return "Version \(version) (\(build))"
+
+        #if DEBUG
+        let isAppStoreBuild = false
+        #elseif targetEnvironment(simulator)
+        let isAppStoreBuild = false
+        #else
+        let isAppStoreBuild = Bundle.main.appStoreReceiptURL?.lastPathComponent != "sandboxReceipt"
+        #endif
+        guard !isAppStoreBuild else { return "Version \(version)" }
+
+        // Zero-padded to three so builds sort and read as one number:
+        // 2.2.043, then 2.2.044. Anything non-numeric passes through.
+        let padded = Int(build).map { String(format: "%03d", $0) } ?? build
+        return "Version \(version).\(padded)"
     }
 
     // MARK: - Initialization
