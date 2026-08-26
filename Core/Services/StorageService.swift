@@ -409,7 +409,8 @@ final class StorageService: ObservableObject {
         image: UIImage,
         duration: TimeInterval,
         activeDuration: TimeInterval? = nil,
-        prompt: String? = nil
+        prompt: String? = nil,
+        cropRect: CGRect? = nil
     ) async -> Session? {
         let filename = "\(UUID().uuidString).jpg"
         let imageURL = imagesDirectory.appendingPathComponent(filename)
@@ -444,7 +445,8 @@ final class StorageService: ObservableObject {
             activeDuration: activeDuration,
             imagePath: filename,
             prompt: prompt,
-            createdAt: Date()
+            createdAt: Date(),
+            cropRect: cropRect
         )
 
         sessions.insert(session, at: 0)

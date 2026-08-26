@@ -305,11 +305,27 @@ struct CameraView: View {
     // MARK: - Preview View
     private func previewView(image: UIImage) -> some View {
         VStack(spacing: Theme.Spacing.xl) {
-            Image(uiImage: image)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
+            // The frame is the page. What sits inside it is what gets kept,
+            // which is the thing the old `.fit` preview could not tell you —
+            // it showed the whole photo and the journal then centre-cropped
+            // it, so a page could be approved and still come out cut.
+            VStack(spacing: Theme.Spacing.xs) {
+                PageFramingView(image: image) { rect in
+                    viewModel.previewCrop = rect
+                }
+                .aspectRatio(PageCapture.aspectRatio, contentMode: .fit)
                 .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.medium, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Theme.CornerRadius.medium, style: .continuous)
+                        .strokeBorder(Theme.Colors.hairline, lineWidth: 1)
+                )
                 .padding(.horizontal, Theme.Spacing.md)
+                .accessibilityIdentifier("camera.framing")
+
+                Text("Pinch to zoom · drag to move")
+                    .font(Theme.Typography.caption)
+                    .foregroundColor(Theme.Colors.secondaryText)
+            }
 
             Spacer()
 

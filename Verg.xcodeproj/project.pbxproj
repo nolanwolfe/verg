@@ -23,6 +23,7 @@
 		667CA47039B7D924E46CC693 /* ambient_stream.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 52D18BD1737C0BA640157030 /* ambient_stream.m4a */; };
 		6B7C68B371EBE84982E1B033 /* ambient_earth.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 80E5C6FB39AC9EA3518C0D3B /* ambient_earth.m4a */; };
 		72C931788C9B814DF5E2B735 /* AppLockViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC13728B9DF36E988801AE59 /* AppLockViews.swift */; };
+		79325AD27BFFA6471C63BB58 /* PageFramingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1450B3C90DF16939FECE4C76 /* PageFramingView.swift */; };
 		84D808917CA182531D07412E /* AppStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0037D8A48FC68AECADF0E328 /* AppStrings.swift */; };
 		89CFE2F8A3ACB70A9B60AC08 /* PageCaptureTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DABEE012D4572BC7AFA1F71 /* PageCaptureTests.swift */; };
 		8F3BEBBF89D78C454624EEA2 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7AEEAEB60B010E7D6255DEF1 /* Foundation.framework */; };
@@ -120,6 +121,7 @@
 		0037D8A48FC68AECADF0E328 /* AppStrings.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppStrings.swift; path = Core/Constants/AppStrings.swift; sourceTree = "<group>"; };
 		04EC071F00E1D30084A3F7A3 /* BookLogicTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = BookLogicTests.swift; path = BookLogicTests.swift; sourceTree = "<group>"; };
 		0FE848EB2AD7DACC4A42882D /* AppLockService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppLockService.swift; sourceTree = "<group>"; };
+		1450B3C90DF16939FECE4C76 /* PageFramingView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PageFramingView.swift; sourceTree = "<group>"; };
 		213D410F133EC97A9E13BDA3 /* ambient_replenish.m4a */ = {isa = PBXFileReference; includeInIndex = 1; name = ambient_replenish.m4a; path = Sounds/ambient_replenish.m4a; sourceTree = "<group>"; };
 		2B3EA26F8AEF44C05BFDF756 /* TimeReclaimedTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = TimeReclaimedTests.swift; path = TimeReclaimedTests.swift; sourceTree = "<group>"; };
 		2FB0870FBFDAE6781C712AC6 /* ambient_storm.m4a */ = {isa = PBXFileReference; includeInIndex = 1; name = ambient_storm.m4a; path = Sounds/ambient_storm.m4a; sourceTree = "<group>"; };
@@ -439,6 +441,7 @@
 			children = (
 				A20000010000000000000014 /* CameraView.swift */,
 				A20000010000000000000015 /* CameraViewModel.swift */,
+				1450B3C90DF16939FECE4C76 /* PageFramingView.swift */,
 			);
 			path = Camera;
 			sourceTree = "<group>";
@@ -819,6 +822,7 @@
 				2327A2B0F046CC33DBE68D02 /* BrightnessService.swift in Sources */,
 				95D8597677780E873EC4BEB7 /* AppLockService.swift in Sources */,
 				72C931788C9B814DF5E2B735 /* AppLockViews.swift in Sources */,
+				79325AD27BFFA6471C63BB58 /* PageFramingView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1021,7 +1025,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 39;
+				CURRENT_PROJECT_VERSION = 40;
 				DEVELOPMENT_TEAM = 9GHNQ3ZYX9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1057,7 +1061,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 39;
+				CURRENT_PROJECT_VERSION = 40;
 				DEVELOPMENT_TEAM = 9GHNQ3ZYX9;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;

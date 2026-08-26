@@ -14,6 +14,10 @@ final class CameraViewModel: NSObject, ObservableObject {
     @Published var showError: Bool = false
     @Published var isSaving: Bool = false
     @Published var showPhotoPicker: Bool = false
+    /// Where the page sits inside the photo on the preview screen,
+    /// normalised 0...1. Reset on every new photo so one framing never
+    /// carries into the next.
+    @Published var previewCrop: CGRect?
 
     // MARK: - Capture Controls
     @Published private(set) var zoomOptions: [CGFloat] = [1]
@@ -184,11 +188,29 @@ final class CameraViewModel: NSObject, ObservableObject {
         // active format, so a size read beforehand may not be one the final
         // format accepts — and AVFoundation raises on an unsupported value
         // rather than clamping it, which takes the whole app down.
-        if let maxDimensions = camera.activeFormat.supportedMaxPhotoDimensions
-            .max(by: { $0.width * $0.height < $1.width * $1.height }) {
+        //
+        // Enough, not maximum. This asked for the largest size the format
+        // offered, which on a Pro is 48MP — and then `normalizeForStorage`
+        // threw ~97% of it away by downsizing to 2048 on the long edge. The
+        // cost was paid entirely in shutter latency: a 48MP capture runs the
+        // full multi-frame pipeline, freezing the preview for a beat after
+        // the tap, which is the lag and the jump.
+        //
+        // `targetLongEdge` is double what a stored page keeps, so there is
+        // still headroom to re-frame a photo later without softening it.
+        let targetLongEdge: Int32 = 4032
+        let supported = camera.activeFormat.supportedMaxPhotoDimensions
+        let chosen = supported
+            .filter { max($0.width, $0.height) >= targetLongEdge }
+            .min(by: { $0.width * $0.height < $1.width * $1.height })
+            ?? supported.max(by: { $0.width * $0.height < $1.width * $1.height })
+        if let chosen {
             session.beginConfiguration()
-            photoOutput.maxPhotoDimensions = maxDimensions
+            photoOutput.maxPhotoDimensions = chosen
             session.commitConfiguration()
+            #if DEBUG
+            print("[Camera] capture size \(chosen.width)x\(chosen.height) of \(supported.count) offered")
+            #endif
         }
 
         return true
@@ -342,13 +364,19 @@ final class CameraViewModel: NSObject, ObservableObject {
             guard let self, self.session.isRunning else { return }
             let settings = AVCapturePhotoSettings()
             settings.maxPhotoDimensions = self.photoOutput.maxPhotoDimensions
-            settings.photoQualityPrioritization = .quality
+            // `.balanced`, not `.quality`. Quality opts into the slowest
+            // path — the deep-fusion style multi-frame merge — which is
+            // meant for difficult light and moving subjects. A page lying
+            // still on a desk is neither, and the extra second of shutter
+            // lag was the whole cost of it.
+            settings.photoQualityPrioritization = .balanced
             self.photoOutput.capturePhoto(with: settings, delegate: self)
         }
     }
 
     func retakePhoto() {
         capturedImage = nil
+        previewCrop = nil
         isShowingPreview = false
     }
 
@@ -368,7 +396,8 @@ final class CameraViewModel: NSObject, ObservableObject {
                 image: image,
                 duration: self.sessionDuration,
                 activeDuration: self.sessionActiveDuration,
-                prompt: self.sessionPrompt
+                prompt: self.sessionPrompt,
+                cropRect: self.previewCrop
             )
             self.isSaving = false
             if let session {

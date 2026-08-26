@@ -146,4 +146,55 @@ final class PageCaptureTests: XCTestCase {
         XCTAssertEqual(framed.size.width, 3000, accuracy: 1)
         XCTAssertGreaterThan(framed.size.height, landscapeHeight * 1.5)
     }
+
+    // MARK: - A frame the user chose
+
+    /// An off-centre frame must actually move the crop. The whole point of
+    /// the control is that a page photographed low in the shot can be
+    /// rescued; if the rect were ignored it would still centre and the
+    /// feature would look like it worked while doing nothing.
+    func testAChosenRectMovesTheCropAwayFromCentre() {
+        let source = image(2000, 2000)
+        let centred = PageCapture.framed(source, crop: nil)
+        let low = PageCapture.framed(
+            source,
+            crop: CGRect(x: 0, y: 0.5, width: 1, height: 0.5)
+        )
+        assertIsPageShaped(low, "A chosen frame should still come out page-shaped")
+        XCTAssertNotEqual(low.size, centred.size,
+                          "The chosen rect made no difference to the crop")
+    }
+
+    /// The rect sets position and scale; the *aspect* always comes from the
+    /// format. That is what lets the page format change later without
+    /// stranding photos at the shape they were framed under.
+    func testTheChosenRectNeverOverridesTheFormat() {
+        let source = image(3000, 4000)
+        for rect in [CGRect(x: 0, y: 0, width: 1, height: 0.4),
+                     CGRect(x: 0.2, y: 0.1, width: 0.5, height: 0.5),
+                     CGRect(x: 0.6, y: 0.6, width: 0.4, height: 0.4)] {
+            assertIsPageShaped(PageCapture.framed(source, crop: rect),
+                               "Frame \(rect) did not come out at the page aspect")
+        }
+    }
+
+    /// A rect that runs off the edge is pulled back inside rather than
+    /// sampling past the image, which would letterbox with empty pixels.
+    func testAFrameOffTheEdgeIsPulledBackIn() {
+        let source = image(1200, 1600)
+        let result = PageCapture.framed(
+            source,
+            crop: CGRect(x: 0.9, y: 0.9, width: 0.4, height: 0.4)
+        )
+        assertIsPageShaped(result, "An overhanging frame should still be page-shaped")
+        XCTAssertLessThanOrEqual(result.size.width, 1200 + 1)
+        XCTAssertLessThanOrEqual(result.size.height, 1600 + 1)
+    }
+
+    func testADegenerateRectFallsBackToCentring() {
+        let source = image(2000, 1000)
+        let zero = PageCapture.framed(source, crop: .zero)
+        let centred = PageCapture.framed(source, crop: nil)
+        XCTAssertEqual(zero.size, centred.size)
+    }
 }

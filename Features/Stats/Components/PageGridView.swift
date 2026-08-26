@@ -112,13 +112,21 @@ struct PageThumbnail: View {
             .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.small, style: .continuous))
         }
         .task(id: session.id) {
+            // Framed here as well as in the viewer. The cell crops with
+            // `.fill` plus a shaped frame, which is always a *centre* crop —
+            // so a page the user deliberately framed off-centre would show
+            // correctly full screen and wrongly in the grid. Cheap: these are
+            // already downsampled to thumbnail size.
+            //
             // Cached thumbnails render on the first frame; only cache misses
-            // take the async path
+            // take the async path.
             if image == nil, let cached = peekThumbnail(session) {
-                image = cached
+                image = PageCapture.framed(cached, crop: session.cropRect)
                 return
             }
-            image = await loadThumbnail(session)
+            if let loaded = await loadThumbnail(session) {
+                image = PageCapture.framed(loaded, crop: session.cropRect)
+            }
         }
     }
 }
@@ -407,7 +415,7 @@ private struct FullScreenPageView: View {
                 // finished UIImage, so the frame has to be applied before it
                 // arrives or the viewer would show the desk around the page.
                 ZoomableImageView(
-                    image: PageCapture.framed(image),
+                    image: PageCapture.framed(image, crop: session.cropRect),
                     pageID: session.id,
                     onDismiss: onDismiss,
                     onDragProgressChanged: onDragProgressChanged

@@ -47,6 +47,45 @@ enum PageCapture {
     /// the result is redrawn upright — cropping a `CGImage` directly ignores
     /// `imageOrientation`, which is how a sideways-EXIF photo ends up cropped
     /// along the wrong axis.
+    /// Frame `image` using an explicit rect the user chose, normalised
+    /// 0...1 against the image. Falls back to the centre crop when there
+    /// isn't one — every page saved before framing existed, and every photo
+    /// the user did not adjust.
+    ///
+    /// The rect is honoured for position and scale but the *aspect* always
+    /// comes from `aspectRatio`, so changing the page format re-frames an
+    /// adjusted photo around the part the user chose rather than stranding
+    /// it at the old shape.
+    static func framed(_ image: UIImage, crop: CGRect?) -> UIImage {
+        guard let crop, crop.width > 0, crop.height > 0 else {
+            return framed(image)
+        }
+        let w = image.size.width, h = image.size.height
+        guard w > 0, h > 0 else { return image }
+
+        // Keep the chosen centre; take the largest rect at the page aspect
+        // that fits inside what they framed.
+        let centre = CGPoint(x: crop.midX * w, y: crop.midY * h)
+        var cw = crop.width * w
+        var ch = crop.height * h
+        if cw / ch > aspectRatio {
+            cw = ch * aspectRatio
+        } else {
+            ch = cw / aspectRatio
+        }
+        // Nudge back inside the image rather than sampling past its edge.
+        var x = centre.x - cw / 2
+        var y = centre.y - ch / 2
+        x = min(max(0, x), max(0, w - cw))
+        y = min(max(0, y), max(0, h - ch))
+
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = image.scale
+        format.opaque = true
+        return UIGraphicsImageRenderer(size: CGSize(width: cw, height: ch), format: format)
+            .image { _ in image.draw(at: CGPoint(x: -x, y: -y)) }
+    }
+
     static func framed(_ image: UIImage) -> UIImage {
         let width = image.size.width
         let height = image.size.height

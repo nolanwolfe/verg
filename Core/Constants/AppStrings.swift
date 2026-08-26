@@ -23,7 +23,7 @@ enum AppStrings {
         // "until the bell", never "until it burns out" — a candle going out
         // is what a missed day means. Don't overload the metaphor.
         static let ritualSteps: [(icon: String, text: String)] = [
-            ("flame.fill", "Light the candle"),
+            ("candle", "Light the candle"),
             ("iphone.slash", "Phone face down"),
             ("pencil", "Write until the bell"),
             ("camera.fill", "Capture the page")

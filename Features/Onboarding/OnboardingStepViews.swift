@@ -97,9 +97,17 @@ struct OnboardingRitualView: View {
                             Circle()
                                 .fill(Theme.Colors.cardBackground)
                                 .frame(width: 44, height: 44)
-                            Image(systemName: step.icon)
-                                .foregroundColor(Theme.Colors.accent)
-                                .font(.system(size: 18, weight: .medium))
+                            if step.icon == "candle" {
+                                // The real candle, not a generic glyph —
+                                // the same animated mark the tab bar uses,
+                                // always lit here regardless of selection.
+                                CandleTabIcon(isSelected: true)
+                                    .frame(width: 14, height: 20)
+                            } else {
+                                Image(systemName: step.icon)
+                                    .foregroundColor(Theme.Colors.accent)
+                                    .font(.system(size: 18, weight: .medium))
+                            }
                         }
 
                         Text(step.text)

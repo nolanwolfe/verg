@@ -1,4 +1,5 @@
 import Foundation
+import CoreGraphics
 
 /// Represents a single journaling session
 struct Session: Identifiable, Codable, Equatable {
@@ -18,6 +19,17 @@ struct Session: Identifiable, Codable, Equatable {
     let prompt: String?
     let createdAt: Date
 
+    /// Where the page sits inside the photo, normalised 0...1 against the
+    /// stored image.
+    ///
+    /// Nil means "centre it", which is what every page saved before framing
+    /// existed gets, and what a photo the user did not adjust still gets.
+    /// Stored rather than baked into the file so the photo stays whole: the
+    /// frame remains a decision, and a future format change can re-derive
+    /// from the same rect instead of being stuck with a crop taken under the
+    /// old one.
+    let cropRect: CGRect?
+
     init(
         id: UUID = UUID(),
         date: Date = Date(),
@@ -25,7 +37,8 @@ struct Session: Identifiable, Codable, Equatable {
         activeDuration: TimeInterval? = nil,
         imagePath: String,
         prompt: String? = nil,
-        createdAt: Date = Date()
+        createdAt: Date = Date(),
+        cropRect: CGRect? = nil
     ) {
         self.id = id
         self.date = date
@@ -34,6 +47,7 @@ struct Session: Identifiable, Codable, Equatable {
         self.imagePath = imagePath
         self.prompt = prompt
         self.createdAt = createdAt
+        self.cropRect = cropRect
     }
 
     // MARK: - Codable (tolerant decoding)
@@ -41,7 +55,7 @@ struct Session: Identifiable, Codable, Equatable {
     // versions fall back to `duration` (they predate background-time
     // exclusion, so the full candle length is the best available estimate).
     enum CodingKeys: String, CodingKey {
-        case id, date, duration, activeDuration, imagePath, prompt, createdAt
+        case id, date, duration, activeDuration, imagePath, prompt, createdAt, cropRect
     }
 
     init(from decoder: Decoder) throws {
@@ -52,6 +66,8 @@ struct Session: Identifiable, Codable, Equatable {
         imagePath = try container.decode(String.self, forKey: .imagePath)
         createdAt = try container.decode(Date.self, forKey: .createdAt)
         activeDuration = try container.decodeIfPresent(TimeInterval.self, forKey: .activeDuration) ?? duration
+        // Absent on every page saved before framing shipped — those centre.
+        cropRect = try container.decodeIfPresent(CGRect.self, forKey: .cropRect)
         // prompt didn't exist before prompts shipped — older pages simply
         // have none, which renders as no prompt line rather than an error.
         prompt = try container.decodeIfPresent(String.self, forKey: .prompt)
