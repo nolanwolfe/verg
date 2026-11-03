@@ -192,7 +192,26 @@ struct CameraView: View {
                 .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.medium, style: .continuous))
                 .padding(.horizontal, Theme.Spacing.xxs)
 
-                if !viewModel.isCameraReady {
+                if viewModel.cameraAccessDenied {
+                    VStack(spacing: Theme.Spacing.sm) {
+                        Text("Camera access is off.")
+                            .font(Theme.Typography.body)
+                            .foregroundColor(Theme.Colors.primaryText)
+                        Text("Turn it on in Settings, or choose a photo from your library.")
+                            .font(Theme.Typography.footnote)
+                            .foregroundColor(Theme.Colors.secondaryText)
+                            .multilineTextAlignment(.center)
+                        Button("Open Settings") {
+                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
+                        }
+                        .font(Theme.Typography.body)
+                        .foregroundColor(Theme.Colors.accent)
+                        .padding(.top, Theme.Spacing.xxs)
+                    }
+                    .padding(Theme.Spacing.lg)
+                } else if !viewModel.isCameraReady {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: Theme.Colors.primaryText))
                 }

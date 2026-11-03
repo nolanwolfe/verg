@@ -10,6 +10,9 @@ final class CameraViewModel: NSObject, ObservableObject {
     @Published var capturedImage: UIImage?
     @Published var isShowingPreview: Bool = false
     @Published var isCameraReady: Bool = false
+    /// Camera permission refused. The viewfinder shows a way to Settings
+    /// instead of a spinner that would never finish.
+    @Published var cameraAccessDenied: Bool = false
     @Published var errorMessage: String?
     @Published var showError: Bool = false
     @Published var isSaving: Bool = false
@@ -72,14 +75,12 @@ final class CameraViewModel: NSObject, ObservableObject {
                     }
                 } else {
                     DispatchQueue.main.async {
-                        self?.errorMessage = "Camera access is required to capture your journal page."
-                        self?.showError = true
+                        self?.cameraAccessDenied = true
                     }
                 }
             }
         case .denied, .restricted:
-            errorMessage = "Camera access is required. Please enable it in Settings."
-            showError = true
+            cameraAccessDenied = true
         @unknown default:
             break
         }

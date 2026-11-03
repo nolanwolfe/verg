@@ -59,6 +59,11 @@ starts once, and is only stopped when the timer screen really closes.
   of resetting it to 5.
 - **"N days this year":** counts only this year.
 - **Books:** deleting a page from a book keeps the book's colour and note.
+- **Camera permission:** with access denied, the viewfinder says so and
+  offers Open Settings, instead of a spinner that never finished.
+- **Smoother scrolling:** the fullscreen viewer frames each page once on
+  load instead of on every drag frame, and the Archive heatmap builds its
+  year grid once per render instead of once per cell.
 
 ### Fixed — the start bell played a system chime instead of Verg's
 

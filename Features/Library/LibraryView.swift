@@ -528,6 +528,10 @@ struct ContributionHeatmap: View {
     }
 
     var body: some View {
+        // Built once per render. `weeks` is computed (53 columns of calendar
+        // maths), and reading the property inside the nested ForEach rebuilt
+        // the whole year for every one of the ~371 cells.
+        let weeks = self.weeks
         HStack(alignment: .top, spacing: 6) {
             weekdayGutter
                 .padding(.top, Self.monthLabelHeight + Self.rowSpacing)

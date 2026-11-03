@@ -367,6 +367,12 @@ private struct FullScreenPageView: View {
     @State private var image: UIImage?
     @State private var hasFullRes = false
 
+    /// The page as the viewer shows it: cropped to the page frame. Done
+    /// once per load rather than per render — see the note in `body`.
+    private func framedForDisplay(_ source: UIImage) -> UIImage {
+        PageCapture.framed(source, crop: session.cropRect)
+    }
+
     private struct LoadKey: Equatable {
         let id: UUID
         let windowed: Bool
@@ -410,12 +416,13 @@ private struct FullScreenPageView: View {
             if isLocked {
                 lockedPage
             } else if let image = image {
-                // Framed here, not in storage. The grid gets its crop for
-                // free from `.fill` plus a shaped cell; this one is handed a
-                // finished UIImage, so the frame has to be applied before it
-                // arrives or the viewer would show the desk around the page.
+                // Framed when loaded (`framedForDisplay`), not in storage
+                // and not here. The grid gets its crop for free from `.fill`
+                // plus a shaped cell; this one is handed a finished UIImage.
+                // Framing in `body` re-drew the page on every body pass —
+                // every frame of a swipe-down, for each page in the window.
                 ZoomableImageView(
-                    image: PageCapture.framed(image, crop: session.cropRect),
+                    image: image,
                     pageID: session.id,
                     onDismiss: onDismiss,
                     onDragProgressChanged: onDragProgressChanged
@@ -446,7 +453,7 @@ private struct FullScreenPageView: View {
                 // Show the already-decoded grid thumbnail immediately while
                 // the full-res decode happens off-main
                 if image == nil {
-                    image = peekThumbnail(session)
+                    image = peekThumbnail(session).map { framedForDisplay($0) }
                 }
 
                 // Settle before decoding. Flicking through a long journal
@@ -462,7 +469,7 @@ private struct FullScreenPageView: View {
 
                 if !hasFullRes, let full = await loadImage(session) {
                     guard !Task.isCancelled else { return }
-                    image = full
+                    image = framedForDisplay(full)
                     hasFullRes = true
                 }
             } else if image == nil {
@@ -474,9 +481,9 @@ private struct FullScreenPageView: View {
                 // swiping back and forth visibly dropped each page to blurry
                 // and then popped it sharp again.
                 if let cached = peekThumbnail(session) {
-                    image = cached
+                    image = framedForDisplay(cached)
                 } else {
-                    image = await loadThumbnail(session)
+                    image = await loadThumbnail(session).map { framedForDisplay($0) }
                 }
             }
         }
