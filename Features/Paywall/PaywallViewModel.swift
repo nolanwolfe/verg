@@ -223,7 +223,10 @@ final class PaywallViewModel: ObservableObject {
             if success {
                 onSubscribed?()
             } else {
-                errorMessage = "No purchases found to restore."
+                // A thrown restore (offline, store error) also returns false;
+                // telling a paying subscriber they have nothing to restore
+                // when the request never got through is wrong.
+                errorMessage = purchaseService.errorMessage ?? "No purchases found to restore."
                 showError = true
             }
         }

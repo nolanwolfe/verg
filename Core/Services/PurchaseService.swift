@@ -47,6 +47,12 @@ final class PurchaseService: ObservableObject {
     // MARK: - Published Properties
     @MainActor @Published private(set) var isSubscribed: Bool = false
     @MainActor @Published private(set) var isFriendsAndFamily: Bool = false
+    /// Whether `isSubscribed` reflects a real answer from RevenueCat /
+    /// StoreKit yet. False from launch until the first successful
+    /// `checkSubscriptionStatus()`; until then `isSubscribed` is only its
+    /// default, and anything irreversible (putting a subscriber's candle out)
+    /// must wait.
+    @MainActor @Published private(set) var hasResolvedEntitlement: Bool = false
 
     /// Manually set subscription status (used by RevenueCat PaywallView callbacks)
     @MainActor
@@ -345,6 +351,7 @@ final class PurchaseService: ObservableObject {
                 print("[RC] CustomerInfo received. Active entitlements: \(customerInfo.entitlements.active.keys)")
                 #endif
                 isSubscribed = customerInfo.entitlements[Self.entitlementID]?.isActive == true
+                hasResolvedEntitlement = true
             } catch {
                 #if DEBUG
                 print("[RC][ERROR] customerInfo() failed: \(error)")
@@ -366,6 +373,7 @@ final class PurchaseService: ObservableObject {
                 }
             }
             isSubscribed = hasSubscription
+            hasResolvedEntitlement = true
         }
     }
 

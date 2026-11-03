@@ -39,6 +39,14 @@ enum CandleRelight {
         var cursor = calendar.date(byAdding: .day, value: 1, to: lastDay) ?? todayDay
 
         while cursor < todayDay {
+            // Already relit by an earlier evaluation of this same gap. The
+            // gap is walked again on every refresh until the user writes, so
+            // without this the same day was appended once per refresh.
+            if isRelit(cursor, relitDates: relitDates, calendar: calendar) {
+                guard let next = calendar.date(byAdding: .day, value: 1, to: cursor) else { break }
+                cursor = next
+                continue
+            }
             if isPremium, isRelightAvailable(asOf: cursor, relitDates: relitDates, calendar: calendar) {
                 relitDates.append(cursor)
                 guard let next = calendar.date(byAdding: .day, value: 1, to: cursor) else { break }

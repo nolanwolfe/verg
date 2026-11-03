@@ -494,6 +494,10 @@ final class StorageService: ObservableObject {
             books[bookIndex] = Book(
                 id: book.id,
                 title: book.title,
+                // Carried over explicitly: left out, both fell back to the
+                // init defaults and the book lost its cover colour and note.
+                colorIndex: book.colorIndex,
+                note: book.note,
                 startDate: book.startDate,
                 endDate: book.endDate,
                 sessionIDs: book.sessionIDs.filter { $0 != id },

@@ -26,6 +26,40 @@ gate up, and the app re-checks when it becomes active.
 `@Published` emits before the property is stored, so the reschedule read the
 previous time. The new time is now passed through.
 
+### Fixed — a relight was lost on the next page, and on a cold launch
+
+Two ways the relight failed to keep a subscriber's count. Writing the day
+after a relit day reset `daysLit` to 1, because `recordSession` only continued
+from a *written* yesterday. And `CandleService` evaluated the gap at launch,
+before the subscription check returned, so every subscriber looked free and a
+"went out" was saved that the later re-run could not undo. Now a gap that
+relights fully covered continues the count, and a gap is never put out until
+the entitlement is actually known. Re-evaluating the same gap also no longer
+appends the same relit date on every refresh.
+
+### Fixed — opening the paywall or camera from the timer restarted it
+
+A `.fullScreenCover` fires the presenter's `onDisappear`/`onAppear`, which
+stopped the session and started a new one, bell and all. The session now
+starts once, and is only stopped when the timer screen really closes.
+
+### Fixed — smaller things
+
+- **Brightness:** the dim level survives locking the phone mid-session.
+  Swipe-to-dim no longer goes dead afterwards.
+- **Library photos:** a pick (HEIC, iCloud) is no longer dropped when it
+  loads after the picker closes.
+- **Camera:** the session stops while a photo is being framed, and restarts
+  on retake.
+- **Restore:** a failed restore shows the real error, not "No purchases
+  found".
+- **Notifications:** the reminder switches turn off if notifications were
+  disabled for Verg in iOS Settings.
+- **Guide replay:** replaying the guide keeps the saved weekly pace instead
+  of resetting it to 5.
+- **"N days this year":** counts only this year.
+- **Books:** deleting a page from a book keeps the book's colour and note.
+
 ### Fixed — the start bell played a system chime instead of Verg's
 
 `bell_start.mp3` was never added to the target. The code now asks for the

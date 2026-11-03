@@ -378,6 +378,23 @@ final class CameraViewModel: NSObject, ObservableObject {
         capturedImage = nil
         previewCrop = nil
         isShowingPreview = false
+        // Back to the viewfinder: resume what `pauseCameraForPreview` stopped.
+        // Only a session that was built — an unconfigured one has nothing to
+        // run, and starting it would just mark the camera ready.
+        sessionQueue.async { [weak self] in
+            guard let self, !self.session.inputs.isEmpty else { return }
+            self.startRunningIfNeeded()
+        }
+    }
+
+    /// Stop the capture session while a photo is being framed. The preview
+    /// view is off screen then, but the session kept running — camera
+    /// indicator lit and battery spent — until the whole screen closed.
+    func pauseCameraForPreview() {
+        sessionQueue.async { [weak self] in
+            guard let self, self.session.isRunning else { return }
+            self.session.stopRunning()
+        }
     }
 
     func usePhoto() {

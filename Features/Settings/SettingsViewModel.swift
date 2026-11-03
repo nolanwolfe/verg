@@ -175,6 +175,24 @@ final class SettingsViewModel: ObservableObject {
         // sink and re-open the set-up sheet every time the tab came back.
         let locked = MainActor.assumeIsolated { AppLockService.shared.isEnabled }
         MainActor.assumeIsolated { reconcileAppLockSwitch(to: locked) }
+
+        syncNotificationTogglesWithSystemPermission()
+    }
+
+    /// Turn the reminder switches off if notifications were switched off for
+    /// Verg in iOS Settings. The switches mirror the saved preference, which
+    /// nothing else ever checked against the real permission, so they could
+    /// show a daily reminder that iOS would never deliver. Assigning `false`
+    /// goes through the usual sinks, which cancel and save.
+    private func syncNotificationTogglesWithSystemPermission() {
+        UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
+            guard settings.authorizationStatus == .denied else { return }
+            DispatchQueue.main.async {
+                guard let self else { return }
+                if self.notificationsEnabled { self.notificationsEnabled = false }
+                if self.weeklySummaryNotificationsEnabled { self.weeklySummaryNotificationsEnabled = false }
+            }
+        }
     }
 
     private func setupBindings() {
@@ -456,9 +474,10 @@ final class SettingsViewModel: ObservableObject {
         Task {
             let success = await purchaseService.restorePurchases()
             await MainActor.run {
+                // A failed request is not the same as nothing to restore.
                 restoreMessage = success
                     ? "Purchases restored."
-                    : "No purchases found to restore."
+                    : (purchaseService.errorMessage ?? "No purchases found to restore.")
                 showRestoreAlert = true
             }
         }
