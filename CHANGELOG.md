@@ -12,7 +12,7 @@ whoever held the phone in under an hour. The first four wrong codes are free;
 then entry closes for 1 min, 5 min, 15 min, and an hour per attempt after
 that. The count lives in the Keychain (this device only), so relaunching or
 reinstalling does not reset it, and the confirm-to-disable sheet goes through
-the same check. Face ID / Touch ID stay available throughout, and a correct
+the same check. The count is forgotten after a day with no wrong code. Face ID / Touch ID stay available throughout, and a correct
 code or a successful scan clears the count.
 
 ### Security — the app lock fails closed if the Keychain can't be read

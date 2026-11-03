@@ -234,8 +234,19 @@ final class AppLockService: ObservableObject {
         return end
     }
 
+    /// A day without a wrong code starts the count over, so the odd typo
+    /// spread across weeks never adds up to a lockout. Guessing still has
+    /// to happen in one sitting, which the schedule makes slow.
+    nonisolated static let failureMemory: TimeInterval = 24 * 60 * 60
+
+    /// The count a new wrong code builds on, given the stored one.
+    nonisolated static func priorFailures(count: Int, lastFailure: Date, now: Date) -> Int {
+        now.timeIntervalSince(lastFailure) > failureMemory ? 0 : count
+    }
+
     private func registerFailure(now: Date = Date()) {
         var record = loadFailures() ?? FailureRecord(count: 0, lastFailure: now)
+        record.count = Self.priorFailures(count: record.count, lastFailure: record.lastFailure, now: now)
         record.count += 1
         record.lastFailure = now
         saveFailures(record)

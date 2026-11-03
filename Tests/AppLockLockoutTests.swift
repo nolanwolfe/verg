@@ -47,6 +47,14 @@ final class AppLockLockoutTests: XCTestCase {
                        last.addingTimeInterval(3600))
     }
 
+    func testFailuresAreForgottenAfterADay() {
+        let last = Date(timeIntervalSince1970: 1_000_000)
+        XCTAssertEqual(AppLockService.priorFailures(count: 4, lastFailure: last,
+                                                    now: last.addingTimeInterval(60 * 60)), 4)
+        XCTAssertEqual(AppLockService.priorFailures(count: 4, lastFailure: last,
+                                                    now: last.addingTimeInterval(25 * 60 * 60)), 0)
+    }
+
     func testLockoutMessage() {
         XCTAssertEqual(AppLockLockoutText.message(remaining: 59.2, biometryLabel: nil),
                        "Too many wrong codes. Try again in 1:00.")
