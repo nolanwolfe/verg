@@ -213,7 +213,9 @@ final class SettingsViewModel: ObservableObject {
             .sink { [weak self] time in
                 self?.storageService.setNotificationTime(time)
                 if self?.notificationsEnabled == true {
-                    self?.scheduleNotification()
+                    // Pass the new value: `@Published` emits in willSet, so
+                    // `notificationTime` still holds the *old* time here.
+                    self?.scheduleNotification(at: time)
                 }
             }
             .store(in: &cancellables)
@@ -349,7 +351,10 @@ final class SettingsViewModel: ObservableObject {
     private static let dailyReminderID = "verg.daily.reminder"
     private static let weeklySummaryID = "verg.weekly.summary"
 
-    private func scheduleNotification() {
+    /// - Parameter time: the reminder time to use. Callers inside a
+    ///   `$notificationTime` sink must pass the emitted value, because the
+    ///   property has not been updated yet when the sink runs.
+    private func scheduleNotification(at time: Date? = nil) {
         let center = UNUserNotificationCenter.current()
 
         // Remove only this notification's prior schedule — the weekly
@@ -365,7 +370,7 @@ final class SettingsViewModel: ObservableObject {
         content.sound = .default
 
         // Create trigger for daily notification
-        let dateComponents = Calendar.current.dateComponents([.hour, .minute], from: notificationTime)
+        let dateComponents = Calendar.current.dateComponents([.hour, .minute], from: time ?? notificationTime)
         let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
 
         // Create request

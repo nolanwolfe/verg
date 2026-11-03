@@ -15,7 +15,10 @@ final class AudioService: ObservableObject {
 
     // MARK: - Sound Types
     enum Sound: String {
-        case bellStart = "bell_start"
+        // The bundled file's name. `bell_start.mp3` in Resources/Sounds is a
+        // byte-identical copy that was never added to the target, so asking
+        // for it always missed and fell back to system sound 1013.
+        case bellStart = "27421__kerri__zenbell_1"
         case bellEnd = "185822__lloydevans09__single-chime"
 
         var filename: String {

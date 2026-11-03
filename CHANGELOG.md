@@ -3,6 +3,34 @@
 All notable changes to Verg are logged here as they're made. Dates are
 when the change was written, not necessarily released.
 
+## [Unreleased] — after build 46 (audit fixes)
+
+### Security — wrong codes at the app lock are now rate-limited
+
+The lock screen accepted unlimited guesses, so a four-digit code fell to
+whoever held the phone in under an hour. The first four wrong codes are free;
+then entry closes for 1 min, 5 min, 15 min, and an hour per attempt after
+that. The count lives in the Keychain (this device only), so relaunching or
+reinstalling does not reset it, and the confirm-to-disable sheet goes through
+the same check. Face ID / Touch ID stay available throughout, and a correct
+code or a successful scan clears the count.
+
+### Security — the app lock fails closed if the Keychain can't be read
+
+Any Keychain read error used to look like "no code set", which opened a locked
+journal. Only "item not found" means no lock now. Any other error keeps the
+gate up, and the app re-checks when it becomes active.
+
+### Fixed — changing the reminder time scheduled it at the old time
+
+`@Published` emits before the property is stored, so the reschedule read the
+previous time. The new time is now passed through.
+
+### Fixed — the start bell played a system chime instead of Verg's
+
+`bell_start.mp3` was never added to the target. The code now asks for the
+bundled copy of the same audio (`27421__kerri__zenbell_1.mp3`).
+
 ## [Unreleased] — build 19 (Library redesign, book customization, tab bar)
 
 ### Changed — the page format is 3:4, and photos are no longer cropped on save
