@@ -197,7 +197,9 @@ struct FullScreenImageView: View {
 
     var body: some View {
         ZStack {
-            Color.black.opacity(1 - dismissDragProgress * 0.6).ignoresSafeArea()
+            // Explicit Double: `opacity` takes Double and this is CGFloat, and
+            // the implicit conversion is ambiguous to newer Swift compilers.
+            Color.black.opacity(Double(1 - dismissDragProgress * 0.6)).ignoresSafeArea()
 
             // Swipeable pages. A paged TabView is NOT lazy — every page view
             // in the ForEach is built when the viewer opens. With 100+ pages
@@ -319,7 +321,7 @@ struct FullScreenImageView: View {
                     )
                 }
             }
-            .opacity(1 - dismissDragProgress)
+            .opacity(Double(1 - dismissDragProgress))
         }
         // A photo viewer is dark everywhere — Photos, Files, Messages. The
         // page is the only thing meant to be lit here, in either appearance.
