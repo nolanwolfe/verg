@@ -316,7 +316,12 @@ final class VergUIFlowTests: XCTestCase {
         pill.tap()
         settle()
 
-        XCTAssertTrue(app.staticTexts["The Golden Age"].waitForExistence(timeout: 5),
+        // Found by its button, as the locked-page test does: the paywall's
+        // heading is a sentence, not the bare phrase.
+        let cta = app.buttons.matching(
+            NSPredicate(format: "label BEGINSWITH 'Enter The Golden Age'")
+        ).firstMatch
+        XCTAssertTrue(cta.waitForExistence(timeout: 5),
                       "A free writer was not shown The Golden Age")
         XCTAssertFalse(app.navigationBars["The Oracle"].exists,
                        "The Oracle opened for a free writer")
