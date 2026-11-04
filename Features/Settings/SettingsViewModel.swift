@@ -379,6 +379,12 @@ final class SettingsViewModel: ObservableObject {
     ///   `$notificationTime` sink must pass the emitted value, because the
     ///   property has not been updated yet when the sink runs.
     private func scheduleNotification(at time: Date? = nil) {
+        Self.scheduleDailyReminder(at: time ?? notificationTime, sessionLength: timerDuration)
+    }
+
+    /// The one place the daily reminder is built, shared by Settings and the
+    /// "Same time tomorrow" offer after a saved page.
+    static func scheduleDailyReminder(at time: Date, sessionLength timerDuration: TimeInterval) {
         let center = UNUserNotificationCenter.current()
 
         // Remove only this notification's prior schedule — the weekly
@@ -394,7 +400,7 @@ final class SettingsViewModel: ObservableObject {
         content.sound = .default
 
         // Create trigger for daily notification
-        let dateComponents = Calendar.current.dateComponents([.hour, .minute], from: time ?? notificationTime)
+        let dateComponents = Calendar.current.dateComponents([.hour, .minute], from: time)
         let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
 
         // Create request

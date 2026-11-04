@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import UserNotifications
 
 /// Home screen with candle and begin writing button
 struct HomeView: View {
@@ -10,6 +11,9 @@ struct HomeView: View {
     @State private var showTimer = false
     @State private var showDurationPicker = false
     @State private var showPaywall = false
+    /// "Same time tomorrow": offered once, after a saved page.
+    @State private var showReminderOffer = false
+    @State private var reminderOfferTime = Date()
     @State private var showPromptSheet = false
     @State private var showAmbiencePicker = false
     @State private var selectedPrompt: WritingPrompt?
@@ -122,11 +126,20 @@ struct HomeView: View {
                 .environmentObject(purchaseService)
         }
         .fullScreenCover(isPresented: $showTimer) {
-            TimerView(prompt: selectedPrompt?.text, onComplete: { _ in
+            TimerView(prompt: selectedPrompt?.text, onComplete: { session in
                 showTimer = false
                 viewModel.refresh()
-                presentSessionPaywallIfEarned()
+                // One thing at a time: the seventh-page paywall wins, and
+                // the reminder offer waits for a later page.
+                let paywallComing = presentSessionPaywallIfEarned()
+                if session != nil, !paywallComing { offerReminderIfDue() }
             })
+        }
+        .alert("Same time tomorrow.", isPresented: $showReminderOffer) {
+            Button("Remind me") { acceptReminderOffer() }
+            Button("Not now", role: .cancel) { }
+        } message: {
+            Text("A reminder at \(reminderOfferTime.formatted(date: .omitted, time: .shortened)) each day. Change it in Settings.")
         }
         .onAppear {
             // Sit at whatever the app is already holding, so returning to
@@ -156,17 +169,54 @@ struct HomeView: View {
     ///
     /// Deliberately after the timer screen has closed, so it never lands on
     /// top of a milestone celebration or the Time Reclaimed reveal.
-    private func presentSessionPaywallIfEarned() {
+    /// Offer a daily reminder at the time this page was written, once, to
+    /// anyone who has none. Right after a saved page is when the habit is
+    /// most wanted; the reminder otherwise sits in Settings unturned-on.
+    /// Never on the same pass as the session paywall, and delayed so the
+    /// timer's cover has finished closing — an alert raised mid-dismissal
+    /// is dropped by SwiftUI.
+    private func offerReminderIfDue() {
+        let settings = storageService.settings
+        guard !settings.notificationsEnabled,
+              !settings.hasBeenOfferedReminder else { return }
+        storageService.setHasBeenOfferedReminder(true)
+        reminderOfferTime = Date()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            showReminderOffer = true
+        }
+    }
+
+    /// Ask iOS, and only on a yes turn the reminder on at the offered time —
+    /// the same setting and schedule as Settings → Daily Reminder.
+    private func acceptReminderOffer() {
+        let time = reminderOfferTime
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, _ in
+            DispatchQueue.main.async {
+                guard granted else { return }
+                storageService.setNotificationTime(time)
+                storageService.setNotificationsEnabled(true)
+                SettingsViewModel.scheduleDailyReminder(
+                    at: time,
+                    sessionLength: storageService.settings.timerDuration
+                )
+            }
+        }
+    }
+
+    /// Returns whether the paywall is about to appear.
+    @discardableResult
+    private func presentSessionPaywallIfEarned() -> Bool {
         guard !gatingService.isPremium,
               !storageService.settings.hasSeenSessionPaywall,
               storageService.stats.totalSessions >= 7
-        else { return }
+        else { return false }
 
         storageService.setHasSeenSessionPaywall(true)
         // A beat after dismissal, or the two full-screen covers collide.
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
             showPaywall = true
         }
+        return true
     }
 
     // MARK: - Days Lit Section

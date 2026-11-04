@@ -5,6 +5,19 @@ when the change was written, not necessarily released.
 
 ## [Unreleased] — after build 46 (audit fixes)
 
+### Added — "Same time tomorrow": a reminder offer after a saved page
+
+The daily reminder lived only in Settings, so most writers never turned it
+on, and it is the cheapest way to bring someone back tomorrow. Now, after a
+saved page, anyone without a reminder is offered one once, at the time they
+just wrote: "Same time tomorrow. A reminder at 9:41 PM each day." Choosing
+Remind me asks iOS for permission and, on a yes, turns on the same Daily
+Reminder as Settings, using the scheduling code it now shares
+(`SettingsViewModel.scheduleDailyReminder`). The offer never appears on the
+same pass as the seventh-page paywall. It's stored as
+`AppSettings.hasBeenOfferedReminder`, which decodes as false from older data,
+and UI-test launches mark it as already offered.
+
 ### Fixed — ambience you turn on now actually plays
 
 Three causes of "I turned the music on and nothing played" from the timer.

@@ -103,6 +103,9 @@ final class StorageService: ObservableObject {
         let wantsOnboarding = args.contains("-VergOnboarding")
         settings.hasSeenOnboarding = !wantsOnboarding
         settings.hasSeenSetTimerNotice = !wantsOnboarding
+        // The reminder offer would appear over whatever a test does after
+        // saving a page; tests that want it can clear this themselves.
+        settings.hasBeenOfferedReminder = true
         // Reset the display choices too, or a run inherits whatever the last
         // one picked and test order starts to matter.
         settings.calendarStyle = .heatmap
@@ -858,6 +861,11 @@ final class StorageService: ObservableObject {
 
     func setAppearance(_ mode: AppearanceMode) {
         settings.appearance = mode
+        saveSettings()
+    }
+
+    func setHasBeenOfferedReminder(_ offered: Bool) {
+        settings.hasBeenOfferedReminder = offered
         saveSettings()
     }
 
