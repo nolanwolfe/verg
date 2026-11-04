@@ -6,7 +6,9 @@ struct ContentView: View {
     @EnvironmentObject private var purchaseService: PurchaseService
     @ObservedObject private var appLock = AppLockService.shared
 
-    @State private var selectedTab: Tab = .write
+    /// The app opens on the journal: your own pages are the first thing you
+    /// see, every launch. Write is one tap away in the middle of the bar.
+    @State private var selectedTab: Tab = .journal
     @State private var showOnboarding: Bool = true
     @State private var onboardingRunID: Int = 0
     @State private var showStartTimerNotice: Bool = false

@@ -28,11 +28,14 @@ struct CustomTabBar: View {
                 .fill(.ultraThinMaterial)
                 .overlay(
                     RoundedRectangle(cornerRadius: 32, style: .continuous)
-                        // 72% black on paper would be a slab dropped on the
-                        // page. Light mode keeps the same idea — a body dark
-                        // enough for the pane to slide over — at a weight
-                        // that still belongs on white.
-                        .fill(Theme.Colors.adaptive(light: "1E1B1400", dark: "000000B8"))
+                        // Dark: 72% black, the body the glass pane slides
+                        // over. Light: frosted paper. This used to be
+                        // `1E1B1400` — alpha 00, so no tint at all — which
+                        // left only `.ultraThinMaterial`, and over a journal
+                        // full of photos that is a grey haze the unselected
+                        // tabs disappear into. 80% paper keeps the frost but
+                        // gives the icons something steady to sit on.
+                        .fill(Theme.Colors.adaptive(light: "FAF7F0CC", dark: "000000B8"))
                 )
                 // Specular highlight — a brighter strip of light along the
                 // top edge, falling off fast.
@@ -88,6 +91,9 @@ struct CustomTabBar: View {
         .padding(.bottom, 14)
     }
 
+    /// Unselected tabs use `secondaryText`, not `tertiaryText`: the bar
+    /// floats over photographs, and the lighter grey was unreadable there.
+    ///
     /// Every tab change ticks. Haptic always; the sound rides on the Sound
     /// setting, via AudioService.
     private func select(_ tab: ContentView.Tab) {
@@ -166,7 +172,7 @@ struct CustomTabBar: View {
                         .font(.system(size: 19, weight: .medium))
                         .foregroundColor(selectedTab == tab
                             ? Theme.Colors.accent
-                            : Theme.Colors.tertiaryText)
+                            : Theme.Colors.secondaryText)
                         .scaleEffect(selectedTab == tab ? 1.05 : 1.0)
                 }
 
@@ -174,7 +180,7 @@ struct CustomTabBar: View {
                     .font(.system(size: 10, weight: selectedTab == tab ? .semibold : .regular))
                     .foregroundColor(selectedTab == tab
                         ? Theme.Colors.accent
-                        : Theme.Colors.tertiaryText)
+                        : Theme.Colors.secondaryText)
             }
             .offset(y: tab == .verg ? -3 : 0)
             .frame(maxWidth: .infinity)
@@ -199,7 +205,7 @@ struct CustomTabBar: View {
                     .font(.system(size: 10, weight: selectedTab == .write ? .semibold : .regular))
                     .foregroundColor(selectedTab == .write
                         ? Theme.Colors.accent
-                        : Theme.Colors.tertiaryText)
+                        : Theme.Colors.secondaryText)
             }
             .frame(maxWidth: .infinity)
             .frame(height: 56)
@@ -217,7 +223,7 @@ struct WriteTabIcon: View {
     let isSelected: Bool
 
     private var color: Color {
-        isSelected ? Theme.Colors.accent : Theme.Colors.tertiaryText
+        isSelected ? Theme.Colors.accent : Theme.Colors.secondaryText
     }
 
     var body: some View {

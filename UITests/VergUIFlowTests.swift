@@ -293,6 +293,16 @@ final class VergUIFlowTests: XCTestCase {
                       "A question of your own did not register as Your question")
     }
 
+    // MARK: - Launch
+
+    /// The app opens on the journal, not the Write tab.
+    func testLaunchOpensOnYourJournal() {
+        let app = launch(appearance: "light", seeded: true)
+        XCTAssertTrue(app.staticTexts["Your Journal"].waitForExistence(timeout: 10),
+                      "The app did not open on Your Journal")
+        shoot(app, "launch-journal")
+    }
+
     // MARK: - The Oracle sheet
 
     /// The Oracle is included with The Golden Age: a free writer tapping

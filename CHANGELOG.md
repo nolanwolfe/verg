@@ -5,6 +5,21 @@ when the change was written, not necessarily released.
 
 ## [Unreleased] — after build 46 (audit fixes)
 
+### Changed — the app opens on Your Journal
+
+Every launch lands on the Journal tab instead of Write, so your own pages are
+the first thing you see. Write is still one tap away. Pinned by
+`testLaunchOpensOnYourJournal`.
+
+### Fixed — unselected tabs were nearly invisible in light mode
+
+The floating tab bar's light-mode tint was `1E1B1400`, which has an alpha of
+00, so the bar was only `.ultraThinMaterial`. Over a journal full of photos,
+the unselected icons, drawn in the pale `tertiaryText`, faded into the
+pictures. The bar now has a frosted-paper body (80% paper over the
+material) and unselected tabs use `secondaryText`. Dark mode is unchanged
+apart from the slightly brighter unselected grey.
+
 ### Changed — the Oracle is included with The Golden Age
 
 The paywall and App Store copy already listed "the questions" as part of The
