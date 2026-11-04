@@ -5,6 +5,17 @@ when the change was written, not necessarily released.
 
 ## [Unreleased] — after build 46 (audit fixes)
 
+### Added — On this day
+
+Your Journal now opens with one quiet row above the grid when there is a page
+from this day a year ago (the oldest anniversary wins) or, failing that, a
+month ago. Tapping it opens that page on its own, even if it has since gone
+into a book. A page outside the free 7-day window shows a lock and "This page
+is still here. The Golden Age opens it." Tapping it then opens the paywall,
+which names the page, the same promise the locked grid makes. Matching
+(`OnThisDay.find`) is pure and covered by `OnThisDayTests`, including Feb 29
+not borrowing Feb 28.
+
 ### Fixed — subscription changes apply while the app is open
 
 Subscription state was read only at launch, and after a purchase or restore
