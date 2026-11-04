@@ -519,8 +519,10 @@ final class PurchaseService: ObservableObject {
 
         if let days = Self.promoCodeDays[digest] {
             if Self.loadPromoGrant(digest) != nil { return .alreadyRedeemed }
-            guard let until = Calendar.current.date(byAdding: .day, value: days, to: now),
-                  Self.savePromoGrant(digest, until: until) else { return .invalid }
+            guard let until = Calendar.current.date(byAdding: .day, value: days, to: now) else {
+                return .invalid
+            }
+            Self.savePromoGrant(digest, until: until)
             promoAccessUntil = max(promoAccessUntil ?? until, until)
             return .promo(until: until)
         }
@@ -543,7 +545,13 @@ final class PurchaseService: ObservableObject {
         #endif
     }
 
-    // MARK: - Promo grants (Keychain)
+    // MARK: - Promo grants (Keychain, with a defaults copy)
+    //
+    // The Keychain copy is the one that matters: it survives deleting the
+    // app, so reinstalling cannot restart a promo. The UserDefaults copy is
+    // the fallback for when the Keychain refuses a write — without it a real
+    // code was answered "Invalid code", which is the one thing a public
+    // promo code must never say.
 
     private static let promoKeychainService = "app.verg.promo"
 
@@ -555,8 +563,19 @@ final class PurchaseService: ObservableObject {
         ]
     }
 
+    private static func promoDefaultsKey(_ digest: String) -> String {
+        "verg.promo.\(digest)"
+    }
+
     /// When the promo for `digest` ends (or ended), if this phone redeemed it.
     private static func loadPromoGrant(_ digest: String) -> Date? {
+        loadPromoGrantFromKeychain(digest) ?? {
+            let seconds = UserDefaults.standard.double(forKey: promoDefaultsKey(digest))
+            return seconds > 0 ? Date(timeIntervalSince1970: seconds) : nil
+        }()
+    }
+
+    private static func loadPromoGrantFromKeychain(_ digest: String) -> Date? {
         var query = promoQuery(digest)
         query[kSecReturnData as String] = true
         query[kSecMatchLimit as String] = kSecMatchLimitOne
@@ -567,7 +586,8 @@ final class PurchaseService: ObservableObject {
         return Date(timeIntervalSince1970: seconds)
     }
 
-    private static func savePromoGrant(_ digest: String, until: Date) -> Bool {
+    private static func savePromoGrant(_ digest: String, until: Date) {
+        UserDefaults.standard.set(until.timeIntervalSince1970, forKey: promoDefaultsKey(digest))
         let base = promoQuery(digest)
         SecItemDelete(base as CFDictionary)
         var add = base
@@ -575,7 +595,7 @@ final class PurchaseService: ObservableObject {
         // AfterFirstUnlock: read during launch. ThisDeviceOnly: one grant per
         // phone, not carried to a new one by a backup.
         add[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
-        return SecItemAdd(add as CFDictionary, nil) == errSecSuccess
+        SecItemAdd(add as CFDictionary, nil)
     }
 
     #if DEBUG
@@ -595,6 +615,7 @@ final class PurchaseService: ObservableObject {
         // trap as above, one level deeper.
         for digest in Self.promoCodeDays.keys {
             SecItemDelete(Self.promoQuery(digest) as CFDictionary)
+            UserDefaults.standard.removeObject(forKey: Self.promoDefaultsKey(digest))
         }
         promoAccessUntil = nil
     }
