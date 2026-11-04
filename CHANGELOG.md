@@ -5,6 +5,20 @@ when the change was written, not necessarily released.
 
 ## [Unreleased] — after build 46 (audit fixes)
 
+### Added — share your session as a story
+
+The Time Reclaimed card, the screen after a saved page, has a Share
+button. It hands the share sheet a 1080×1920 image:
+- the candle
+- the minutes ("24 minutes on paper, instead of scrolling.")
+- days lit
+- a small "Verg 🕯️ journal on paper / verg.app" mark
+
+The handwriting is never in it: the page stays on the phone, and only the
+minutes travel. It uses fixed colours, so every card looks the same whatever
+the phone's appearance. It's rendered once with `ImageRenderer`
+(`ShareStoryCard`), and only for sessions of at least a minute.
+
 ### Changed — about 8 MB smaller download, same sound
 
 - **Rain and fire loops:** now Apple Lossless, roughly half the size of PCM,
