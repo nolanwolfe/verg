@@ -43,10 +43,14 @@ final class VergUIFlowTests: XCTestCase {
         seeded: Bool = false,
         onboarding: Bool = false,
         large: Bool = false,
-        textSize: String? = nil
+        textSize: String? = nil,
+        premium: Bool = false
     ) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-VergUITest", "-VergAppearance", appearance]
+        // The Oracle is a Golden Age feature; tests of how it behaves run
+        // as a subscriber. DEBUG-only flag, see StorageService.
+        if premium { app.launchArguments.append("-VergPremium") }
         if seeded { app.launchArguments.append("-VergSeedData") }
         if onboarding { app.launchArguments.append("-VergOnboarding") }
         if large { app.launchArguments.append("-VergSeedLarge") }
@@ -204,7 +208,7 @@ final class VergUIFlowTests: XCTestCase {
     /// Write a script, then change it. Editing did not exist at all until
     /// 2.2, so this covers the path end to end.
     func testWriteThenEditAScript() {
-        let app = launch(appearance: "light")
+        let app = launch(appearance: "light", premium: true)
         open(app, tab: "settings")
 
         let oracle = app.buttons["settings.The Oracle"]
@@ -249,7 +253,7 @@ final class VergUIFlowTests: XCTestCase {
     /// open it for editing. The whole row was one button that opened the
     /// editor, so selecting a script you had written was impossible.
     func testPickingYourOwnScriptSelectsItRatherThanEditingIt() {
-        let app = launch(appearance: "light")
+        let app = launch(appearance: "light", premium: true)
 
         // Write one first — the built-ins are not listed here.
         open(app, tab: "settings")
@@ -291,8 +295,26 @@ final class VergUIFlowTests: XCTestCase {
 
     // MARK: - The Oracle sheet
 
-    func testOracleSheetOpensFromWrite() {
+    /// The Oracle is included with The Golden Age: a free writer tapping
+    /// the pill is shown the offer, not the sheet.
+    func testOracleIsGoldenAgeForFreeWriters() {
         let app = launch(appearance: "light")
+        open(app, tab: "write")
+
+        let pill = app.buttons["write.scriptPill"]
+        XCTAssertTrue(pill.waitForExistence(timeout: 5), "Write has no script pill")
+        pill.tap()
+        settle()
+
+        XCTAssertTrue(app.staticTexts["The Golden Age"].waitForExistence(timeout: 5),
+                      "A free writer was not shown The Golden Age")
+        XCTAssertFalse(app.navigationBars["The Oracle"].exists,
+                       "The Oracle opened for a free writer")
+        shoot(app, "oracle-paywall")
+    }
+
+    func testOracleSheetOpensFromWrite() {
+        let app = launch(appearance: "light", premium: true)
         XCTAssertTrue(tab(app, "write").waitForExistence(timeout: 10))
         open(app, tab: "write")
 
@@ -717,7 +739,7 @@ final class VergUIFlowTests: XCTestCase {
     /// session's script, so backing out of the sheet still changed it and
     /// there was no moment where you committed — the bug this guards.
     func testDrawingWithoutConfirmingDoesNotChangeTheScript() {
-        let app = launch(appearance: "light")
+        let app = launch(appearance: "light", premium: true)
         open(app, tab: "write")
 
         let pill = app.buttons["write.scriptPill"]
@@ -740,7 +762,7 @@ final class VergUIFlowTests: XCTestCase {
 
     /// …and Select Guidance is what commits it.
     func testSelectGuidanceCommitsTheDrawnScript() {
-        let app = launch(appearance: "light")
+        let app = launch(appearance: "light", premium: true)
         open(app, tab: "write")
 
         app.buttons["write.scriptPill"].tap()
@@ -771,7 +793,7 @@ final class VergUIFlowTests: XCTestCase {
     /// the saved page as metadata and never rendered, so the one moment it
     /// exists for was the one moment you couldn't see it.
     func testTheScriptIsShownOnTheTimer() {
-        let app = launch(appearance: "light")
+        let app = launch(appearance: "light", premium: true)
         open(app, tab: "write")
 
         app.buttons["write.scriptPill"].tap()

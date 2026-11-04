@@ -52,8 +52,9 @@ final class CandleService: ObservableObject {
     func refreshDaysLit() {
         var stats = storage.getStats()
         let (isPremium, entitlementKnown) = MainActor.assumeIsolated {
-            (purchaseService.isSubscribed || purchaseService.isFriendsAndFamily,
-             purchaseService.hasResolvedEntitlement || purchaseService.isFriendsAndFamily)
+            (purchaseService.hasPremiumAccess,
+             purchaseService.hasResolvedEntitlement || purchaseService.isFriendsAndFamily
+                || purchaseService.hasPromoAccess)
         }
 
         let result = CandleRelight.evaluate(

@@ -220,7 +220,12 @@ struct HomeView: View {
         // starting — am I writing to my own words or the app's — was the one
         // thing it wouldn't tell you.
         pill(icon: "text.quote", title: scriptState) {
-            showPromptSheet = true
+            // The Oracle is included with The Golden Age.
+            if gatingService.isPremium {
+                showPromptSheet = true
+            } else {
+                showPaywall = true
+            }
         }
         // Identified, because "No script" is also the label of a button
         // inside the Oracle sheet this pill opens — matching on the text

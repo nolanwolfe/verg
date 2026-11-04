@@ -5,6 +5,25 @@ when the change was written, not necessarily released.
 
 ## [Unreleased] — after build 46 (audit fixes)
 
+### Changed — the Oracle is included with The Golden Age
+
+The paywall and App Store copy already listed "the questions" as part of The
+Golden Age, but nothing gated them. Now the Write tab's Oracle pill and
+Settings → The Oracle open the paywall for a free writer. The UI tests that
+exercise the Oracle launch with `-VergPremium` (DEBUG only), and
+`testOracleIsGoldenAgeForFreeWriters` checks the gate.
+
+### Added — ONTHEVERG gives thirty days of The Golden Age
+
+The code on verg.app/ontheverg works again, as a public promo rather than the
+lifetime code it was before it leaked: redeemed under Settings → Redeem Access
+Code, it grants The Golden Age for 30 days, once per phone. The grant is kept
+in the Keychain (this device only) so reinstalling does not restart it. A
+single `PurchaseService.hasPremiumAccess` (paid, friends & family, or a running
+promo) now backs every gate. The page copy is updated to match. **Merge the
+site change only once this build is on the App Store**: until then the live
+app still rejects the code.
+
 ### Security — wrong codes at the app lock are now rate-limited
 
 The lock screen accepted unlimited guesses, so a four-digit code fell to

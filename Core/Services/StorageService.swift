@@ -126,7 +126,9 @@ final class StorageService: ObservableObject {
         // premium — and the tests that notice are the paywall ones, which
         // fail looking exactly like a bypass.
         MainActor.assumeIsolated {
-            if args.contains("-VergScreenshots") {
+            // `-VergPremium`: a test that exercises a Golden Age feature
+            // (the Oracle) as a subscriber would.
+            if args.contains("-VergScreenshots") || args.contains("-VergPremium") {
                 PurchaseService.shared.grantAccessForScreenshots()
             } else {
                 PurchaseService.shared.resetGrantedAccessForUITesting()

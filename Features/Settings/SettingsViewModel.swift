@@ -459,10 +459,16 @@ final class SettingsViewModel: ObservableObject {
     func redeemAccessCode() {
         let code = redeemCodeText
         Task { @MainActor in
-            let success = purchaseService.redeemAccessCode(code)
-            redeemResultMessage = success
-                ? "Access granted. Unlimited access to Verg."
-                : "Invalid code. Check it and try again."
+            switch purchaseService.redeem(code: code) {
+            case .friendsAndFamily:
+                redeemResultMessage = "Access granted. Unlimited access to Verg."
+            case .promo(let until):
+                redeemResultMessage = "The Golden Age is yours until \(until.formatted(.dateTime.month(.wide).day()))."
+            case .alreadyRedeemed:
+                redeemResultMessage = "This code has already been used on this phone."
+            case .invalid:
+                redeemResultMessage = "Invalid code. Check it and try again."
+            }
             redeemCodeText = ""
             showRedeemSheet = false
             showRedeemResult = true

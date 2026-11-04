@@ -179,8 +179,19 @@ struct SettingsView: View {
         Divider().background(Theme.Colors.secondaryText.opacity(0.2))
     }
 
+    /// Says what a redeemed code is doing, so a promo's end date is never a
+    /// surprise. A running promo leaves the row tappable: a friends & family
+    /// code can still be entered on top of it.
+    private var redeemRowTitle: String {
+        if purchaseService.isFriendsAndFamily { return "Friends & Family Access Active" }
+        if purchaseService.hasPromoAccess, let until = purchaseService.promoAccessUntil {
+            return "The Golden Age until \(until.formatted(.dateTime.month(.wide).day()))"
+        }
+        return "Redeem Access Code"
+    }
+
     private var isPremium: Bool {
-        purchaseService.isSubscribed || purchaseService.isFriendsAndFamily
+        purchaseService.hasPremiumAccess
     }
 
     // MARK: - Notifications Section
@@ -250,7 +261,7 @@ struct SettingsView: View {
                 // access without a purchase, and it reads as a system action
                 // beside the two gold subscription rows.
                 iconColor: .blue,
-                title: purchaseService.isFriendsAndFamily ? "Friends & Family Access Active" : "Redeem Access Code",
+                title: redeemRowTitle,
                 action: {
                     guard !purchaseService.isFriendsAndFamily else { return }
                     AudioService.shared.playUITick()
@@ -344,10 +355,17 @@ struct SettingsView: View {
             SettingsButtonRow(
                 icon: "text.quote",
                 iconColor: Theme.Colors.accent,
+                // Title kept plain: the row's accessibility identifier is
+                // built from it, and the tests find the row by that.
                 title: "The Oracle",
                 action: {
                     AudioService.shared.playUITick()
-                    showPromptLibrary = true
+                    // Included with The Golden Age, like Ambience above.
+                    if isPremium {
+                        showPromptLibrary = true
+                    } else {
+                        viewModel.showPaywall = true
+                    }
                 }
             )
 
