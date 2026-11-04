@@ -5,6 +5,14 @@ when the change was written, not necessarily released.
 
 ## [Unreleased] — after build 46 (audit fixes)
 
+### Fixed — subscription changes apply while the app is open
+
+Subscription state was read only at launch, and after a purchase or restore
+in the same session. A renewal, expiry, refund or background-completed
+purchase showed only after a cold start. PurchaseService now follows
+`Purchases.shared.customerInfoStream`, so The Golden Age turns on or off
+when RevenueCat says it changed.
+
 ### Added — share your session as a story
 
 The Time Reclaimed card, the screen after a saved page, has a Share

@@ -123,6 +123,8 @@ final class PurchaseService: ObservableObject {
     // MARK: - Private Properties
     private var products: [Product] = []
     private var updateListenerTask: Task<Void, Error>?
+    /// Follows RevenueCat's customer-info updates for the life of the app.
+    private var customerInfoTask: Task<Void, Never>?
     @MainActor @Published private(set) var currentOffering: Offering?
 
     var isUsingStoreKitTesting: Bool {
@@ -134,6 +136,7 @@ final class PurchaseService: ObservableObject {
 
     deinit {
         updateListenerTask?.cancel()
+        customerInfoTask?.cancel()
     }
 
     // MARK: - Configuration
@@ -155,6 +158,7 @@ final class PurchaseService: ObservableObject {
             Purchases.logLevel = .error
             #endif
             Purchases.configure(withAPIKey: revenueCatAPIKey)
+            listenForCustomerInfo()
             // Deliberately no offerings fetch here: `fetchProducts()` below
             // already calls it whenever there is an API key. Doing both meant
             // two concurrent passes writing the same published price
@@ -169,6 +173,27 @@ final class PurchaseService: ObservableObject {
         Task {
             await fetchProducts()
             await checkSubscriptionStatus()
+        }
+    }
+
+    // MARK: - RevenueCat updates
+
+    /// Subscription state used to be read once at launch (and after a
+    /// purchase or restore in this process). A renewal, an expiry, a refund
+    /// or a purchase finished in the background only showed up on the next
+    /// cold start — so a lapsed subscriber kept The Golden Age until they
+    /// force-quit, and a renewed one could be shown the paywall. RevenueCat
+    /// publishes every change on this stream; following it keeps
+    /// `isSubscribed` current while the app is open.
+    @MainActor
+    private func listenForCustomerInfo() {
+        customerInfoTask?.cancel()
+        customerInfoTask = Task { @MainActor [weak self] in
+            for await info in Purchases.shared.customerInfoStream {
+                guard let self else { return }
+                self.isSubscribed = info.entitlements[Self.entitlementID]?.isActive == true
+                self.hasResolvedEntitlement = true
+            }
         }
     }
 
