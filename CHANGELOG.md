@@ -5,6 +5,25 @@ when the change was written, not necessarily released.
 
 ## [Unreleased] — after build 46 (audit fixes)
 
+### Fixed — ambience you turn on now actually plays
+
+Three causes of "I turned the music on and nothing played" from the timer.
+
+- **The silent switch muted it.** The whole app ran on `.ambient`, which
+  obeys the ring/silent switch, so a phone left on silent swallowed
+  ambience the writer had just switched on. While ambience plays, the
+  session is now `.playback`, and it returns to `.ambient` when ambience
+  stops. Both modes mix with other apps' audio. The end bell, which rings
+  as ambience fades, is audible on silent too.
+- **Sound and ambience could disagree.** Sound off takes ambience with it,
+  but turning ambience on (timer button, timer picker, Write-tab picker,
+  Settings) left Sound off: music on, bells silent, and the pill showing
+  muted. Turning ambience on now turns Sound on.
+- **Choosing a new track left the old one playing.** `startAmbience`
+  overwrote the player without stopping it, so the old loop played under
+  the new one with nothing left to stop it, even after the session ended.
+  The old track now fades out first.
+
 ### Changed — the app opens on Your Journal
 
 Every launch lands on the Journal tab instead of Write, so your own pages are

@@ -241,6 +241,12 @@ final class SettingsViewModel: ObservableObject {
         $ambientSoundEnabled
             .dropFirst()
             .sink { [weak self] enabled in
+                // The mirror of the Sound sink above: ambience on brings
+                // Sound back on (through its own sink, which saves it and
+                // tells AudioService), so the two rows never disagree.
+                if enabled, self?.soundEnabled == false {
+                    self?.soundEnabled = true
+                }
                 self?.storageService.setAmbientSoundEnabled(enabled)
             }
             .store(in: &cancellables)

@@ -153,6 +153,7 @@ final class TimerViewModel: ObservableObject {
 
     func setAmbienceEnabled(_ enabled: Bool) {
         audioService.playImpact(.light)
+        if enabled { turnSoundOnIfOff() }
         storageService.setAmbientSoundEnabled(enabled)
         objectWillChange.send()
         if enabled {
@@ -176,10 +177,21 @@ final class TimerViewModel: ObservableObject {
     /// waited for a resume.
     func selectAmbientSound(_ sound: AudioService.AmbientSound) {
         audioService.playImpact(.light)
+        turnSoundOnIfOff()
         storageService.setAmbientSoundID(sound.rawValue)
         storageService.setAmbientSoundEnabled(true)
         objectWillChange.send()
         startAmbienceIfEnabled()
+    }
+
+    /// Sound is the master switch: turning it off takes ambience with it.
+    /// The reverse has to hold too. Turning ambience on from the timer while
+    /// Sound was off left the two disagreeing — music on, bells and the Sound
+    /// pill still off — so asking for ambience turns Sound back on.
+    private func turnSoundOnIfOff() {
+        guard !storageService.settings.soundEnabled else { return }
+        storageService.setSoundEnabled(true)
+        audioService.setSoundEnabled(true)
     }
 
     /// Start looping ambience if the option is on and the user is Pro.

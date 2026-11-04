@@ -378,6 +378,13 @@ struct AmbiencePickerSheet: View {
             onPaywall()
             return
         }
+        // Choosing a sound with Sound off turns Sound on: off takes ambience
+        // with it, so ambience on has to bring Sound back, or the pill shows
+        // "Sound" muted while a track is selected.
+        if enabled, !storageService.settings.soundEnabled {
+            storageService.setSoundEnabled(true)
+            AudioService.shared.setSoundEnabled(true)
+        }
         AudioService.shared.playUITick()
         storageService.setAmbientSoundEnabled(enabled)
         if let id { storageService.setAmbientSoundID(id) }

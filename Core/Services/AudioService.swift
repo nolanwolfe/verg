@@ -227,6 +227,19 @@ final class AudioService: ObservableObject {
             return
         }
 
+        // A track already playing is faded out first. Overwriting
+        // `ambientPlayer` used to orphan it: choosing another sound mid
+        // session left the old loop playing underneath the new one, with no
+        // reference left to stop it — it ran until the app was killed.
+        stopAmbience(fadeOut: 0.4)
+
+        // Chosen ambience plays through the silent switch. Everything else
+        // (bells, ticks) stays on `.ambient` and keeps respecting it, but a
+        // track the writer turned on deliberately is not something the
+        // switch should swallow without a word: "I turned the music on and
+        // nothing played" was exactly what a phone left on silent did.
+        setAmbiencePlaybackMode(true)
+
         do {
             let player = try AVAudioPlayer(contentsOf: url)
             player.numberOfLoops = -1
@@ -236,6 +249,7 @@ final class AudioService: ObservableObject {
             player.setVolume(0.55, fadeDuration: 1.5)
             ambientPlayer = player
         } catch {
+            setAmbiencePlaybackMode(false)
             #if DEBUG
             print("Failed to start ambience: \(error)")
             #endif
@@ -247,8 +261,30 @@ final class AudioService: ObservableObject {
         guard let player = ambientPlayer else { return }
         ambientPlayer = nil
         player.setVolume(0, fadeDuration: fadeOut)
-        DispatchQueue.main.asyncAfter(deadline: .now() + fadeOut + 0.1) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + fadeOut + 0.1) { [weak self] in
             player.stop()
+            // Back to `.ambient` once nothing chosen is playing — unless a
+            // new track started during the fade.
+            if self?.ambientPlayer == nil {
+                self?.setAmbiencePlaybackMode(false)
+            }
+        }
+    }
+
+    /// `.playback` while ambience plays (audible on silent), `.ambient`
+    /// otherwise. Both mix with other apps' audio, so neither interrupts
+    /// someone's own music.
+    private func setAmbiencePlaybackMode(_ on: Bool) {
+        let session = AVAudioSession.sharedInstance()
+        let wanted: AVAudioSession.Category = on ? .playback : .ambient
+        guard session.category != wanted else { return }
+        do {
+            try session.setCategory(wanted, mode: .default, options: [.mixWithOthers])
+            try session.setActive(true)
+        } catch {
+            #if DEBUG
+            print("AudioService: could not switch audio category — \(error)")
+            #endif
         }
     }
 
