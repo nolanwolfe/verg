@@ -61,6 +61,17 @@ final class VergUIFlowTests: XCTestCase {
         return app
     }
 
+    /// Tap a navigation-bar button inside a sheet at its centre.
+    ///
+    /// `tap()` first asks accessibility to scroll the element into view, and
+    /// for toolbar buttons in a sheet that request fails with
+    /// kAXErrorCannotComplete on CI simulators, although the button is on
+    /// screen and tappable. A coordinate tap skips that step and still
+    /// fails the test if nothing is there to respond.
+    private func tapToolbarButton(_ element: XCUIElement) {
+        element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+    }
+
     private func shoot(_ app: XCUIApplication, _ name: String) {
         let shot = XCTAttachment(screenshot: app.screenshot())
         shot.name = name
@@ -217,7 +228,7 @@ final class VergUIFlowTests: XCTestCase {
 
         // New script
         let add = app.buttons["Add"].exists ? app.buttons["Add"] : app.buttons.matching(identifier: "plus").firstMatch
-        if add.waitForExistence(timeout: 3) { add.tap() }
+        if add.waitForExistence(timeout: 3) { tapToolbarButton(add) }
         let newScript = app.buttons["New question"]
         if newScript.waitForExistence(timeout: 3) { newScript.tap() }
 
@@ -259,7 +270,7 @@ final class VergUIFlowTests: XCTestCase {
         open(app, tab: "settings")
         app.buttons["settings.The Oracle"].tap()
         let add = app.buttons["Add"].exists ? app.buttons["Add"] : app.buttons.matching(identifier: "plus").firstMatch
-        if add.waitForExistence(timeout: 3) { add.tap() }
+        if add.waitForExistence(timeout: 3) { tapToolbarButton(add) }
         if app.buttons["New question"].waitForExistence(timeout: 3) { app.buttons["New question"].tap() }
         let field = app.textFields.firstMatch
         guard field.waitForExistence(timeout: 5) else { return XCTFail("No script editor") }
@@ -575,7 +586,7 @@ final class VergUIFlowTests: XCTestCase {
             ? app.buttons["ellipsis.circle"]
             : app.navigationBars.buttons.firstMatch
         XCTAssertTrue(menu.waitForExistence(timeout: 5), "Book detail has no overflow menu")
-        menu.tap()
+        tapToolbarButton(menu)
         settle(0.6)
 
         let rename = app.buttons["Rename & Color"]

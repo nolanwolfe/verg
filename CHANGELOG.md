@@ -5,6 +5,15 @@ when the change was written, not necessarily released.
 
 ## [Unreleased] — after build 46 (audit fixes)
 
+### Fixed — the paywall sometimes forgot which page you tapped
+
+Tapping a locked page should open the paywall with "October 26 is still
+here." The date was assigned in `onAppear`, after the first render, to a
+property that wasn't `@Published`, so the line only appeared if something
+else redrew the paywall. Often it showed the generic line instead. Found by
+the new CI, where the same test passed on one simulator and failed on
+another.
+
 ### Added — On this day
 
 Your Journal now opens with one quiet row above the grid when there is a page
