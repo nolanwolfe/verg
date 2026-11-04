@@ -86,9 +86,12 @@ final class AudioService: ObservableObject {
 
         var filename: String { "ambient_\(rawValue)" }
 
-        /// The three original loops are short uncompressed PCM .caf clips;
-        /// the newer, much longer tracks are AAC .m4a (compressed — some run
-        /// 10-35 minutes, and uncompressed at that length would be enormous).
+        /// The three original loops are short .caf clips: rain and fire are
+        /// Apple Lossless (half the size of PCM, still gapless), focus is
+        /// PCM because ALAC padded its odd length with 52 ms of silence that
+        /// would click at every loop. Keep short loops out of AAC: its
+        /// priming samples leave a gap each time round. The newer, much
+        /// longer tracks are AAC .m4a (10-35 minutes, so a gap is rare).
         var fileExtension: String {
             switch self {
             case .rain, .fireplace, .deepFocus: return "caf"

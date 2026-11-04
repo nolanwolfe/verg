@@ -5,6 +5,19 @@ when the change was written, not necessarily released.
 
 ## [Unreleased] — after build 46 (audit fixes)
 
+### Changed — about 8 MB smaller download, same sound
+
+- **Rain and fire loops:** now Apple Lossless, roughly half the size of PCM,
+  bit-identical audio, and still gapless. Focus stays PCM, because ALAC
+  padded its odd length with 52 ms of silence that would click at every
+  loop.
+- **End chime:** was a 24-bit, 96 kHz studio master (4.4 MB). It's now a
+  16-bit, 44.1 kHz copy (1.4 MB) under the same name.
+- **Repo cleanup:** removed about 18 MB of duplicate audio that was never in
+  the app (`Resources/ambient_*.caf`, `Sounds/bell_start.mp3`,
+  `Sounds/bell_end.wav`), plus a stray `.DS_Store` and a tracked
+  `xcuserdata` file that `.gitignore` already excludes.
+
 ### Added — "Same time tomorrow": a reminder offer after a saved page
 
 The daily reminder lived only in Settings, so most writers never turned it
