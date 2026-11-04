@@ -51,8 +51,10 @@ final class CandleService: ObservableObject {
     /// resetting to zero where it isn't.
     func refreshDaysLit() {
         var stats = storage.getStats()
-        let isPremium = MainActor.assumeIsolated {
-            purchaseService.isSubscribed || purchaseService.isFriendsAndFamily
+        let (isPremium, entitlementKnown) = MainActor.assumeIsolated {
+            (purchaseService.hasPremiumAccess,
+             purchaseService.hasResolvedEntitlement || purchaseService.isFriendsAndFamily
+                || purchaseService.hasPromoAccess)
         }
 
         let result = CandleRelight.evaluate(
@@ -61,6 +63,18 @@ final class CandleService: ObservableObject {
             relitDates: stats.relitDates,
             isPremium: isPremium
         )
+        // On a cold launch this runs before the subscription check returns,
+        // so `isPremium` is false for everyone. Saving "went out" then would
+        // be permanent: the re-run once the real status loads starts from
+        // the saved 0 and has nothing to relight. Leave the stored count
+        // alone until the answer is in; ContentView re-runs this when it is.
+        if result.candleWentOut && !entitlementKnown {
+            daysLit = stats.daysLit
+            longestDaysLit = stats.longestDaysLit
+            hasWrittenToday = stats.hasWrittenToday
+            relitDates = stats.relitDates
+            return
+        }
         stats.daysLit = result.daysLit
         stats.relitDates = result.relitDates
         storage.updateStats(stats)

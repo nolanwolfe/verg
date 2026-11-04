@@ -44,6 +44,12 @@ final class OnboardingViewModel: ObservableObject {
     // MARK: - Initialization
     init(storageService: StorageService = .shared) {
         self.storageService = storageService
+        // Replaying the guide from Settings starts from the pace already
+        // chosen. Defaulting to 5 every time meant tapping through a replay
+        // silently reset someone's 7-day goal.
+        if let saved = storageService.settings.weeklyCommitmentDaysPerWeek {
+            selectedDaysPerWeek = saved
+        }
     }
 
     // MARK: - Actions

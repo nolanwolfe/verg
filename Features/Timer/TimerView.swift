@@ -17,6 +17,11 @@ struct TimerView: View {
     @State private var completionFlash: Double = 0.0
     @State private var showAmbiencePicker = false
     @State private var showPaywall = false
+    /// The session starts once per presentation. A `.fullScreenCover` on
+    /// top of this view (camera, paywall) fires `onDisappear`, and closing
+    /// it fires `onAppear` again; without this guard that stopped the
+    /// countdown and then started a brand-new one, bell and all.
+    @State private var hasStartedSession = false
 
     private let gatingService = SessionGatingService.shared
 
@@ -187,11 +192,17 @@ struct TimerView: View {
             BrightnessService.shared.take(brightness)
             dragStartBrightness = brightness
             UIApplication.shared.isIdleTimerDisabled = true
+            guard !hasStartedSession else { return }
+            hasStartedSession = true
             DispatchQueue.main.async {
                 viewModel.startTimer()
             }
         }
         .onDisappear {
+            // Covered by our own camera or paywall, not closed: the session
+            // carries on underneath. Every path that really closes this view
+            // clears `showCamera` first, so this cannot leave a timer running.
+            guard !viewModel.showCamera && !showPaywall else { return }
             viewModel.stopTimer()
             hideTask?.cancel()
             // Brightness deliberately persists — see BrightnessService.

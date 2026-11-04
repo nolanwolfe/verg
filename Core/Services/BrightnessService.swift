@@ -61,7 +61,11 @@ final class BrightnessService: ObservableObject {
         guard let systemBrightness else { return }
         UIScreen.main.brightness = systemBrightness
         self.systemBrightness = nil
-        level = nil
+        // `level` is kept on purpose: it is what `reapplyAfterForeground()`
+        // restores. Clearing it here made that method a no-op, and with
+        // `systemBrightness` also nil every later swipe (`set`) was ignored
+        // until the screen re-appeared — so after locking the phone mid
+        // session, the dim was gone and could not be put back.
     }
 
     /// Re-apply the app's level after returning from the background, since

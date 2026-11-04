@@ -3,6 +3,194 @@
 All notable changes to Verg are logged here as they're made. Dates are
 when the change was written, not necessarily released.
 
+## [Unreleased] — after build 46 (audit fixes)
+
+### Fixed — the paywall sometimes forgot which page you tapped
+
+Tapping a locked page should open the paywall with "October 26 is still
+here." The date was assigned in `onAppear`, after the first render, to a
+property that wasn't `@Published`, so the line only appeared if something
+else redrew the paywall. Often it showed the generic line instead. Found by
+the new CI, where the same test passed on one simulator and failed on
+another.
+
+### Added — On this day
+
+Your Journal now opens with one quiet row above the grid when there is a page
+from this day a year ago (the oldest anniversary wins) or, failing that, a
+month ago. Tapping it opens that page on its own, even if it has since gone
+into a book. A page outside the free 7-day window shows a lock and "This page
+is still here. The Golden Age opens it." Tapping it then opens the paywall,
+which names the page, the same promise the locked grid makes. Matching
+(`OnThisDay.find`) is pure and covered by `OnThisDayTests`, including Feb 29
+not borrowing Feb 28.
+
+### Fixed — subscription changes apply while the app is open
+
+Subscription state was read only at launch, and after a purchase or restore
+in the same session. A renewal, expiry, refund or background-completed
+purchase showed only after a cold start. PurchaseService now follows
+`Purchases.shared.customerInfoStream`, so The Golden Age turns on or off
+when RevenueCat says it changed.
+
+### Added — share your session as a story
+
+The Time Reclaimed card, the screen after a saved page, has a Share
+button. It hands the share sheet a 1080×1920 image:
+- the candle
+- the minutes ("24 minutes on paper, instead of scrolling.")
+- days lit
+- a small "Verg 🕯️ journal on paper / verg.app" mark
+
+The handwriting is never in it: the page stays on the phone, and only the
+minutes travel. It uses fixed colours, so every card looks the same whatever
+the phone's appearance. It's rendered once with `ImageRenderer`
+(`ShareStoryCard`), and only for sessions of at least a minute.
+
+### Changed — about 8 MB smaller download, same sound
+
+- **Rain and fire loops:** now Apple Lossless, roughly half the size of PCM,
+  bit-identical audio, and still gapless. Focus stays PCM, because ALAC
+  padded its odd length with 52 ms of silence that would click at every
+  loop.
+- **End chime:** was a 24-bit, 96 kHz studio master (4.4 MB). It's now a
+  16-bit, 44.1 kHz copy (1.4 MB) under the same name.
+- **Repo cleanup:** removed about 18 MB of duplicate audio that was never in
+  the app (`Resources/ambient_*.caf`, `Sounds/bell_start.mp3`,
+  `Sounds/bell_end.wav`), plus a stray `.DS_Store` and a tracked
+  `xcuserdata` file that `.gitignore` already excludes.
+
+### Added — "Same time tomorrow": a reminder offer after a saved page
+
+The daily reminder lived only in Settings, so most writers never turned it
+on, and it is the cheapest way to bring someone back tomorrow. Now, after a
+saved page, anyone without a reminder is offered one once, at the time they
+just wrote: "Same time tomorrow. A reminder at 9:41 PM each day." Choosing
+Remind me asks iOS for permission and, on a yes, turns on the same Daily
+Reminder as Settings, using the scheduling code it now shares
+(`SettingsViewModel.scheduleDailyReminder`). The offer never appears on the
+same pass as the seventh-page paywall. It's stored as
+`AppSettings.hasBeenOfferedReminder`, which decodes as false from older data,
+and UI-test launches mark it as already offered.
+
+### Fixed — ambience you turn on now actually plays
+
+Three causes of "I turned the music on and nothing played" from the timer.
+
+- **The silent switch muted it.** The whole app ran on `.ambient`, which
+  obeys the ring/silent switch, so a phone left on silent swallowed
+  ambience the writer had just switched on. While ambience plays, the
+  session is now `.playback`, and it returns to `.ambient` when ambience
+  stops. Both modes mix with other apps' audio. The end bell, which rings
+  as ambience fades, is audible on silent too.
+- **Sound and ambience could disagree.** Sound off takes ambience with it,
+  but turning ambience on (timer button, timer picker, Write-tab picker,
+  Settings) left Sound off: music on, bells silent, and the pill showing
+  muted. Turning ambience on now turns Sound on.
+- **Choosing a new track left the old one playing.** `startAmbience`
+  overwrote the player without stopping it, so the old loop played under
+  the new one with nothing left to stop it, even after the session ended.
+  The old track now fades out first.
+
+### Changed — the app opens on Your Journal
+
+Every launch lands on the Journal tab instead of Write, so your own pages are
+the first thing you see. Write is still one tap away. Pinned by
+`testLaunchOpensOnYourJournal`.
+
+### Fixed — unselected tabs were nearly invisible in light mode
+
+The floating tab bar's light-mode tint was `1E1B1400`, which has an alpha of
+00, so the bar was only `.ultraThinMaterial`. Over a journal full of photos,
+the unselected icons, drawn in the pale `tertiaryText`, faded into the
+pictures. The bar now has a frosted-paper body (80% paper over the
+material) and unselected tabs use `secondaryText`. Dark mode is unchanged
+apart from the slightly brighter unselected grey.
+
+### Changed — the Oracle is included with The Golden Age
+
+The paywall and App Store copy already listed "the questions" as part of The
+Golden Age, but nothing gated them. Now the Write tab's Oracle pill and
+Settings → The Oracle open the paywall for a free writer. The UI tests that
+exercise the Oracle launch with `-VergPremium` (DEBUG only), and
+`testOracleIsGoldenAgeForFreeWriters` checks the gate.
+
+### Added — ONTHEVERG gives thirty days of The Golden Age
+
+The code on verg.app/ontheverg works again, as a public promo rather than the
+lifetime code it was before it leaked: redeemed under Settings → Redeem Access
+Code, it grants The Golden Age for 30 days, once per phone. The grant is kept
+in the Keychain (this device only) so reinstalling does not restart it. A
+single `PurchaseService.hasPremiumAccess` (paid, friends & family, or a running
+promo) now backs every gate. The page copy is updated to match. **Merge the
+site change only once this build is on the App Store**: until then the live
+app still rejects the code.
+
+### Security — wrong codes at the app lock are now rate-limited
+
+The lock screen accepted unlimited guesses, so a four-digit code fell to
+whoever held the phone in under an hour. The first four wrong codes are free;
+then entry closes for 1 min, 5 min, 15 min, and an hour per attempt after
+that. The count lives in the Keychain (this device only), so relaunching or
+reinstalling does not reset it, and the confirm-to-disable sheet goes through
+the same check. The count is forgotten after a day with no wrong code. Face ID / Touch ID stay available throughout, and a correct
+code or a successful scan clears the count.
+
+### Security — the app lock fails closed if the Keychain can't be read
+
+Any Keychain read error used to look like "no code set", which opened a locked
+journal. Only "item not found" means no lock now. Any other error keeps the
+gate up, and the app re-checks when it becomes active.
+
+### Fixed — changing the reminder time scheduled it at the old time
+
+`@Published` emits before the property is stored, so the reschedule read the
+previous time. The new time is now passed through.
+
+### Fixed — a relight was lost on the next page, and on a cold launch
+
+Two ways the relight failed to keep a subscriber's count. Writing the day
+after a relit day reset `daysLit` to 1, because `recordSession` only continued
+from a *written* yesterday. And `CandleService` evaluated the gap at launch,
+before the subscription check returned, so every subscriber looked free and a
+"went out" was saved that the later re-run could not undo. Now a gap that
+relights fully covered continues the count, and a gap is never put out until
+the entitlement is actually known. Re-evaluating the same gap also no longer
+appends the same relit date on every refresh.
+
+### Fixed — opening the paywall or camera from the timer restarted it
+
+A `.fullScreenCover` fires the presenter's `onDisappear`/`onAppear`, which
+stopped the session and started a new one, bell and all. The session now
+starts once, and is only stopped when the timer screen really closes.
+
+### Fixed — smaller things
+
+- **Brightness:** the dim level survives locking the phone mid-session.
+  Swipe-to-dim no longer goes dead afterwards.
+- **Library photos:** a pick (HEIC, iCloud) is no longer dropped when it
+  loads after the picker closes.
+- **Camera:** the session stops while a photo is being framed, and restarts
+  on retake.
+- **Restore:** a failed restore shows the real error, not "No purchases
+  found".
+- **Notifications:** the reminder switches turn off if notifications were
+  disabled for Verg in iOS Settings.
+- **Guide replay:** replaying the guide keeps the saved weekly pace instead
+  of resetting it to 5.
+- **"N days this year":** counts only this year.
+- **Books:** deleting a page from a book keeps the book's colour and note.
+- **Camera permission:** with access denied, the viewfinder says so and
+  offers Open Settings, instead of a spinner that never finished.
+- **Smoother scrolling:** the fullscreen viewer frames each page once on
+  load instead of on every drag frame, and the Archive heatmap builds its
+  year grid once per render instead of once per cell.
+
+### Fixed — the start bell played a system chime instead of Verg's
+
+`bell_start.mp3` was never added to the target. The code now asks for the
+bundled copy of the same audio (`27421__kerri__zenbell_1.mp3`).
+
 ## [Unreleased] — build 19 (Library redesign, book customization, tab bar)
 
 ### Changed — the page format is 3:4, and photos are no longer cropped on save

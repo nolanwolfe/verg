@@ -103,6 +103,9 @@ final class StorageService: ObservableObject {
         let wantsOnboarding = args.contains("-VergOnboarding")
         settings.hasSeenOnboarding = !wantsOnboarding
         settings.hasSeenSetTimerNotice = !wantsOnboarding
+        // The reminder offer would appear over whatever a test does after
+        // saving a page; tests that want it can clear this themselves.
+        settings.hasBeenOfferedReminder = true
         // Reset the display choices too, or a run inherits whatever the last
         // one picked and test order starts to matter.
         settings.calendarStyle = .heatmap
@@ -126,7 +129,9 @@ final class StorageService: ObservableObject {
         // premium — and the tests that notice are the paywall ones, which
         // fail looking exactly like a bypass.
         MainActor.assumeIsolated {
-            if args.contains("-VergScreenshots") {
+            // `-VergPremium`: a test that exercises a Golden Age feature
+            // (the Oracle) as a subscriber would.
+            if args.contains("-VergScreenshots") || args.contains("-VergPremium") {
                 PurchaseService.shared.grantAccessForScreenshots()
             } else {
                 PurchaseService.shared.resetGrantedAccessForUITesting()
@@ -494,6 +499,10 @@ final class StorageService: ObservableObject {
             books[bookIndex] = Book(
                 id: book.id,
                 title: book.title,
+                // Carried over explicitly: left out, both fell back to the
+                // init defaults and the book lost its cover colour and note.
+                colorIndex: book.colorIndex,
+                note: book.note,
                 startDate: book.startDate,
                 endDate: book.endDate,
                 sessionIDs: book.sessionIDs.filter { $0 != id },
@@ -852,6 +861,11 @@ final class StorageService: ObservableObject {
 
     func setAppearance(_ mode: AppearanceMode) {
         settings.appearance = mode
+        saveSettings()
+    }
+
+    func setHasBeenOfferedReminder(_ offered: Bool) {
+        settings.hasBeenOfferedReminder = offered
         saveSettings()
     }
 

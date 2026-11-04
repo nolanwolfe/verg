@@ -71,7 +71,7 @@ struct UserStats: Codable, Equatable {
 
         // Only update the candle once per day
         if !hasWrittenToday {
-            if wroteYesterday || lastSessionDate == nil {
+            if wroteYesterday || lastSessionDate == nil || gapSinceLastSessionIsRelit() {
                 // Continue the candle or light a new one
                 daysLit += 1
             } else {
@@ -86,6 +86,27 @@ struct UserStats: Codable, Equatable {
         }
 
         lastSessionDate = Date()
+    }
+
+    /// Whether every day between the last session and today was bridged by
+    /// a relight.
+    ///
+    /// Without this a relight only lasted until the next page: the relight
+    /// kept the count on screen, but writing the day after it fell through
+    /// to "candle went out" because the last *written* day was two days ago,
+    /// and the count dropped to 1. The relit day itself still does not add
+    /// to the count; it only lets the next written day continue it.
+    func gapSinceLastSessionIsRelit(today: Date = Date(), calendar: Calendar = .current) -> Bool {
+        guard let lastSessionDate else { return false }
+        let todayDay = calendar.startOfDay(for: today)
+        guard var cursor = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: lastSessionDate)),
+              cursor < todayDay else { return false }
+        while cursor < todayDay {
+            guard CandleRelight.isRelit(cursor, relitDates: relitDates, calendar: calendar) else { return false }
+            guard let next = calendar.date(byAdding: .day, value: 1, to: cursor) else { return false }
+            cursor = next
+        }
+        return true
     }
 
     /// Formatted "days lit" text

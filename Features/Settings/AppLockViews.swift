@@ -88,11 +88,22 @@ struct AppLockScreen: View {
                     .frame(maxWidth: lock.codeStyle == .fourDigit ? 180 : .infinity)
                     .offset(x: shake)
 
-                    if failed {
-                        Text("Wrong code.")
-                            .font(Theme.Typography.footnote)
-                            .foregroundColor(.red)
-                            .transition(.opacity)
+                    // Ticks once a second so the wait counts down and the
+                    // message clears itself when entry reopens.
+                    TimelineView(.periodic(from: .now, by: 1)) { context in
+                        if let remaining = lock.lockoutRemaining(at: context.date) {
+                            Text(AppLockLockoutText.message(remaining: remaining,
+                                                            biometryLabel: lock.biometryLabel))
+                                .font(Theme.Typography.footnote)
+                                .foregroundColor(.red)
+                                .multilineTextAlignment(.center)
+                                .accessibilityIdentifier("applock.lockoutMessage")
+                        } else if failed {
+                            Text("Wrong code.")
+                                .font(Theme.Typography.footnote)
+                                .foregroundColor(.red)
+                                .transition(.opacity)
+                        }
                     }
                 }
                 .padding(.horizontal, Theme.Spacing.xl)
@@ -114,6 +125,9 @@ struct AppLockScreen: View {
             }
         }
         .task {
+            // Pick up a lockout left over from before a relaunch, and settle
+            // a fail-closed launch if the Keychain can answer now.
+            lock.resyncWithKeychain()
             guard !biometricsAttempted else { return }
             biometricsAttempted = true
             await runBiometrics()
@@ -331,8 +345,26 @@ struct AppLockConfirmSheet: View {
             lock.disable()
             onFinish(true)
         } else {
-            error = "Wrong code."
+            if let remaining = lock.lockoutRemaining() {
+                error = AppLockLockoutText.message(remaining: remaining, biometryLabel: nil)
+            } else {
+                error = "Wrong code."
+            }
             code = ""
         }
+    }
+}
+
+// MARK: - Lockout Copy
+
+/// The wording for a wrong-code lockout, shared by the lock screen and the
+/// confirm sheet.
+enum AppLockLockoutText {
+    static func message(remaining: TimeInterval, biometryLabel: String?) -> String {
+        let total = max(1, Int(remaining.rounded(.up)))
+        let wait = String(format: "%d:%02d", total / 60, total % 60)
+        let base = "Too many wrong codes. Try again in \(wait)."
+        guard let biometryLabel else { return base }
+        return base + " \(biometryLabel) still works."
     }
 }

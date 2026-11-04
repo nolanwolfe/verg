@@ -10,6 +10,9 @@ final class CameraViewModel: NSObject, ObservableObject {
     @Published var capturedImage: UIImage?
     @Published var isShowingPreview: Bool = false
     @Published var isCameraReady: Bool = false
+    /// Camera permission refused. The viewfinder shows a way to Settings
+    /// instead of a spinner that would never finish.
+    @Published var cameraAccessDenied: Bool = false
     @Published var errorMessage: String?
     @Published var showError: Bool = false
     @Published var isSaving: Bool = false
@@ -72,14 +75,12 @@ final class CameraViewModel: NSObject, ObservableObject {
                     }
                 } else {
                     DispatchQueue.main.async {
-                        self?.errorMessage = "Camera access is required to capture your journal page."
-                        self?.showError = true
+                        self?.cameraAccessDenied = true
                     }
                 }
             }
         case .denied, .restricted:
-            errorMessage = "Camera access is required. Please enable it in Settings."
-            showError = true
+            cameraAccessDenied = true
         @unknown default:
             break
         }
@@ -378,6 +379,23 @@ final class CameraViewModel: NSObject, ObservableObject {
         capturedImage = nil
         previewCrop = nil
         isShowingPreview = false
+        // Back to the viewfinder: resume what `pauseCameraForPreview` stopped.
+        // Only a session that was built — an unconfigured one has nothing to
+        // run, and starting it would just mark the camera ready.
+        sessionQueue.async { [weak self] in
+            guard let self, !self.session.inputs.isEmpty else { return }
+            self.startRunningIfNeeded()
+        }
+    }
+
+    /// Stop the capture session while a photo is being framed. The preview
+    /// view is off screen then, but the session kept running — camera
+    /// indicator lit and battery spent — until the whole screen closed.
+    func pauseCameraForPreview() {
+        sessionQueue.async { [weak self] in
+            guard let self, self.session.isRunning else { return }
+            self.session.stopRunning()
+        }
     }
 
     func usePhoto() {

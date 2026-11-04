@@ -66,7 +66,12 @@ final class PaywallViewModel: ObservableObject {
     /// specific locked page. A date formats to "March 14th is still here."
     /// — naming the exact thing the person reached for and confirming
     /// it's safe. Nil falls back to the generic subtitle.
-    var contextSubtitleDate: Date?
+    ///
+    /// Published: it is assigned in the view's `onAppear`, after the first
+    /// render, so a plain property only showed up if something else happened
+    /// to redraw the paywall. CI caught it as a test that passed on one
+    /// simulator and failed on another.
+    @Published var contextSubtitleDate: Date?
 
     var subtitleText: String {
         if let date = contextSubtitleDate {
@@ -223,7 +228,10 @@ final class PaywallViewModel: ObservableObject {
             if success {
                 onSubscribed?()
             } else {
-                errorMessage = "No purchases found to restore."
+                // A thrown restore (offline, store error) also returns false;
+                // telling a paying subscriber they have nothing to restore
+                // when the request never got through is wrong.
+                errorMessage = purchaseService.errorMessage ?? "No purchases found to restore."
                 showError = true
             }
         }

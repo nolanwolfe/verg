@@ -224,4 +224,48 @@ final class CandleRelightTests: XCTestCase {
         XCTAssertFalse(result.candleWentOut)
         XCTAssertEqual(result.daysLit, 5)
     }
+
+    // MARK: - Writing after a relight
+
+    /// The relit day must let the next written day continue the count.
+    /// Before, recordSession saw "last written two days ago" and reset to 1.
+    func testGapSinceLastSession_AllRelit_ContinuesCount() {
+        let stats = UserStats(
+            daysLit: 5, longestDaysLit: 5, totalSessions: 5,
+            lastSessionDate: date(2026, 1, 10),
+            relitDates: [date(2026, 1, 11, hour: 0)]
+        )
+        XCTAssertTrue(stats.gapSinceLastSessionIsRelit(today: date(2026, 1, 12), calendar: utc))
+    }
+
+    func testGapSinceLastSession_UnrelitDayInGap_DoesNotContinue() {
+        let stats = UserStats(
+            daysLit: 5, lastSessionDate: date(2026, 1, 10),
+            relitDates: [date(2026, 1, 11, hour: 0)]
+        )
+        // The 12th was neither written nor relit.
+        XCTAssertFalse(stats.gapSinceLastSessionIsRelit(today: date(2026, 1, 13), calendar: utc))
+    }
+
+    func testGapSinceLastSession_NoGap_IsFalse() {
+        let stats = UserStats(daysLit: 5, lastSessionDate: date(2026, 1, 11), relitDates: [])
+        XCTAssertFalse(stats.gapSinceLastSessionIsRelit(today: date(2026, 1, 12), calendar: utc),
+                       "Wrote yesterday is handled by wroteYesterday, not as a relit gap")
+    }
+
+    /// Re-evaluating the same gap (every Home appear, every launch) must not
+    /// append the same relit day again.
+    func testReevaluatingSameGap_DoesNotDuplicateRelitDate() {
+        let first = CandleRelight.evaluate(
+            lastSessionDate: date(2026, 1, 10), daysLit: 5, relitDates: [],
+            isPremium: true, today: date(2026, 1, 12), calendar: utc
+        )
+        let second = CandleRelight.evaluate(
+            lastSessionDate: date(2026, 1, 10), daysLit: first.daysLit, relitDates: first.relitDates,
+            isPremium: true, today: date(2026, 1, 12), calendar: utc
+        )
+        XCTAssertEqual(second.relitDates.count, 1)
+        XCTAssertEqual(second.daysLit, 5)
+        XCTAssertFalse(second.candleWentOut)
+    }
 }

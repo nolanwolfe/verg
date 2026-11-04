@@ -43,10 +43,14 @@ final class VergUIFlowTests: XCTestCase {
         seeded: Bool = false,
         onboarding: Bool = false,
         large: Bool = false,
-        textSize: String? = nil
+        textSize: String? = nil,
+        premium: Bool = false
     ) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-VergUITest", "-VergAppearance", appearance]
+        // The Oracle is a Golden Age feature; tests of how it behaves run
+        // as a subscriber. DEBUG-only flag, see StorageService.
+        if premium { app.launchArguments.append("-VergPremium") }
         if seeded { app.launchArguments.append("-VergSeedData") }
         if onboarding { app.launchArguments.append("-VergOnboarding") }
         if large { app.launchArguments.append("-VergSeedLarge") }
@@ -55,6 +59,17 @@ final class VergUIFlowTests: XCTestCase {
         }
         app.launch()
         return app
+    }
+
+    /// Tap a navigation-bar button inside a sheet at its centre.
+    ///
+    /// `tap()` first asks accessibility to scroll the element into view, and
+    /// for toolbar buttons in a sheet that request fails with
+    /// kAXErrorCannotComplete on CI simulators, although the button is on
+    /// screen and tappable. A coordinate tap skips that step and still
+    /// fails the test if nothing is there to respond.
+    private func tapToolbarButton(_ element: XCUIElement) {
+        element.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
     }
 
     private func shoot(_ app: XCUIApplication, _ name: String) {
@@ -204,7 +219,7 @@ final class VergUIFlowTests: XCTestCase {
     /// Write a script, then change it. Editing did not exist at all until
     /// 2.2, so this covers the path end to end.
     func testWriteThenEditAScript() {
-        let app = launch(appearance: "light")
+        let app = launch(appearance: "light", premium: true)
         open(app, tab: "settings")
 
         let oracle = app.buttons["settings.The Oracle"]
@@ -213,7 +228,7 @@ final class VergUIFlowTests: XCTestCase {
 
         // New script
         let add = app.buttons["Add"].exists ? app.buttons["Add"] : app.buttons.matching(identifier: "plus").firstMatch
-        if add.waitForExistence(timeout: 3) { add.tap() }
+        if add.waitForExistence(timeout: 3) { tapToolbarButton(add) }
         let newScript = app.buttons["New question"]
         if newScript.waitForExistence(timeout: 3) { newScript.tap() }
 
@@ -249,13 +264,13 @@ final class VergUIFlowTests: XCTestCase {
     /// open it for editing. The whole row was one button that opened the
     /// editor, so selecting a script you had written was impossible.
     func testPickingYourOwnScriptSelectsItRatherThanEditingIt() {
-        let app = launch(appearance: "light")
+        let app = launch(appearance: "light", premium: true)
 
         // Write one first — the built-ins are not listed here.
         open(app, tab: "settings")
         app.buttons["settings.The Oracle"].tap()
         let add = app.buttons["Add"].exists ? app.buttons["Add"] : app.buttons.matching(identifier: "plus").firstMatch
-        if add.waitForExistence(timeout: 3) { add.tap() }
+        if add.waitForExistence(timeout: 3) { tapToolbarButton(add) }
         if app.buttons["New question"].waitForExistence(timeout: 3) { app.buttons["New question"].tap() }
         let field = app.textFields.firstMatch
         guard field.waitForExistence(timeout: 5) else { return XCTFail("No script editor") }
@@ -289,10 +304,43 @@ final class VergUIFlowTests: XCTestCase {
                       "A question of your own did not register as Your question")
     }
 
+    // MARK: - Launch
+
+    /// The app opens on the journal, not the Write tab.
+    func testLaunchOpensOnYourJournal() {
+        let app = launch(appearance: "light", seeded: true)
+        XCTAssertTrue(app.staticTexts["Your Journal"].waitForExistence(timeout: 10),
+                      "The app did not open on Your Journal")
+        shoot(app, "launch-journal")
+    }
+
     // MARK: - The Oracle sheet
 
-    func testOracleSheetOpensFromWrite() {
+    /// The Oracle is included with The Golden Age: a free writer tapping
+    /// the pill is shown the offer, not the sheet.
+    func testOracleIsGoldenAgeForFreeWriters() {
         let app = launch(appearance: "light")
+        open(app, tab: "write")
+
+        let pill = app.buttons["write.scriptPill"]
+        XCTAssertTrue(pill.waitForExistence(timeout: 5), "Write has no script pill")
+        pill.tap()
+        settle()
+
+        // Found by its button, as the locked-page test does: the paywall's
+        // heading is a sentence, not the bare phrase.
+        let cta = app.buttons.matching(
+            NSPredicate(format: "label BEGINSWITH 'Enter The Golden Age'")
+        ).firstMatch
+        XCTAssertTrue(cta.waitForExistence(timeout: 5),
+                      "A free writer was not shown The Golden Age")
+        XCTAssertFalse(app.navigationBars["The Oracle"].exists,
+                       "The Oracle opened for a free writer")
+        shoot(app, "oracle-paywall")
+    }
+
+    func testOracleSheetOpensFromWrite() {
+        let app = launch(appearance: "light", premium: true)
         XCTAssertTrue(tab(app, "write").waitForExistence(timeout: 10))
         open(app, tab: "write")
 
@@ -538,7 +586,7 @@ final class VergUIFlowTests: XCTestCase {
             ? app.buttons["ellipsis.circle"]
             : app.navigationBars.buttons.firstMatch
         XCTAssertTrue(menu.waitForExistence(timeout: 5), "Book detail has no overflow menu")
-        menu.tap()
+        tapToolbarButton(menu)
         settle(0.6)
 
         let rename = app.buttons["Rename & Color"]
@@ -717,7 +765,7 @@ final class VergUIFlowTests: XCTestCase {
     /// session's script, so backing out of the sheet still changed it and
     /// there was no moment where you committed — the bug this guards.
     func testDrawingWithoutConfirmingDoesNotChangeTheScript() {
-        let app = launch(appearance: "light")
+        let app = launch(appearance: "light", premium: true)
         open(app, tab: "write")
 
         let pill = app.buttons["write.scriptPill"]
@@ -740,7 +788,7 @@ final class VergUIFlowTests: XCTestCase {
 
     /// …and Select Guidance is what commits it.
     func testSelectGuidanceCommitsTheDrawnScript() {
-        let app = launch(appearance: "light")
+        let app = launch(appearance: "light", premium: true)
         open(app, tab: "write")
 
         app.buttons["write.scriptPill"].tap()
@@ -771,7 +819,7 @@ final class VergUIFlowTests: XCTestCase {
     /// the saved page as metadata and never rendered, so the one moment it
     /// exists for was the one moment you couldn't see it.
     func testTheScriptIsShownOnTheTimer() {
-        let app = launch(appearance: "light")
+        let app = launch(appearance: "light", premium: true)
         open(app, tab: "write")
 
         app.buttons["write.scriptPill"].tap()

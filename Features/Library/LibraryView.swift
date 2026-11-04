@@ -186,8 +186,13 @@ struct LibraryView: View {
     }
 
     private var heatmapSummary: String {
-        let days = viewModel.sessionCountsByDate.count
-        guard days > 0 else { return "No pages yet" }
+        // `sessionCountsByDate` spans every year; the label says this one.
+        let calendar = Calendar.current
+        let year = calendar.component(.year, from: Date())
+        let days = viewModel.sessionCountsByDate.keys
+            .filter { calendar.component(.year, from: $0) == year }
+            .count
+        guard !viewModel.sessionCountsByDate.isEmpty else { return "No pages yet" }
         return "\(days) \(days == 1 ? "day" : "days") this year"
     }
 
@@ -523,6 +528,10 @@ struct ContributionHeatmap: View {
     }
 
     var body: some View {
+        // Built once per render. `weeks` is computed (53 columns of calendar
+        // maths), and reading the property inside the nested ForEach rebuilt
+        // the whole year for every one of the ~371 cells.
+        let weeks = self.weeks
         HStack(alignment: .top, spacing: 6) {
             weekdayGutter
                 .padding(.top, Self.monthLabelHeight + Self.rowSpacing)

@@ -48,11 +48,22 @@ struct CameraView: View {
         }
         .sheet(isPresented: $viewModel.showPhotoPicker) {
             PhotoPicker(selectedImage: $viewModel.capturedImage)
-                .onDisappear {
-                    if viewModel.capturedImage != nil {
-                        viewModel.isShowingPreview = true
-                    }
-                }
+        }
+        // The preview opens when an image *arrives*, not when the picker
+        // closes. A library photo (HEIC, or one still in iCloud) usually
+        // finishes loading after the sheet is gone, so checking on dismiss
+        // found nothing and the pick was silently lost.
+        .onChange(of: viewModel.capturedImage) { _, image in
+            guard image != nil else { return }
+            if !viewModel.isShowingPreview {
+                viewModel.previewCrop = nil
+                viewModel.isShowingPreview = true
+            }
+            // Nothing is in the viewfinder while framing, so stop the
+            // camera (and the green indicator) until a retake.
+            #if !targetEnvironment(simulator)
+            viewModel.pauseCameraForPreview()
+            #endif
         }
         .onAppear {
             viewModel.sessionDuration = duration
@@ -181,7 +192,26 @@ struct CameraView: View {
                 .clipShape(RoundedRectangle(cornerRadius: Theme.CornerRadius.medium, style: .continuous))
                 .padding(.horizontal, Theme.Spacing.xxs)
 
-                if !viewModel.isCameraReady {
+                if viewModel.cameraAccessDenied {
+                    VStack(spacing: Theme.Spacing.sm) {
+                        Text("Camera access is off.")
+                            .font(Theme.Typography.body)
+                            .foregroundColor(Theme.Colors.primaryText)
+                        Text("Turn it on in Settings, or choose a photo from your library.")
+                            .font(Theme.Typography.footnote)
+                            .foregroundColor(Theme.Colors.secondaryText)
+                            .multilineTextAlignment(.center)
+                        Button("Open Settings") {
+                            if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
+                        }
+                        .font(Theme.Typography.body)
+                        .foregroundColor(Theme.Colors.accent)
+                        .padding(.top, Theme.Spacing.xxs)
+                    }
+                    .padding(Theme.Spacing.lg)
+                } else if !viewModel.isCameraReady {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: Theme.Colors.primaryText))
                 }
@@ -410,7 +440,11 @@ struct PhotoPicker: UIViewControllerRepresentable {
                 return
             }
 
-            provider.loadObject(ofClass: UIImage.self) { [weak self] image, error in
+            // Held strongly, not through `[weak self]`: the sheet is already
+            // dismissed, SwiftUI releases this coordinator with it, and a weak
+            // capture meant a slow load wrote its result to nothing.
+            let selection = parent.$selectedImage
+            provider.loadObject(ofClass: UIImage.self) { image, error in
                 guard let picked = image as? UIImage else { return }
                 // Library photos arrive in whatever shape they were shot or
                 // Kept whole, like a capture. A picked photo and a captured
@@ -419,7 +453,7 @@ struct PhotoPicker: UIViewControllerRepresentable {
                 // either of them losing what falls outside the frame.
                 let page = picked
                 DispatchQueue.main.async {
-                    self?.parent.selectedImage = page
+                    selection.wrappedValue = page
                 }
             }
         }

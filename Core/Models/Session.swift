@@ -95,3 +95,55 @@ struct Session: Identifiable, Codable, Equatable {
         return formatter.string(from: createdAt)
     }
 }
+
+// MARK: - On this day
+
+/// A page from the same calendar day a year or a month ago, for the card at
+/// the top of the journal. Rereading your own handwriting is the payoff of
+/// keeping a paper journal; the app had every page and never offered one
+/// back.
+enum OnThisDay {
+    struct Match: Equatable {
+        let session: Session
+        /// "One year ago today", "Two years ago today", "A month ago today".
+        let label: String
+    }
+
+    /// The oldest anniversary wins: a page from years ago is a better find
+    /// than last month's. Years are checked back to the earliest page; the
+    /// month is a fallback so a journal younger than a year still gets one.
+    /// Several pages on the matching day: the first written that day.
+    static func find(in sessions: [Session], today: Date = Date(), calendar: Calendar = .current) -> Match? {
+        guard let earliest = sessions.map(\.date).min() else { return nil }
+        let maxYears = max(0, calendar.dateComponents([.year], from: earliest, to: today).year ?? 0)
+
+        func firstPage(on day: Date) -> Session? {
+            sessions
+                .filter { calendar.isDate($0.date, inSameDayAs: day) }
+                .min { $0.date < $1.date }
+        }
+
+        if maxYears >= 1 {
+            for years in stride(from: maxYears, through: 1, by: -1) {
+                guard let day = calendar.date(byAdding: .year, value: -years, to: today),
+                      // Feb 29 maps to Feb 28 in other years; only an exact
+                      // same-day match counts, so that one is skipped.
+                      calendar.component(.day, from: day) == calendar.component(.day, from: today),
+                      let page = firstPage(on: day) else { continue }
+                return Match(session: page, label: yearsLabel(years))
+            }
+        }
+
+        if let day = calendar.date(byAdding: .month, value: -1, to: today),
+           calendar.component(.day, from: day) == calendar.component(.day, from: today),
+           let page = firstPage(on: day) {
+            return Match(session: page, label: "A month ago today")
+        }
+        return nil
+    }
+
+    private static func yearsLabel(_ years: Int) -> String {
+        let words = [1: "One", 2: "Two", 3: "Three", 4: "Four", 5: "Five"]
+        return "\(words[years] ?? "\(years)") \(years == 1 ? "year" : "years") ago today"
+    }
+}

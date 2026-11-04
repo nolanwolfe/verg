@@ -175,6 +175,24 @@ final class SettingsViewModel: ObservableObject {
         // sink and re-open the set-up sheet every time the tab came back.
         let locked = MainActor.assumeIsolated { AppLockService.shared.isEnabled }
         MainActor.assumeIsolated { reconcileAppLockSwitch(to: locked) }
+
+        syncNotificationTogglesWithSystemPermission()
+    }
+
+    /// Turn the reminder switches off if notifications were switched off for
+    /// Verg in iOS Settings. The switches mirror the saved preference, which
+    /// nothing else ever checked against the real permission, so they could
+    /// show a daily reminder that iOS would never deliver. Assigning `false`
+    /// goes through the usual sinks, which cancel and save.
+    private func syncNotificationTogglesWithSystemPermission() {
+        UNUserNotificationCenter.current().getNotificationSettings { [weak self] settings in
+            guard settings.authorizationStatus == .denied else { return }
+            DispatchQueue.main.async {
+                guard let self else { return }
+                if self.notificationsEnabled { self.notificationsEnabled = false }
+                if self.weeklySummaryNotificationsEnabled { self.weeklySummaryNotificationsEnabled = false }
+            }
+        }
     }
 
     private func setupBindings() {
@@ -213,7 +231,9 @@ final class SettingsViewModel: ObservableObject {
             .sink { [weak self] time in
                 self?.storageService.setNotificationTime(time)
                 if self?.notificationsEnabled == true {
-                    self?.scheduleNotification()
+                    // Pass the new value: `@Published` emits in willSet, so
+                    // `notificationTime` still holds the *old* time here.
+                    self?.scheduleNotification(at: time)
                 }
             }
             .store(in: &cancellables)
@@ -221,6 +241,12 @@ final class SettingsViewModel: ObservableObject {
         $ambientSoundEnabled
             .dropFirst()
             .sink { [weak self] enabled in
+                // The mirror of the Sound sink above: ambience on brings
+                // Sound back on (through its own sink, which saves it and
+                // tells AudioService), so the two rows never disagree.
+                if enabled, self?.soundEnabled == false {
+                    self?.soundEnabled = true
+                }
                 self?.storageService.setAmbientSoundEnabled(enabled)
             }
             .store(in: &cancellables)
@@ -349,7 +375,16 @@ final class SettingsViewModel: ObservableObject {
     private static let dailyReminderID = "verg.daily.reminder"
     private static let weeklySummaryID = "verg.weekly.summary"
 
-    private func scheduleNotification() {
+    /// - Parameter time: the reminder time to use. Callers inside a
+    ///   `$notificationTime` sink must pass the emitted value, because the
+    ///   property has not been updated yet when the sink runs.
+    private func scheduleNotification(at time: Date? = nil) {
+        Self.scheduleDailyReminder(at: time ?? notificationTime, sessionLength: timerDuration)
+    }
+
+    /// The one place the daily reminder is built, shared by Settings and the
+    /// "Same time tomorrow" offer after a saved page.
+    static func scheduleDailyReminder(at time: Date, sessionLength timerDuration: TimeInterval) {
         let center = UNUserNotificationCenter.current()
 
         // Remove only this notification's prior schedule — the weekly
@@ -365,7 +400,7 @@ final class SettingsViewModel: ObservableObject {
         content.sound = .default
 
         // Create trigger for daily notification
-        let dateComponents = Calendar.current.dateComponents([.hour, .minute], from: notificationTime)
+        let dateComponents = Calendar.current.dateComponents([.hour, .minute], from: time)
         let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
 
         // Create request
@@ -436,10 +471,16 @@ final class SettingsViewModel: ObservableObject {
     func redeemAccessCode() {
         let code = redeemCodeText
         Task { @MainActor in
-            let success = purchaseService.redeemAccessCode(code)
-            redeemResultMessage = success
-                ? "Access granted. Unlimited access to Verg."
-                : "Invalid code. Check it and try again."
+            switch purchaseService.redeem(code: code) {
+            case .friendsAndFamily:
+                redeemResultMessage = "Access granted. Unlimited access to Verg."
+            case .promo(let until):
+                redeemResultMessage = "The Golden Age is yours until \(until.formatted(.dateTime.month(.wide).day()))."
+            case .alreadyRedeemed:
+                redeemResultMessage = "This code has already been used on this phone."
+            case .invalid:
+                redeemResultMessage = "Invalid code. Check it and try again."
+            }
             redeemCodeText = ""
             showRedeemSheet = false
             showRedeemResult = true
@@ -451,9 +492,10 @@ final class SettingsViewModel: ObservableObject {
         Task {
             let success = await purchaseService.restorePurchases()
             await MainActor.run {
+                // A failed request is not the same as nothing to restore.
                 restoreMessage = success
                     ? "Purchases restored."
-                    : "No purchases found to restore."
+                    : (purchaseService.errorMessage ?? "No purchases found to restore.")
                 showRestoreAlert = true
             }
         }

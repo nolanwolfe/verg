@@ -33,7 +33,8 @@ final class SessionGatingService {
 
     /// Whether the user is a premium (The Golden Age) subscriber or has friends & family access
     var isPremium: Bool {
-        purchaseService.isSubscribed || purchaseService.isFriendsAndFamily
+        // Paid, friends & family, or a running promo code.
+        purchaseService.hasPremiumAccess
     }
 
     /// Writing itself is always free and unlimited — nothing gates

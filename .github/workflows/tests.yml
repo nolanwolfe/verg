@@ -1,0 +1,104 @@
+name: Tests
+
+# Builds Verg and runs its tests on every pull request and every push to
+# main. Unit tests gate; UI tests run alongside as their own job so a slow
+# or flaky simulator run never hides a real unit-test result.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+# Simulator builds are signed ad hoc ("-"): no certificate or account, but
+# the app gets an identity, which the Keychain needs. Unsigned
+# (CODE_SIGNING_ALLOWED=NO) builds cannot write to it, so the app-lock and
+# promo-code paths silently fail in CI and their tests fail for the wrong
+# reason.
+jobs:
+  unit:
+    name: Build + unit tests
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Xcode version
+        run: xcodebuild -version
+
+      - name: Pick a simulator
+        id: sim
+        run: echo "udid=$(python3 .github/scripts/pick_simulator.py)" >> "$GITHUB_OUTPUT"
+
+      - name: Build and run unit tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project Verg.xcodeproj \
+            -scheme Verg \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -only-testing:VergTests \
+            -resultBundlePath build/unit.xcresult \
+            CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= \
+            | tee build-unit.log | grep -E "error:|warning: unre|Test Case .* (passed|failed)|Executed|\*\* TEST" || true
+          # tee + grep keeps the log readable; the real exit status:
+          grep -q "\*\* TEST SUCCEEDED \*\*" build-unit.log
+
+      - name: Show failures
+        if: failure()
+        run: grep -nE "error:|failed|FAILED" build-unit.log | head -100 || true
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-results
+          path: |
+            build/unit.xcresult
+            build-unit.log
+          retention-days: 7
+
+  ui:
+    name: UI tests
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pick a simulator
+        id: sim
+        run: echo "udid=$(python3 .github/scripts/pick_simulator.py)" >> "$GITHUB_OUTPUT"
+
+      - name: Run UI tests
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project Verg.xcodeproj \
+            -scheme Verg \
+            -destination "id=${{ steps.sim.outputs.udid }}" \
+            -only-testing:VergUITests \
+            -skip-testing:VergUITests/StoreScreenshots \
+            -resultBundlePath build/ui.xcresult \
+            CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= \
+            | tee build-ui.log | grep -E "error:|Test Case .* (passed|failed)|Executed|\*\* TEST" || true
+          grep -q "\*\* TEST SUCCEEDED \*\*" build-ui.log
+
+      - name: Show failures
+        if: failure()
+        run: grep -nE "error:|failed|FAILED" build-ui.log | head -150 || true
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-results
+          path: |
+            build/ui.xcresult
+            build-ui.log
+          retention-days: 7

@@ -35,6 +35,28 @@ final class PurchaseService: ObservableObject {
         "1412ec2a2095625422924112a03018cb6a87ccf30efaef71864dbd6e675dfb71"   // launch campaign
     ]
 
+    /// Promo codes: public on purpose, and time-limited for that reason.
+    /// Each grants The Golden Age for a number of days, once per phone.
+    ///
+    /// `ONTHEVERG` is printed on verg.app/ontheverg for creators to share.
+    /// It was a lifetime friends-and-family code until 2.2, which is exactly
+    /// why it was rotated out when it leaked; as a 30-day promo, being public
+    /// is the point. Digest of `accessCodeSalt + code`, same as above.
+    static let promoCodeDays: [String: Int] = [
+        "76372bcbb50bceb5d75a3b44c505427cf1a64fd4f027e399a3d34c4b3405d736": 30   // ONTHEVERG
+    ]
+
+    /// What a typed code turned out to be.
+    enum AccessCodeResult: Equatable {
+        /// Lifetime friends & family access.
+        case friendsAndFamily
+        /// The Golden Age until this date.
+        case promo(until: Date)
+        /// A real promo code this phone has already redeemed.
+        case alreadyRedeemed
+        case invalid
+    }
+
     /// Hex SHA-256 of the salted code, matching how the digests above were
     /// generated.
     private static func accessCodeDigest(_ normalized: String) -> String {
@@ -47,6 +69,28 @@ final class PurchaseService: ObservableObject {
     // MARK: - Published Properties
     @MainActor @Published private(set) var isSubscribed: Bool = false
     @MainActor @Published private(set) var isFriendsAndFamily: Bool = false
+    /// Whether `isSubscribed` reflects a real answer from RevenueCat /
+    /// StoreKit yet. False from launch until the first successful
+    /// `checkSubscriptionStatus()`; until then `isSubscribed` is only its
+    /// default, and anything irreversible (putting a subscriber's candle out)
+    /// must wait.
+    @MainActor @Published private(set) var hasResolvedEntitlement: Bool = false
+    /// End of a redeemed promo (see `promoCodeDays`), if any — past or
+    /// future. Read from the Keychain at launch.
+    @MainActor @Published private(set) var promoAccessUntil: Date?
+
+    /// A promo is running right now.
+    @MainActor var hasPromoAccess: Bool {
+        guard let promoAccessUntil else { return false }
+        return promoAccessUntil > Date()
+    }
+
+    /// The one answer to "does this person have The Golden Age": paid,
+    /// friends & family, or inside a promo. Everything that gates should ask
+    /// this rather than combining the parts itself.
+    @MainActor var hasPremiumAccess: Bool {
+        isSubscribed || isFriendsAndFamily || hasPromoAccess
+    }
 
     /// Manually set subscription status (used by RevenueCat PaywallView callbacks)
     @MainActor
@@ -79,6 +123,8 @@ final class PurchaseService: ObservableObject {
     // MARK: - Private Properties
     private var products: [Product] = []
     private var updateListenerTask: Task<Void, Error>?
+    /// Follows RevenueCat's customer-info updates for the life of the app.
+    private var customerInfoTask: Task<Void, Never>?
     @MainActor @Published private(set) var currentOffering: Offering?
 
     var isUsingStoreKitTesting: Bool {
@@ -90,6 +136,7 @@ final class PurchaseService: ObservableObject {
 
     deinit {
         updateListenerTask?.cancel()
+        customerInfoTask?.cancel()
     }
 
     // MARK: - Configuration
@@ -98,6 +145,7 @@ final class PurchaseService: ObservableObject {
     func configure() {
         // Load persisted friends & family status
         isFriendsAndFamily = UserDefaults.standard.bool(forKey: friendsAndFamilyKey)
+        promoAccessUntil = Self.promoCodeDays.keys.compactMap(Self.loadPromoGrant).max()
 
         if !revenueCatAPIKey.isEmpty {
             // Configure RevenueCat for production
@@ -110,6 +158,7 @@ final class PurchaseService: ObservableObject {
             Purchases.logLevel = .error
             #endif
             Purchases.configure(withAPIKey: revenueCatAPIKey)
+            listenForCustomerInfo()
             // Deliberately no offerings fetch here: `fetchProducts()` below
             // already calls it whenever there is an API key. Doing both meant
             // two concurrent passes writing the same published price
@@ -124,6 +173,27 @@ final class PurchaseService: ObservableObject {
         Task {
             await fetchProducts()
             await checkSubscriptionStatus()
+        }
+    }
+
+    // MARK: - RevenueCat updates
+
+    /// Subscription state used to be read once at launch (and after a
+    /// purchase or restore in this process). A renewal, an expiry, a refund
+    /// or a purchase finished in the background only showed up on the next
+    /// cold start — so a lapsed subscriber kept The Golden Age until they
+    /// force-quit, and a renewed one could be shown the paywall. RevenueCat
+    /// publishes every change on this stream; following it keeps
+    /// `isSubscribed` current while the app is open.
+    @MainActor
+    private func listenForCustomerInfo() {
+        customerInfoTask?.cancel()
+        customerInfoTask = Task { @MainActor [weak self] in
+            for await info in Purchases.shared.customerInfoStream {
+                guard let self else { return }
+                self.isSubscribed = info.entitlements[Self.entitlementID]?.isActive == true
+                self.hasResolvedEntitlement = true
+            }
         }
     }
 
@@ -345,6 +415,7 @@ final class PurchaseService: ObservableObject {
                 print("[RC] CustomerInfo received. Active entitlements: \(customerInfo.entitlements.active.keys)")
                 #endif
                 isSubscribed = customerInfo.entitlements[Self.entitlementID]?.isActive == true
+                hasResolvedEntitlement = true
             } catch {
                 #if DEBUG
                 print("[RC][ERROR] customerInfo() failed: \(error)")
@@ -366,6 +437,7 @@ final class PurchaseService: ObservableObject {
                 }
             }
             isSubscribed = hasSubscription
+            hasResolvedEntitlement = true
         }
     }
 
@@ -448,15 +520,47 @@ final class PurchaseService: ObservableObject {
 
     // MARK: - Friends & Family / Access Code Redemption
 
-    /// Redeem an access code to grant friends-and-family unlimited access.
-    /// Returns true if the code is valid.
+    /// Redeem any access code. Returns true if it granted access (friends &
+    /// family or a promo). `redeem(code:)` says which.
     @MainActor
     @discardableResult
     func redeemAccessCode(_ code: String) -> Bool {
-        let normalized = code.uppercased().trimmingCharacters(in: .whitespacesAndNewlines)
-        guard Self.validAccessCodeDigests.contains(Self.accessCodeDigest(normalized)) else {
-            return false
+        switch redeem(code: code) {
+        case .friendsAndFamily, .promo: return true
+        case .alreadyRedeemed, .invalid: return false
         }
+    }
+
+    /// Redeem a typed code: a lifetime friends & family code, or a promo.
+    ///
+    /// A promo is granted once per phone. The grant lives in the Keychain
+    /// (this device only), which survives deleting the app, so reinstalling
+    /// does not reset the clock — otherwise a public code would be unlimited
+    /// access in 30-day instalments.
+    @MainActor
+    func redeem(code: String, now: Date = Date()) -> AccessCodeResult {
+        let normalized = code.uppercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        let digest = Self.accessCodeDigest(normalized)
+
+        if let days = Self.promoCodeDays[digest] {
+            if Self.loadPromoGrant(digest) != nil { return .alreadyRedeemed }
+            guard let until = Calendar.current.date(byAdding: .day, value: days, to: now) else {
+                return .invalid
+            }
+            Self.savePromoGrant(digest, until: until)
+            promoAccessUntil = max(promoAccessUntil ?? until, until)
+            return .promo(until: until)
+        }
+
+        guard Self.validAccessCodeDigests.contains(digest) else {
+            return .invalid
+        }
+        grantFriendsAndFamily()
+        return .friendsAndFamily
+    }
+
+    @MainActor
+    private func grantFriendsAndFamily() {
         isFriendsAndFamily = true
         UserDefaults.standard.set(true, forKey: friendsAndFamilyKey)
         #if DEBUG
@@ -464,7 +568,59 @@ final class PurchaseService: ObservableObject {
         // one screen-share away from being public again.
         print("[PurchaseService] Friends & Family access granted")
         #endif
-        return true
+    }
+
+    // MARK: - Promo grants (Keychain, with a defaults copy)
+    //
+    // The Keychain copy is the one that matters: it survives deleting the
+    // app, so reinstalling cannot restart a promo. The UserDefaults copy is
+    // the fallback for when the Keychain refuses a write — without it a real
+    // code was answered "Invalid code", which is the one thing a public
+    // promo code must never say.
+
+    private static let promoKeychainService = "app.verg.promo"
+
+    private static func promoQuery(_ digest: String) -> [String: Any] {
+        [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: promoKeychainService,
+            kSecAttrAccount as String: digest
+        ]
+    }
+
+    private static func promoDefaultsKey(_ digest: String) -> String {
+        "verg.promo.\(digest)"
+    }
+
+    /// When the promo for `digest` ends (or ended), if this phone redeemed it.
+    private static func loadPromoGrant(_ digest: String) -> Date? {
+        loadPromoGrantFromKeychain(digest) ?? {
+            let seconds = UserDefaults.standard.double(forKey: promoDefaultsKey(digest))
+            return seconds > 0 ? Date(timeIntervalSince1970: seconds) : nil
+        }()
+    }
+
+    private static func loadPromoGrantFromKeychain(_ digest: String) -> Date? {
+        var query = promoQuery(digest)
+        query[kSecReturnData as String] = true
+        query[kSecMatchLimit as String] = kSecMatchLimitOne
+        var item: CFTypeRef?
+        guard SecItemCopyMatching(query as CFDictionary, &item) == errSecSuccess,
+              let data = item as? Data,
+              let seconds = Double(String(decoding: data, as: UTF8.self)) else { return nil }
+        return Date(timeIntervalSince1970: seconds)
+    }
+
+    private static func savePromoGrant(_ digest: String, until: Date) {
+        UserDefaults.standard.set(until.timeIntervalSince1970, forKey: promoDefaultsKey(digest))
+        let base = promoQuery(digest)
+        SecItemDelete(base as CFDictionary)
+        var add = base
+        add[kSecValueData as String] = Data(String(until.timeIntervalSince1970).utf8)
+        // AfterFirstUnlock: read during launch. ThisDeviceOnly: one grant per
+        // phone, not carried to a new one by a backup.
+        add[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+        SecItemAdd(add as CFDictionary, nil)
     }
 
     #if DEBUG
@@ -480,6 +636,13 @@ final class PurchaseService: ObservableObject {
     func resetGrantedAccessForUITesting() {
         isFriendsAndFamily = false
         UserDefaults.standard.removeObject(forKey: friendsAndFamilyKey)
+        // Promo grants are in the Keychain, which outlives the app — same
+        // trap as above, one level deeper.
+        for digest in Self.promoCodeDays.keys {
+            SecItemDelete(Self.promoQuery(digest) as CFDictionary)
+            UserDefaults.standard.removeObject(forKey: Self.promoDefaultsKey(digest))
+        }
+        promoAccessUntil = nil
     }
 
     /// Grant access, for the App Store screenshot pass only.

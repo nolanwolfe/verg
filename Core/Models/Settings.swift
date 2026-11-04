@@ -83,6 +83,12 @@ struct AppSettings: Codable, Equatable {
     /// deleted and the count crosses seven again.
     var hasSeenSessionPaywall: Bool
 
+    /// Whether the "Same time tomorrow" reminder offer has been shown. It
+    /// appears once, after a saved page, to anyone without a reminder — the
+    /// daily reminder otherwise lives only in Settings, where most people
+    /// never turn it on.
+    var hasBeenOfferedReminder: Bool
+
     init(
         timerDuration: TimeInterval = AppSettings.defaultTimerDuration,
         soundEnabled: Bool = true,
@@ -98,7 +104,8 @@ struct AppSettings: Codable, Equatable {
         weeklyCommitmentDaysPerWeek: Int? = nil,
         calendarStyle: CalendarStyle = .heatmap,
         appearance: AppearanceMode = .light,
-        hasSeenSessionPaywall: Bool = false
+        hasSeenSessionPaywall: Bool = false,
+        hasBeenOfferedReminder: Bool = false
     ) {
         self.timerDuration = timerDuration
         self.soundEnabled = soundEnabled
@@ -115,6 +122,7 @@ struct AppSettings: Codable, Equatable {
         self.calendarStyle = calendarStyle
         self.appearance = appearance
         self.hasSeenSessionPaywall = hasSeenSessionPaywall
+        self.hasBeenOfferedReminder = hasBeenOfferedReminder
     }
 
     // MARK: - Codable (tolerant decoding)
@@ -137,6 +145,7 @@ struct AppSettings: Codable, Equatable {
         case calendarStyle
         case appearance
         case hasSeenSessionPaywall
+        case hasBeenOfferedReminder
     }
 
     init(from decoder: Decoder) throws {
@@ -156,6 +165,7 @@ struct AppSettings: Codable, Equatable {
         calendarStyle = try container.decodeIfPresent(CalendarStyle.self, forKey: .calendarStyle) ?? .heatmap
         appearance = try container.decodeIfPresent(AppearanceMode.self, forKey: .appearance) ?? .light
         hasSeenSessionPaywall = try container.decodeIfPresent(Bool.self, forKey: .hasSeenSessionPaywall) ?? false
+        hasBeenOfferedReminder = try container.decodeIfPresent(Bool.self, forKey: .hasBeenOfferedReminder) ?? false
     }
 
     /// The app's own pitch: a session is 10 minutes. Also what the

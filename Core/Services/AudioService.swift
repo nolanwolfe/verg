@@ -15,7 +15,10 @@ final class AudioService: ObservableObject {
 
     // MARK: - Sound Types
     enum Sound: String {
-        case bellStart = "bell_start"
+        // The bundled file's name. `bell_start.mp3` in Resources/Sounds is a
+        // byte-identical copy that was never added to the target, so asking
+        // for it always missed and fell back to system sound 1013.
+        case bellStart = "27421__kerri__zenbell_1"
         case bellEnd = "185822__lloydevans09__single-chime"
 
         var filename: String {
@@ -83,9 +86,12 @@ final class AudioService: ObservableObject {
 
         var filename: String { "ambient_\(rawValue)" }
 
-        /// The three original loops are short uncompressed PCM .caf clips;
-        /// the newer, much longer tracks are AAC .m4a (compressed — some run
-        /// 10-35 minutes, and uncompressed at that length would be enormous).
+        /// The three original loops are short .caf clips: rain and fire are
+        /// Apple Lossless (half the size of PCM, still gapless), focus is
+        /// PCM because ALAC padded its odd length with 52 ms of silence that
+        /// would click at every loop. Keep short loops out of AAC: its
+        /// priming samples leave a gap each time round. The newer, much
+        /// longer tracks are AAC .m4a (10-35 minutes, so a gap is rare).
         var fileExtension: String {
             switch self {
             case .rain, .fireplace, .deepFocus: return "caf"
@@ -224,6 +230,19 @@ final class AudioService: ObservableObject {
             return
         }
 
+        // A track already playing is faded out first. Overwriting
+        // `ambientPlayer` used to orphan it: choosing another sound mid
+        // session left the old loop playing underneath the new one, with no
+        // reference left to stop it — it ran until the app was killed.
+        stopAmbience(fadeOut: 0.4)
+
+        // Chosen ambience plays through the silent switch. Everything else
+        // (bells, ticks) stays on `.ambient` and keeps respecting it, but a
+        // track the writer turned on deliberately is not something the
+        // switch should swallow without a word: "I turned the music on and
+        // nothing played" was exactly what a phone left on silent did.
+        setAmbiencePlaybackMode(true)
+
         do {
             let player = try AVAudioPlayer(contentsOf: url)
             player.numberOfLoops = -1
@@ -233,6 +252,7 @@ final class AudioService: ObservableObject {
             player.setVolume(0.55, fadeDuration: 1.5)
             ambientPlayer = player
         } catch {
+            setAmbiencePlaybackMode(false)
             #if DEBUG
             print("Failed to start ambience: \(error)")
             #endif
@@ -244,8 +264,30 @@ final class AudioService: ObservableObject {
         guard let player = ambientPlayer else { return }
         ambientPlayer = nil
         player.setVolume(0, fadeDuration: fadeOut)
-        DispatchQueue.main.asyncAfter(deadline: .now() + fadeOut + 0.1) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + fadeOut + 0.1) { [weak self] in
             player.stop()
+            // Back to `.ambient` once nothing chosen is playing — unless a
+            // new track started during the fade.
+            if self?.ambientPlayer == nil {
+                self?.setAmbiencePlaybackMode(false)
+            }
+        }
+    }
+
+    /// `.playback` while ambience plays (audible on silent), `.ambient`
+    /// otherwise. Both mix with other apps' audio, so neither interrupts
+    /// someone's own music.
+    private func setAmbiencePlaybackMode(_ on: Bool) {
+        let session = AVAudioSession.sharedInstance()
+        let wanted: AVAudioSession.Category = on ? .playback : .ambient
+        guard session.category != wanted else { return }
+        do {
+            try session.setCategory(wanted, mode: .default, options: [.mixWithOthers])
+            try session.setActive(true)
+        } catch {
+            #if DEBUG
+            print("AudioService: could not switch audio category — \(error)")
+            #endif
         }
     }
 
