@@ -16,6 +16,11 @@ concurrency:
   group: tests-${{ github.ref }}
   cancel-in-progress: true
 
+# Simulator builds are signed ad hoc ("-"): no certificate or account, but
+# the app gets an identity, which the Keychain needs. Unsigned
+# (CODE_SIGNING_ALLOWED=NO) builds cannot write to it, so the app-lock and
+# promo-code paths silently fail in CI and their tests fail for the wrong
+# reason.
 jobs:
   unit:
     name: Build + unit tests
@@ -40,7 +45,7 @@ jobs:
             -destination "id=${{ steps.sim.outputs.udid }}" \
             -only-testing:VergTests \
             -resultBundlePath build/unit.xcresult \
-            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= \
             | tee build-unit.log | grep -E "error:|warning: unre|Test Case .* (passed|failed)|Executed|\*\* TEST" || true
           # tee + grep keeps the log readable; the real exit status:
           grep -q "\*\* TEST SUCCEEDED \*\*" build-unit.log
@@ -80,7 +85,7 @@ jobs:
             -only-testing:VergUITests \
             -skip-testing:VergUITests/StoreScreenshots \
             -resultBundlePath build/ui.xcresult \
-            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM= \
             | tee build-ui.log | grep -E "error:|Test Case .* (passed|failed)|Executed|\*\* TEST" || true
           grep -q "\*\* TEST SUCCEEDED \*\*" build-ui.log
 
